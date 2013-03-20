@@ -2,25 +2,36 @@
 
 import sys
 import json
-import smtplib
-
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
+import pynliner
 
 from django.template import Template, Context
 import django.conf
 django.conf.settings.configure()
 
-msg = MIMEMultipart('alternative')
-msg['Subject'] = "Daily Analytics summary"
-me = "Mark Kennedy <mark@gamer-network.net>"
-msg['From'] = me
-you = "Mark Kennedy <mark@verynoisy.com>"
-msg['To'] = you
+data = json.loads( sys.stdin.read() )
+#{ "period" : sys.argv[1], "start_date" : start_date, "end_date": end_date, "sites": sites }
+# calc country totals
 
-part1 = MIMEText(html, 'html')
+from collections import defaultdict
 
-msg.attach(part1)
-s = smtplib.SMTP('localhost')
-s.sendmail(me, you, msg.as_string())
+countries = defaultdict(int)
+total = 0
+for site in data[ "sites" ]:
+	for country in site[ "countries" ]:
+		countries[ country[ "name" ] ] += country[ "metrics" ][ "pageviews" ]
+	total += site[ "totals" ][ "pageviews" ]
 
+countries = ( { "name": key, "pageviews": val } for key, val in countries.items() )
+
+t = Template( open( "dash.html" ).read() )
+c = Context( {
+	"sites": data[ "sites" ],
+	"countries": countries,
+	"period": data[ "period" ],
+	"start_date": data[ "start_date" ],
+	"end_date": data[ "end_date" ],
+	"total_pageviews": total,
+} )
+html = t.render(c)
+
+print pynliner.fromString(html)

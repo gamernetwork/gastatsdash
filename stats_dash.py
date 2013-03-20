@@ -78,7 +78,7 @@ except gdata.client.Error:
 total_hits = 0
 total_pages = 0
 sites = []
-for table, gaid in sorted( TABLES.items()[:2] ):
+for table, gaid in sorted( TABLES.items() ):
 
 	# get totals
 
@@ -152,15 +152,6 @@ for table, gaid in sorted( TABLES.items()[:2] ):
 
 #print total_hits, total_pages
 
-print json.dumps( sites )
-sys.exit(0)
-
-t = Template( open( "dash.html" ).read() )
-c = Context( {
-	"sites": sites
-} )
-html = t.render(c)
-
-print html
+print json.dumps( { "period" : sys.argv[1], "start_date" : unicode( start_date ), "end_date": unicode( end_date ), "sites": sites } )
 sys.exit(0)
 
