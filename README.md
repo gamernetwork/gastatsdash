@@ -40,7 +40,7 @@ To pipe the output to an email, just send the right headers.
 
 ```shell
 PYTHONIOENCODING=utf-8 env/bin/python stats_dash.py <period> \
-	| PYTHONIOENCODING=utf-8 env/bin/python format.py > <output-file>
+	| PYTHONIOENCODING=utf-8 env/bin/python format.py > <output-file> \
 	| mail -a "Content-Type: text/html; charset=utf-8" -s "statsdash" <email-address>
 ```
 
