@@ -9,19 +9,24 @@ metrics:
 https://developers.google.com/analytics/devguides/reporting/core/dimsmets
 """
 
-import re
+#import re
 import sys
+import json
 
-from operator import itemgetter
+#from operator import itemgetter
 from datetime import date, timedelta
 
 import gdata.analytics.client
-import gdata.sample_util
+
+import dateutils
 
 # module containing tuples of account credentials (username, password), not under version control
 import credentials
 
-APP  = 'EG-UniquesAcrossNetwork'
+
+APP  = 'EG-DashBoard'
+
+COUNTRIES_REGEX = "Czec|Germa|Denma|Spai|Franc|Italy|Portug|Swede|Polan|Brazi|Belgiu|Netherl|United Ki|Irela|United St|Canad|Austral|New Ze"
 
 # GA table ids for each site
 TABLES = {'eurogamer.net':'ga:24487962',
@@ -48,23 +53,21 @@ TABLES = {'eurogamer.net':'ga:24487962',
           'video-game-wallpapers.com' :'ga:68749538',
           'gamesindustry.biz' :'ga:11504681'}
 
-def usage():
-	print 'Retrieves the total uniques hits for network sites.'
-	print
-	print 'Usage:', sys.argv[0], '<days>'
-	print '  <days>  - number of days to query'
-	
-try:
-	days     = int(sys.argv[1])
-except (IndexError, KeyError, ValueError):
-	usage()
-	sys.exit(2)
+# so I think it's an inclusive date range
+# same as the web interface
+if sys.argv[1] == "month":
+	end_date = date.today() - timedelta(days=1)
+	start_date = dateutils.subtract_one_month( date.today() )
+else:
+	d = int(sys.argv[1])
+	end_date = date.today() - timedelta(days=1)
+	start_date = date.today() - timedelta(days=d)
 
-my_client = gdata.analytics.client.AnalyticsClient(source=APP)
+gac = gdata.analytics.client.AnalyticsClient(source=APP)
 
 try:
     user, password = credentials.google
-    my_client.ClientLogin(user, password, source=APP)
+    gac.ClientLogin(user, password, source=APP)
 except gdata.client.BadAuthentication:
     print 'Invalid User Credentials'
     sys.exit(1)
@@ -74,26 +77,90 @@ except gdata.client.Error:
 
 total_hits = 0
 total_pages = 0
-for table, gaid in TABLES.items():
+sites = []
+for table, gaid in sorted( TABLES.items()[:2] ):
+
+	# get totals
 
 	data_query = gdata.analytics.client.DataFeedQuery({
 		'ids' : gaid,
-		'start-date' : date.today() - timedelta(days=days) - timedelta(days=365),
-		'end-date' : date.today() - timedelta(days=1) -  timedelta(days=365),
+		'start-date' : start_date,
+		'end-date' : end_date,
 		'metrics' : 'ga:visitors,ga:pageviews'
 	})
 
-	feed = my_client.GetDataFeed(data_query)
+	feed = gac.GetDataFeed(data_query)
+
+	totals = {}
+
+	for metric in feed.aggregates.metric:
+		if metric.type == "integer":
+			totals[ metric.name.replace( "ga:", "" ) ] = int( metric.value );
+
+	# country breakdown
+
+	data_query = gdata.analytics.client.DataFeedQuery({
+		'ids' : gaid,
+		'start-date' : start_date,
+		'end-date' : end_date,
+		'metrics' : 'ga:visitors,ga:pageviews',
+		'dimensions' : 'ga:country',
+		'filters': 'ga:country=~' + COUNTRIES_REGEX
+	})
+
+	feed = gac.GetDataFeed(data_query)
+	countries = []
 
 	for entry in feed.entry:
-		hits = int(entry.metric[0].value)
-		pages = int(entry.metric[1].value)
-		
-		print "%s: %i %i" % (table, hits, pages)
-		total_hits += hits
-		total_pages += pages
+		cm = {}
+		for metric in entry.metric:
+			if metric.type == "integer":
+				cm[ metric.name.replace( "ga:", "" ) ] = int( metric.value );
 
-print total_hits, total_pages
-		
+		countries.append( {
+			"name": entry.dimension[0].value,
+			"metrics": cm
+		} )
 
+	# get ROW data
+
+	data_query = gdata.analytics.client.DataFeedQuery({
+		'ids' : gaid,
+		'start-date' : start_date,
+		'end-date' : end_date,
+		'metrics' : 'ga:visitors,ga:pageviews',
+		'filters': 'ga:country!~' + COUNTRIES_REGEX
+	})
+
+	feed = gac.GetDataFeed(data_query)
+
+	data = {}
+	for metric in feed.aggregates.metric:
+		if metric.type == "integer":
+			data[ metric.name.replace( "ga:", "" ) ] = int( metric.value );
+
+	countries.append( {
+		"name": "ROW",
+		"metrics": data
+	} )
+
+	sites.append( {
+		"name": table,
+		"countries": countries,
+		"totals": totals
+	} )
+
+#print total_hits, total_pages
+
+print json.dumps( sites )
+sys.exit(0)
+
+t = Template( open( "dash.html" ).read() )
+c = Context( {
+	"sites": sites
+} )
+html = t.render(c)
+
+print html
+sys.exit(0)
 
