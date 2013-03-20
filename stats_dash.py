@@ -23,35 +23,11 @@ import dateutils
 # module containing tuples of account credentials (username, password), not under version control
 import credentials
 
-
 APP  = 'EG-DashBoard'
 
 COUNTRIES_REGEX = "Czec|Germa|Denma|Spai|Franc|Italy|Portug|Swede|Polan|Brazi|Belgiu|Netherl|United Ki|Irela|United St|Canad|Austral|New Ze"
 
-# GA table ids for each site
-TABLES = {'eurogamer.net':'ga:24487962',
-          'eurogamer.de' :'ga:20485214',
-          'eurogamer.fr' :'ga:24488326',
-          'eurogamer.es' :'ga:24488378',
-          'eurogamer.it' :'ga:24488410',
-          'eurogamer.se' :'ga:31986560',
-          'eurogamer.nl' :'ga:24488436',
-          'eurogamer.pt' :'ga:24488474',
-          'eurogamer.cz' :'ga:24488523',
-          'eurogamer.be' :'ga:24488541',
-          'eurogamer.dk' :'ga:24488560',
-          'eurogamer.pl' :'ga:64991349',
-          'eurogamer.br' :'ga:64988449',
-          'modojo.com' :'ga:43806',
-          'vg247.com' :'ga:6872882',
-          'vg247.ru' :'ga:59715320',
-          'nintendolife.com' :'ga:961919',
-          'purexbox.com' :'ga:38375276',
-          'pushsquare.com' :'ga:14459794',
-          'outsidexbox.com' :'ga:61719556',
-          'rockpapershotgun.com' :'ga:5031782',
-          'video-game-wallpapers.com' :'ga:68749538',
-          'gamesindustry.biz' :'ga:11504681'}
+#credentials.TABLES
 
 # so I think it's an inclusive date range
 # same as the web interface
@@ -78,7 +54,7 @@ except gdata.client.Error:
 total_hits = 0
 total_pages = 0
 sites = []
-for table, gaid in sorted( TABLES.items() ):
+for table, gaid in sorted( credentials.TABLES.items() ):
 
 	# get totals
 

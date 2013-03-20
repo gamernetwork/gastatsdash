@@ -1,9 +1,9 @@
 Statsdash
 =========
 
-A basic summary of all your Google Analytics properties, broken down by some territories.
+A basic summary of all your Google Analytics properties, broken down by some territories.  Not especially useful if you only have one account.
 
-In nice HTML form, with a filter to make it email safe in case you want to email it to your managers :)
+Output in nice HTML form, with a filter to make it email safe in case you want to email it to your managers :)
 
 Uses legacy Google Analytics API cos the new version (3) requires all sorts of OAuth nonsense and who's got time for that amirite?  Just remember not to leave your API credentials lying around, or checked in to github!
 
@@ -20,6 +20,8 @@ env/bin/pip install pynliner       # css -> inline styles conversion
 env/bin/pip install cssutils       # ditto
 env/bin/pip install BeautifulSoup  # ditto
 ```
+
+Copy ```example-credentials.py``` to ```credentials.py``` and change values to those appropriate to you.
 
 Usage
 -----
