@@ -14,6 +14,7 @@ Pop it in a virtualenv for safety.
 
 ```shell
 virtualenv env
+env/bin/pip install argparse       # argument parsing
 env/bin/pip install gdata          # analytics API v2
 env/bin/pip install django         # for templates (sorry, I know this is excessive)
 env/bin/pip install pynliner       # css -> inline styles conversion
