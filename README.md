@@ -31,17 +31,27 @@ Need to tell python to assume stdout is UTF-8 or it'll moan when it tries to con
 
 ```shell
 PYTHONIOENCODING=utf-8 env/bin/python stats_dash.py <period> \
-	| PYTHONIOENCODING=utf-8 env/bin/python format.py > <output-file>
+	| PYTHONIOENCODING=utf-8 env/bin/python format.py [--email] [--template=<template-file>] <output-file>
 ```
 
-<period>:
-	n-days to run  | 'month' (calendar month - back to same date last month)
+period
+:   n-days to run  | 'month' (calendar month - back to same date last month)
+
+--email
+:   whether or not to inline the stylesheet for better email compatibility
+
+--template
+:   which file, relative to templates/, to use for formatting the output.  Templates are in Django format.
+
+output-file
+:   a file, or - for stdout
+
 
 To pipe the output to an email, just send the right headers.
 
 ```shell
 PYTHONIOENCODING=utf-8 env/bin/python stats_dash.py <period> \
-	| PYTHONIOENCODING=utf-8 env/bin/python format.py > <output-file>
+	| PYTHONIOENCODING=utf-8 env/bin/python format.py - \
 	| mail -a "Content-Type: text/html; charset=utf-8" -s "statsdash" <email-address>
 ```
 
