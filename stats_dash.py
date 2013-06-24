@@ -56,6 +56,7 @@ total_pages = 0
 sites = []
 for table, gaid in sorted( credentials.TABLES.items() ):
 
+	sys.stderr.write( table )
 	# get totals
 
 	data_query = gdata.analytics.client.DataFeedQuery({
