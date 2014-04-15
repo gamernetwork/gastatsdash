@@ -32,12 +32,12 @@ COUNTRIES_REGEX = "Czec|Germa|Denma|Spai|Franc|Italy|Portug|Swede|Polan|Brazi|Be
 # so I think it's an inclusive date range
 # same as the web interface
 if sys.argv[1] == "month":
-	end_date = date.today() - timedelta(days=1)
-	start_date = dateutils.subtract_one_month( date.today() )
+    end_date = date.today() - timedelta(days=1)
+    start_date = dateutils.subtract_one_month( date.today() )
 else:
-	d = int(sys.argv[1])
-	end_date = date.today() - timedelta(days=1)
-	start_date = date.today() - timedelta(days=d)
+    d = int(sys.argv[1])
+    end_date = date.today() - timedelta(days=1)
+    start_date = date.today() - timedelta(days=d)
 
 gac = gdata.analytics.client.AnalyticsClient(source=APP)
 
@@ -54,84 +54,110 @@ except gdata.client.Error:
 total_hits = 0
 total_pages = 0
 sites = []
-for table, gaid in sorted( credentials.TABLES.items() ):
 
-	sys.stderr.write( table )
-	# get totals
+def get_country_breakdown( gaid, start_date, end_date ):
 
-	data_query = gdata.analytics.client.DataFeedQuery({
-		'ids' : gaid,
-		'start-date' : start_date,
-		'end-date' : end_date,
+    data_query = gdata.analytics.client.DataFeedQuery({
+        'ids' : gaid,
+        'start-date' : start_date,
+        'end-date' : end_date,
         'sort' : '-ga:pageviews',
-		'metrics' : 'ga:visitors,ga:pageviews'
-	})
+        'metrics' : 'ga:visitors,ga:pageviews',
+        'dimensions' : 'ga:country',
+        'filters': 'ga:country=~' + COUNTRIES_REGEX
+    })
 
-	feed = gac.GetDataFeed(data_query)
+    feed = gac.GetDataFeed(data_query)
+    countries = []
 
-	totals = {}
+    for entry in feed.entry:
+        cm = {}
+        for metric in entry.metric:
+            if metric.type == "integer":
+                cm[ metric.name.replace( "ga:", "" ) ] = int( metric.value );
 
-	for metric in feed.aggregates.metric:
-		if metric.type == "integer":
-			totals[ metric.name.replace( "ga:", "" ) ] = int( metric.value );
+        countries.append( {
+            "name": entry.dimension[0].value,
+            "metrics": cm
+        } )
 
-	# country breakdown
+    # get ROW data
 
-	data_query = gdata.analytics.client.DataFeedQuery({
-		'ids' : gaid,
-		'start-date' : start_date,
-		'end-date' : end_date,
+    data_query = gdata.analytics.client.DataFeedQuery({
+        'ids' : gaid,
+        'start-date' : start_date,
+        'end-date' : end_date,
         'sort' : '-ga:pageviews',
-		'metrics' : 'ga:visitors,ga:pageviews',
-		'dimensions' : 'ga:country',
-		'filters': 'ga:country=~' + COUNTRIES_REGEX
-	})
+        'metrics' : 'ga:visitors,ga:pageviews',
+        'filters': 'ga:country!~' + COUNTRIES_REGEX
+    })
 
-	feed = gac.GetDataFeed(data_query)
-	countries = []
+    feed = gac.GetDataFeed(data_query)
 
-	for entry in feed.entry:
-		cm = {}
-		for metric in entry.metric:
-			if metric.type == "integer":
-				cm[ metric.name.replace( "ga:", "" ) ] = int( metric.value );
+    data = {}
+    for metric in feed.aggregates.metric:
+        if metric.type == "integer":
+            data[ metric.name.replace( "ga:", "" ) ] = int( metric.value );
 
-		countries.append( {
-			"name": entry.dimension[0].value,
-			"metrics": cm
-		} )
+    countries.append( {
+        "name": "ROW",
+        "metrics": data
+    } )
 
-	# get ROW data
+    return countries
 
-	data_query = gdata.analytics.client.DataFeedQuery({
-		'ids' : gaid,
-		'start-date' : start_date,
-		'end-date' : end_date,
+def get_totals( gaid, start_date, end_date ):
+
+    data_query = gdata.analytics.client.DataFeedQuery({
+        'ids' : gaid,
+        'start-date' : start_date,
+        'end-date' : end_date,
         'sort' : '-ga:pageviews',
-		'metrics' : 'ga:visitors,ga:pageviews',
-		'filters': 'ga:country!~' + COUNTRIES_REGEX
-	})
+        'metrics' : 'ga:visitors,ga:pageviews'
+    })
 
-	feed = gac.GetDataFeed(data_query)
+    feed = gac.GetDataFeed(data_query)
 
-	data = {}
-	for metric in feed.aggregates.metric:
-		if metric.type == "integer":
-			data[ metric.name.replace( "ga:", "" ) ] = int( metric.value );
+    totals = {}
 
-	countries.append( {
-		"name": "ROW",
-		"metrics": data
-	} )
+    for metric in feed.aggregates.metric:
+        if metric.type == "integer":
+            totals[ metric.name.replace( "ga:", "" ) ] = int( metric.value );
 
-	sites.append( {
-		"name": table,
-		"countries": countries,
-		"totals": totals
-	} )
+    return totals
 
-#print total_hits, total_pages
 
-print json.dumps( { "period" : sys.argv[1], "start_date" : unicode( start_date ), "end_date": unicode( end_date ), "sites": sites } )
-sys.exit(0)
+
+if __name__ == "__main__":
+
+    # rollup
+
+    sys.stderr.write( "rollup\n" )
+    rollup_totals = get_totals( credentials.ROLLUP, start_date, end_date )
+    rollup_countries = get_country_breakdown( credentials.ROLLUP, start_date, end_date )
+
+    for table, gaid in sorted( credentials.TABLES.items() ):
+
+        sys.stderr.write( table + "\n" )
+        # get totals
+        totals = get_totals( gaid, start_date, end_date )
+
+        # country breakdown
+        countries = get_country_breakdown( gaid, start_date, end_date )
+
+        sites.append( {
+            "name": table,
+            "countries": countries,
+            "totals": totals,
+        } )
+
+    rollup = {
+        "countries": rollup_countries,
+        "totals": rollup_totals,
+    }
+
+    #print total_hits, total_pages
+
+    print json.dumps( { "period" : sys.argv[1], "start_date" : unicode( start_date ), "end_date": unicode( end_date ), "sites": sites, "rollup": rollup } )
+    sys.exit(0)
 
