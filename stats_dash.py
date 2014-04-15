@@ -63,6 +63,7 @@ for table, gaid in sorted( credentials.TABLES.items() ):
 		'ids' : gaid,
 		'start-date' : start_date,
 		'end-date' : end_date,
+        'sort' : '-ga:pageviews',
 		'metrics' : 'ga:visitors,ga:pageviews'
 	})
 
@@ -80,6 +81,7 @@ for table, gaid in sorted( credentials.TABLES.items() ):
 		'ids' : gaid,
 		'start-date' : start_date,
 		'end-date' : end_date,
+        'sort' : '-ga:pageviews',
 		'metrics' : 'ga:visitors,ga:pageviews',
 		'dimensions' : 'ga:country',
 		'filters': 'ga:country=~' + COUNTRIES_REGEX
@@ -105,6 +107,7 @@ for table, gaid in sorted( credentials.TABLES.items() ):
 		'ids' : gaid,
 		'start-date' : start_date,
 		'end-date' : end_date,
+        'sort' : '-ga:pageviews',
 		'metrics' : 'ga:visitors,ga:pageviews',
 		'filters': 'ga:country!~' + COUNTRIES_REGEX
 	})
