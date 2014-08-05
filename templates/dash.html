@@ -57,24 +57,32 @@
 			<tr>
 				<td></td>
 				<th>Duplicated</th>
-				<th>De-duplicated from rollup</th>
+				{% if do_rollup %}
+					<th>De-duplicated from rollup</th>
+				{% endif %}
 			</tr>
 		</thead>
 		<tbody>
 			<tr class="odd">
 				<th>Total network pageviews</th>
 				<td class="num">{{ totals.pageviews }}</td>
-				<td class="num">{{ rollup.totals.pageviews }}</td>
+				{% if do_rollup %}
+					<td class="num">{{ rollup.totals.pageviews }}</td>
+				{% endif %}
 			</tr>
 			<tr class="even">
 				<th>Total network visitors</th>
 				<td class="num dup">{{ totals.visitors }}</td>
-				<td class="num">{{ rollup.totals.visitors }}</td>
+				{% if do_rollup %}
+					<td class="num">{{ rollup.totals.visitors }}</td>
+				{% endif %}
 			</tr>
 			<tr class="odd">
 				<th>Average network P/V</th>
 				<td class="num dup">{{ totals.pageviews|pages_per_visitor:totals.visitors }}</td>
-				<td class="num">{{ rollup.totals.pageviews|pages_per_visitor:rollup.totals.visitors }}</td>
+				{% if do_rollup %}
+					<td class="num">{{ rollup.totals.pageviews|pages_per_visitor:rollup.totals.visitors }}</td>
+				{% endif %}
 			</tr>
 		</tbody>
 	</table>
@@ -123,9 +131,11 @@
 				<th colspan="3">Pages</th>
 				<th colspan="3">Visitors</th>
 				<th rowspan="2">P/V</th>
-				<th colspan="3">Roll-up pages</th>
-				<th colspan="3">Roll-up visitors</th>
-				<th rowspan="2">Roll-up P/V</th>
+				{% if do_rollup %}
+					<th colspan="3">Roll-up pages</th>
+					<th colspan="3">Roll-up visitors</th>
+					<th rowspan="2">Roll-up P/V</th>
+				{% endif %}
 			</tr>
 			<tr>
 				<th>Abs.</th>
@@ -134,12 +144,15 @@
 				<th>Abs.</th>
 				<th>%</th>
 				<th>Cum. %</th>
-				<th>Abs.</th>
-				<th>%</th>
-				<th>Cum. %</th>
-				<th>Abs.</th>
-				<th>%</th>
-				<th>Cum. %</th>
+
+				{% if do_rollup %}
+					<th>Abs.</th>
+					<th>%</th>
+					<th>Cum. %</th>
+					<th>Abs.</th>
+					<th>%</th>
+					<th>Cum. %</th>
+				{% endif %}
 			</tr>
 		</thead>
 		<tbody>
@@ -153,13 +166,15 @@
 					<td class="num dup">{{ country.metrics.visitors|as_percentage_of:totals.visitors }}</td>
 					<td class="num dup">{{ country.cum.visitors|as_percentage_of:totals.visitors }}</td>
 					<td class="num dup">{{ country.metrics.pageviews|pages_per_visitor:country.metrics.visitors }}</td>
-					<td class="num">{{ country.rollup.pageviews }}</td>
-					<td class="num">{{ country.rollup.pageviews|as_percentage_of:rollup.totals.pageviews }}</td>
-					<td class="num">{{ country.rollup.cum.pageviews|as_percentage_of:rollup.totals.pageviews }}</td>
-					<td class="num">{{ country.rollup.visitors }}</td>
-					<td class="num">{{ country.rollup.visitors|as_percentage_of:rollup.totals.visitors }}</td>
-					<td class="num">{{ country.rollup.cum.visitors|as_percentage_of:rollup.totals.visitors }}</td>
-					<td class="num">{{ country.rollup.pageviews|pages_per_visitor:country.rollup.visitors }}</td>
+					{% if do_rollup %}
+						<td class="num">{{ country.rollup.pageviews }}</td>
+						<td class="num">{{ country.rollup.pageviews|as_percentage_of:rollup.totals.pageviews }}</td>
+						<td class="num">{{ country.rollup.cum.pageviews|as_percentage_of:rollup.totals.pageviews }}</td>
+						<td class="num">{{ country.rollup.visitors }}</td>
+						<td class="num">{{ country.rollup.visitors|as_percentage_of:rollup.totals.visitors }}</td>
+						<td class="num">{{ country.rollup.cum.visitors|as_percentage_of:rollup.totals.visitors }}</td>
+						<td class="num">{{ country.rollup.pageviews|pages_per_visitor:country.rollup.visitors }}</td>
+					{% endif %}
 				</tr>
 			{% endfor %}
 		</tbody>
