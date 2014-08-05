@@ -1,0 +1,6 @@
+argparse
+gdata
+django
+pynliner
+cssutils
+BeautifulSoup
