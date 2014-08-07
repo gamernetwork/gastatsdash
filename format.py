@@ -92,6 +92,7 @@ c = Context( {
     "start_date": data[ "start_date" ],
     "end_date": data[ "end_date" ],
     "totals": totals,
+    "do_rollup": False,
 } )
 html = t.render(c)
 
