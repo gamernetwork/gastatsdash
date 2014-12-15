@@ -5,7 +5,7 @@ A basic summary of all your Google Analytics properties, broken down by some ter
 
 Output in nice HTML form, with a filter to make it email safe in case you want to email it to your managers :)
 
-Uses legacy Google Analytics API cos the new version (3) requires all sorts of OAuth nonsense and who's got time for that amirite?  Just remember not to leave your API credentials lying around, or checked in to github!
+Uses Google Analytics API v3.
 
 Install
 -------
@@ -14,15 +14,25 @@ Pop it in a virtualenv for safety.
 
 ```shell
 virtualenv env
-env/bin/pip install argparse       # argument parsing
-env/bin/pip install gdata          # analytics API v2
-env/bin/pip install django         # for templates (sorry, I know this is excessive)
-env/bin/pip install pynliner       # css -> inline styles conversion
-env/bin/pip install cssutils       # ditto
-env/bin/pip install BeautifulSoup  # ditto
+env/bin/pip install -r requirements.txt
 ```
 
-Copy ```example-credentials.py``` to ```credentials.py``` and change values to those appropriate to you.
+Copy ```config.py-example``` to ```config.py``` and change values to those appropriate to you. Get your tables IDs from
+the Google Analytics backends - look for the view IDs.
+
+See next section for generating a service account and private key.
+
+Generating service account
+--------------------------
+
+  - Register for Google Developers Console: https://console.developers.google.com/
+  - Create a project
+  - Go to APIs & Auth -> Credentials
+  - Click 'Create a new client ID'
+    - Choose 'Service account'
+  - You will be prompted to save a .p12 file - this is the private key file referenced in config.py
+  - Copy the service account email address and pop into config.py
+  - U r ready to rok (just remember not to check all this private stuff into git ok?)
 
 Usage
 -----

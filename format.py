@@ -11,11 +11,15 @@ import django.template.loader
 import django.template
 import django.conf
 
+import django
+
 cwd=os.path.dirname(os.path.realpath(__file__))
 django.conf.settings.configure( TEMPLATE_DIRS=(os.path.join(cwd, "templates"),) )
 
+django.setup()
+
 parser = argparse.ArgumentParser(description='Format GAStatsDash data (json input) into nice tables and stuff.')
-parser.add_argument('--template', dest='template', type=str, help='Which template to use (default: templates/dash.html)', default='templates/dash.html')
+parser.add_argument('--template', dest='template', type=str, help='Which template to use (default: templates/dash.html)', default='dash.html')
 parser.add_argument('--email-safe', dest='email', action='store_true', help='Inline all styles so output can be piped into an email.')
 parser.add_argument('infile', type=argparse.FileType('r'), help='JSON input file (or - for stdin)')
 args = parser.parse_args()
@@ -29,7 +33,6 @@ from collections import defaultdict
 countries = defaultdict( lambda:defaultdict(int) )
 totals = defaultdict(int)
 
-rollup = data["rollup"]
 sites = list( data["sites"] )
 sites.sort( key=lambda k: k['totals']['visitors'], reverse=True )
 cum = { "pageviews":0, "visitors": 0 }
@@ -59,12 +62,6 @@ for c in countries:
     cum[ "pageviews" ] += c[ "metrics" ][ "pageviews" ]
     cum[ "visitors" ] += c[ "metrics" ][ "visitors" ]
     c[ "cum" ] = cum.copy()
-    for r_c in rollup["countries"]:
-        if r_c["name"] == c["name"]:
-            c[ "rollup" ] = r_c[ "metrics" ]
-            r_cum[ "pageviews" ] += r_c[ "metrics" ][ "pageviews" ]
-            r_cum[ "visitors" ] += r_c[ "metrics" ][ "visitors" ]
-            c[ "rollup" ][ "cum" ] = r_cum.copy()
 
 register = django.template.Library()
 @register.filter
@@ -87,7 +84,6 @@ t = django.template.loader.get_template( args.template )
 c = Context( {
     "sites": sites,
     "countries": countries,
-    "rollup": rollup,
     "period": data[ "period" ],
     "start_date": data[ "start_date" ],
     "end_date": data[ "end_date" ],
