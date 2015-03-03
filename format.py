@@ -34,7 +34,7 @@ countries = defaultdict( lambda:defaultdict(int) )
 totals = defaultdict(int)
 
 sites = list( data["sites"] )
-sites.sort( key=lambda k: k['totals']['visitors'], reverse=True )
+sites.sort( key=lambda k: k['totals']['pageviews'], reverse=True )
 cum = { "pageviews":0, "visitors": 0 }
 
 for site in sites:
@@ -55,7 +55,7 @@ for site in sites:
 
 #rollup_countries = list(( { "name": key, "metrics": val } for key, val in rollup[ "countries" ].items() ))
 countries = list(( { "name": key, "metrics": val } for key, val in countries.items() ))
-countries.sort( key=lambda k: k['metrics']['visitors'], reverse=True )
+countries.sort( key=lambda k: k['metrics']['pageviews'], reverse=True )
 cum = { "pageviews":0, "visitors": 0 }
 r_cum = { "pageviews":0, "visitors": 0 }
 for c in countries:
