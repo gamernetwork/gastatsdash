@@ -1,3 +1,5 @@
+import datetime
+
 def add_one_month(t):
     """Return a `datetime.date` or `datetime.datetime` (as given) that is
     one month earlier.
@@ -8,7 +10,6 @@ def add_one_month(t):
         >>> add_one_month(datetime.date(2010, 1, 31))
         datetime.date(2010, 2, 28)
     """
-    import datetime
     one_day = datetime.timedelta(days=1)
     one_month_later = t + one_day
     while one_month_later.month == t.month:  # advance to start of next month
@@ -31,7 +32,6 @@ def subtract_one_month(t):
         >>> subtract_one_month(datetime.date(2010, 3, 31))
         datetime.date(2010, 2, 28)
     """
-    import datetime
     one_day = datetime.timedelta(days=1)
     one_month_earlier = t - one_day
     while one_month_earlier.month == t.month or one_month_earlier.day > t.day:

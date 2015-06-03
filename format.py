@@ -14,7 +14,7 @@ import django.conf
 import django
 
 cwd=os.path.dirname(os.path.realpath(__file__))
-django.conf.settings.configure( TEMPLATE_DIRS=(os.path.join(cwd, "templates"),) )
+django.conf.settings.configure( TEMPLATE_DIRS=(os.path.join(cwd, "templates"),), INSTALLED_APPS=['django.contrib.humanize'] )
 
 django.setup()
 
