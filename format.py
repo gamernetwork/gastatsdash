@@ -6,7 +6,7 @@ import json
 import pynliner
 import os
 
-from django.template import Template, Context
+from django.template import Context
 import django.template.loader
 import django.template
 import django.conf

@@ -1,0 +1,80 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset='utf-8'> 
+	</head>
+<body>
+	<style>
+	body, p, td, th {
+		font-family: sans-serif;
+		text-align: left;
+	}
+	td, th {
+		padding: 0.3em 1em 0.3em 0.5em;
+		vertical-align: top;
+	}
+	tr.odd td, tr.odd th {
+		background-color: #f0f2f4;
+	}
+	thead th {
+		border-bottom: 1px solid #d0d9e0;
+		vertical-align: middle;
+	}
+    thead th.article-title {
+        width: 700px;
+    }
+	tr.site td, tr.site th {
+		border-top: 1px solid #d0d9e0;
+	}
+	tr.site td, tr.site th {
+		font-weight: bold;
+		padding-top: 1em;
+	}
+	tr.total td, tr.total th {
+		border-top: 1px solid #d0d9e0;
+	}
+	tr.total td, tr.total th {
+		padding-bottom: 1em;
+	}
+	td.num {
+		text-align: right;
+	}
+	.dup {
+		color: blue;
+	}
+	</style>
+	<h1>
+		Article Breakdown Dash {% if topic %}for Topic '{{topic}}'{% endif %} {% if site %}- {{site}} {% endif %}
+	</h1>
+    <p>
+      Showing {{article_limit}} most popular articles.
+    </p>
+    <p>
+        {{start_date}} - {{end_date}}
+    </p>
+    <table>
+        <thead>
+            <tr>
+                <th>Site</th>
+                <th class="article-title">Article Title</th>
+                <th>PV</th>
+                <th>DoD<th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for path, article in data %}
+            <tr {% if forloop.counter|divisibleby:2 %}class="odd"{% endif %}>
+                <td>{{article.host}}</td>
+                <td><a href="http://{{article.host}}{{article.path}}">{{article.title}}</a></td>
+                <td>{{article.pageviews}}</td>
+                <td>{% if article.change == article.pageviews %}-{% else %}<span style="color: {% if article.change > 0 %}green{% else %}red{% endif %};">{{article.change|as_percentage_of:article.previous_pageviews}}</span>{% endif %}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+	<h4>Email confidentiality notice.</h4>
+	<p>
+		This message is private and is entirely confidential. If you have received this message in error, please notify us and remove it from your system.
+	</p>
+</html>

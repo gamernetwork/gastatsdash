@@ -19,21 +19,7 @@ from httplib2 import Http
 from apiclient.discovery import build
 import dateutils
 
-class StatsRange(object):
-    
-    def __init__(self, name, start_date, end_date):
-        self.name = name
-        self.start_date = start_date
-        self.end_date = end_date
-
-    def _get_formatted_date(self, d):
-        return d.isoformat()
-
-    def get_start(self):
-        return self._get_formatted_date(self.start_date)
-
-    def get_end(self):
-        return self._get_formatted_date(self.end_date)
+from analytics import StatsRange
 
 
 with open(config.KEY_FILE) as f:
