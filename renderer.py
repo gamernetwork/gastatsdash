@@ -32,6 +32,9 @@ def pages_per_visitor(part, whole):
 django.template.builtins.append(register)
 
 def render_template(template_name, context, email=True):
+    """
+    Helper function for rendering template given a context.
+    """
     template = django.template.loader.get_template(template_name)
     c = Context(context)
     html = template.render(c)

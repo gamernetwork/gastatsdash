@@ -13,6 +13,9 @@ from renderer import render_template
 analytics = get_analytics()
 
 class Emailer(object):
+    """
+    Responsible for sending HTMl emails to one or more recipients.
+    """
     
     def __init__(self):
         #self.smtp_address = 'localhost:1055'
@@ -24,6 +27,9 @@ class Emailer(object):
         return sender
 
     def send_email(self, recipients, subject, html):
+        """
+        Send an html email to a list of recipients.
+        """
         msg = MIMEMultipart('alternative')
         msg.set_charset('utf8')
         msg['Subject'] = subject
@@ -55,19 +61,31 @@ class Report(object):
         return config.TABLES[self.site]
 
     def data_available(self):
+        """
+        Query GA to see if the data is available for this report.
+        """
         return analytics.data_available_for_site(self.get_site_gaid(), 
             self.period.get_end())
 
     def get_subject(self):
+        """
+        Get the subject line for this report.
+        """
         report_name_parts = re.findall('[A-Z][^A-Z]*', self.__class__.__name__)
         report_name = ' '.join(report_name_parts)
         subject = "%s - %s" % (report_name, self.period.get_start())
         return subject
 
     def generate_report(self):
+        """
+        Marshall the data needed and use it to render the HTML report.
+        """
         raise NotImplementedError()
 
     def send_report(self):
+        """
+        Generate and send the report to the recipients.
+        """
         html = self.generate_report()
         subject = self.get_subject()
         recipients = self.recipients
@@ -128,6 +146,11 @@ class NetworkArticleBreakdown(ArticleBreakdown):
         return formatted
 
     def data_available(self):
+        """
+        Iterate through all sites and check that their data is available.
+        """
+        # TODO: move this up in to an AggregateReport mixin class which is aware
+        #   of multiple sites
         for site in self.sites:
             site_ga_id = config.TABLES[site]
             site_data_available = analytics.data_available_for_site(site_ga_id, 

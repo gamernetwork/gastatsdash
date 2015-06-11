@@ -13,6 +13,8 @@ yesterday_stats_range = StatsRange("Yesterday", yesterday, yesterday)
 day_before = yesterday - timedelta(days=1)
 day_before_stats_range = StatsRange("Day Before", day_before, day_before)
 
+# Reports configuration - what reports to run, how frequently, who to send to
+
 reports = [
     # E3 topic article breakdowns
     {
@@ -83,6 +85,10 @@ reports = [
 ]
 
 class RunLogger(object):
+    """
+    Persistence layer for recording the last run of a report and querying
+    whether a report can be run now, given a reporting frequency.
+    """
     
     def __init__(self):
         self.conn = sqlite3.connect("schedule.db")
@@ -98,6 +104,9 @@ class RunLogger(object):
         )
 
     def get_last_run(self, identifier):
+        """
+        Get the last run of a report given a unique identifier.
+        """
         c = self.conn.cursor()
         c.execute(
             "SELECT last_run FROM report_runs " +
@@ -110,6 +119,9 @@ class RunLogger(object):
         return datetime(1, 1, 1)
 
     def record_run(self, identifier):
+        """
+        Record the last run of a report given its unique identifier.
+        """
         c = self.conn.cursor()
         c.execute(
             "INSERT OR REPLACE INTO report_runs VALUES (?, ?)", 
@@ -118,6 +130,9 @@ class RunLogger(object):
         self.conn.commit()
 
     def needs_run(self, identifier, frequency):
+        """
+        Can we run the report given an identifier and frequency.
+        """
         last_run = self.get_last_run(identifier)
         today = date.today()
         if frequency == 'DAILY':
@@ -127,6 +142,10 @@ class RunLogger(object):
 
 
 def run_schedule():
+    """
+    The main loop.  Iterate over our report config and try to run reports that
+    are scheduled to run now.
+    """
     run_logger = RunLogger()
     for config in reports:
         identifier = config['identifier']
