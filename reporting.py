@@ -96,10 +96,11 @@ class Report(object):
 class ArticleBreakdown(Report):
     template = "article_dash.html"
 
-    def __init__(self, recipients, site, period, second_period, topic=None, article_limit=10):
+    def __init__(self, recipients, site, period, second_period, topic, extra_filters="", article_limit=10):
         super(ArticleBreakdown, self).__init__(recipients, site, period)
         self.second_period = second_period
         self.topic = topic
+        self.extra_filters = extra_filters
         self.article_limit = article_limit
 
     def get_subject(self):
@@ -110,7 +111,7 @@ class ArticleBreakdown(Report):
 
     def get_article_breakdown_for_site(self, site_id):
         data = analytics.get_article_breakdown_two_periods(site_id, 
-            self.period, self.second_period, topic=self.topic,
+            self.period, self.second_period, extra_filters=self.extra_filters,
             min_pageviews=250)
         return data
 
@@ -132,10 +133,10 @@ class ArticleBreakdown(Report):
 class NetworkArticleBreakdown(ArticleBreakdown):
     template = "article_dash.html"
 
-    def __init__(self, recipients, site, period, second_period, topic=None, article_limit=10):
+    def __init__(self, recipients, site, period, second_period, topic, extra_filters="", article_limit=10):
         super(NetworkArticleBreakdown, self).__init__(
             recipients, site, period, 
-            second_period, topic, article_limit
+            second_period, topic, extra_filters, article_limit
         )
         self.sites = site.split(',')
 

@@ -1,88 +1,10 @@
-import time, sqlite3
+import sqlite3, os
+
 from sqlite3 import OperationalError
+from datetime import date, datetime
 
-from datetime import date, timedelta, datetime
-
-from analytics import StatsRange
-from reporting import ArticleBreakdown, NetworkArticleBreakdown
-
-recipients = ["brendan.smith@gamer-network.net", "brendan.smith1988@gmail.com"]
-
-yesterday = date.today() - timedelta(days=1)
-yesterday_stats_range = StatsRange("Yesterday", yesterday, yesterday)
-day_before = yesterday - timedelta(days=1)
-day_before_stats_range = StatsRange("Day Before", day_before, day_before)
-
-# Reports configuration - what reports to run, how frequently, who to send to
-
-reports = [
-    # E3 topic article breakdowns
-    {
-        "report": 
-            ArticleBreakdown(
-                recipients = recipients,
-                site = "eurogamer.net", 
-                period = yesterday_stats_range,
-                second_period = day_before_stats_range,
-                topic="e3",
-                article_limit=10,
-            ),
-        "frequency": "DAILY",
-        "identifier": "EG-breakdown-e3",
-    },
-    {
-        "report": 
-            ArticleBreakdown(
-                recipients = recipients,
-                site = "usgamer.net", 
-                period = yesterday_stats_range,
-                second_period = day_before_stats_range,
-                topic="e3",
-                article_limit=10,
-            ),
-        "frequency": "DAILY",
-        "identifier": "USG-breakdown-e3",
-    },
-    {
-        "report": 
-            ArticleBreakdown(
-                recipients = recipients,
-                site = "gamesindustry.biz", 
-                period = yesterday_stats_range,
-                second_period = day_before_stats_range,
-                topic="e3",
-                article_limit=10,
-            ),
-        "frequency": "DAILY",
-        "identifier": "GI-breakdown-e3",
-    },
-    {
-        "report": 
-            ArticleBreakdown(
-                recipients = recipients,
-                site = "vg247.com", 
-                period = yesterday_stats_range,
-                second_period = day_before_stats_range,
-                topic="e3",
-                article_limit=10,
-            ),
-        "frequency": "DAILY",
-        "identifier": "VG-breakdown-e3",
-    },
-    {
-        "report": 
-            NetworkArticleBreakdown(
-                recipients = recipients,
-                site = "eurogamer.net,vg247.com,gamesindustry.biz,usgamer.net", 
-                period = yesterday_stats_range,
-                second_period = day_before_stats_range,
-                topic="e3",
-                article_limit=25,
-            ),
-        "frequency": "DAILY",
-        "identifier": "NETWORK-breakdown-e3",
-    },
-]
+import config
+from report_schedule import reports
 
 class RunLogger(object):
     """
@@ -91,7 +13,8 @@ class RunLogger(object):
     """
     
     def __init__(self):
-        self.conn = sqlite3.connect("schedule.db")
+        db_location = os.path.join(config.SCHEDULE_DB_LOCATION, "schedule.db")
+        self.conn = sqlite3.connect(db_location)
         try:
             self.conn.execute("SELECT * FROM report_runs LIMIT 1")
         except OperationalError:

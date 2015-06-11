@@ -56,16 +56,16 @@ class Analytics(object):
         return data_available
 
     def get_article_breakdown(self, site_id, stats_range, 
-            topic=None, min_pageviews=1):
+            extra_filters="", min_pageviews=1):
         """
         Get pageview breakdown grouped by articles for a particular stats daterange
-        and topic (optional).
+        and extra_filters (optional).
         """
         start_date = stats_range.get_start()
         end_date = stats_range.get_end()
         filters = ''
-        if topic:
-            filters = 'ga:dimension2=@%s;' % topic
+        if extra_filters:
+            filters = '%s;' % extra_filters
         filters += 'ga:pageviews>%s' % min_pageviews
         query = self.ga.get(
             ids=site_id,
@@ -81,13 +81,13 @@ class Analytics(object):
         return article_data
 
     def get_article_breakdown_two_periods(self, site_id, first_period, 
-            second_period, topic=None, min_pageviews=1):
+            second_period, extra_filters="", min_pageviews=1):
         """
         """
         first_data = self.get_article_breakdown(site_id, first_period, 
-            topic=topic, min_pageviews=min_pageviews)
+            extra_filters=extra_filters, min_pageviews=min_pageviews)
         second_data = self.get_article_breakdown(site_id, second_period, 
-            topic=topic, min_pageviews=min_pageviews)
+            extra_filters=extra_filters, min_pageviews=min_pageviews)
         for path, article_info in first_data.items():
             try:
                 previous_period_pageviews = second_data[path]['pageviews']

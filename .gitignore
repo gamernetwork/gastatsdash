@@ -9,4 +9,6 @@ notes.do.not.commit
 send_email.py
 weekly.sh
 *.swp
+
 schedule.db
+report_schedule.py
