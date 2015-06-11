@@ -1,0 +1,91 @@
+from datetime import date, timedelta
+
+from analytics import StatsRange
+from reporting import ArticleBreakdown, NetworkArticleBreakdown
+
+recipients = ["me@example.net", "bob@example.net"]
+
+yesterday = date.today() - timedelta(days=1)
+yesterday_stats_range = StatsRange("Yesterday", yesterday, yesterday)
+day_before = yesterday - timedelta(days=1)
+day_before_stats_range = StatsRange("Day Before", day_before, day_before)
+
+# Reports configuration - what reports to run, how frequently, who to send to
+
+# EXAMPLE reports configuration - adjust this for your sites
+# TODO: turn this in to a true configuration file which describes the configuration
+#   for instantiating Report objects per scheduler.py run rather than 
+#   instantiating them directly
+reports = [
+    # E3 topic article breakdowns
+    {
+        "report": 
+            ArticleBreakdown(
+                recipients = recipients,
+                site = "eurogamer.net", 
+                period = yesterday_stats_range,
+                second_period = day_before_stats_range,
+                extra_filters="ga:dimension2=@e3",
+                topic = "E3",
+                article_limit=10,
+            ),
+        "frequency": "DAILY",
+        "identifier": "EG-breakdown-e3",
+    },
+    {
+        "report": 
+            ArticleBreakdown(
+                recipients = recipients,
+                site = "usgamer.net", 
+                period = yesterday_stats_range,
+                second_period = day_before_stats_range,
+                extra_filters="ga:dimension2=@e3",
+                topic = "E3",
+                article_limit=10,
+            ),
+        "frequency": "DAILY",
+        "identifier": "USG-breakdown-e3",
+    },
+    {
+        "report": 
+            ArticleBreakdown(
+                recipients = recipients,
+                site = "gamesindustry.biz", 
+                period = yesterday_stats_range,
+                second_period = day_before_stats_range,
+                extra_filters="ga:dimension2=@e3",
+                topic = "E3",
+                article_limit=10,
+            ),
+        "frequency": "DAILY",
+        "identifier": "GI-breakdown-e3",
+    },
+    {
+        "report": 
+            ArticleBreakdown(
+                recipients = recipients,
+                site = "vg247.com", 
+                period = yesterday_stats_range,
+                second_period = day_before_stats_range,
+                extra_filters="ga:dimension2=@e3",
+                topic = "E3",
+                article_limit=10,
+            ),
+        "frequency": "DAILY",
+        "identifier": "VG-breakdown-e3",
+    },
+    {
+        "report": 
+            NetworkArticleBreakdown(
+                recipients = recipients,
+                site = "eurogamer.net,vg247.com,gamesindustry.biz,usgamer.net", 
+                period = yesterday_stats_range,
+                second_period = day_before_stats_range,
+                extra_filters="ga:dimension2=@e3",
+                topic = "E3",
+                article_limit=25,
+            ),
+        "frequency": "DAILY",
+        "identifier": "NETWORK-breakdown-e3",
+    },
+]

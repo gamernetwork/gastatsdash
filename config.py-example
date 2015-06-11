@@ -1,3 +1,5 @@
+import os
+
 # Google APIs service account
 # See README for how to generate
 CLIENT_EMAIL = 'abcdefg-1234567890@developer.gserviceaccount.com'
@@ -9,3 +11,8 @@ TABLES = {'site.com':'ga:12345678',
           'zite.de' :'ga:87654321',
           'sait.fr' :'ga:87655678',
           }
+
+SMTP_ADDRESS = 'localhost:25'
+SEND_FROM = 'statsdash@your-hostname.net'
+
+SCHEDULE_DB_LOCATION = os.path.abspath('.')

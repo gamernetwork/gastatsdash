@@ -1,9 +1,7 @@
 Statsdash
 =========
 
-A basic summary of all your Google Analytics properties, broken down by some territories.  Not especially useful if you only have one account.
-
-Output in nice HTML form, with a filter to make it email safe in case you want to email it to your managers :)
+A simple email reporting tool for all your Google Analytics properties.  Not especially useful if you only have one account.
 
 Uses Google Analytics API v3.
 
@@ -19,6 +17,8 @@ env/bin/pip install -r requirements.txt
 
 Copy ```config.py-example``` to ```config.py``` and change values to those appropriate to you. Get your tables IDs from
 the Google Analytics backends - look for the view IDs.
+
+Copy ```report_schedule.py-example``` to ```report_schedule.py``` and change the reports config to be appropriate to you.
 
 See next section for generating a service account and private key.
 
@@ -37,32 +37,18 @@ Generating service account
 Usage
 -----
 
-Need to tell python to assume stdout is UTF-8 or it'll moan when it tries to convert some country names.
+Reports are run using a lightweight scheduler - scheduler.py.
 
-```shell
-PYTHONIOENCODING=utf-8 env/bin/python stats_dash.py <period> \
-	| PYTHONIOENCODING=utf-8 env/bin/python format.py [--email] [--template=<template-file>] <output-file>
+```
+python scheduler.py
 ```
 
-period
-:   n-days to run  | 'month' (calendar month - back to same date last month)
+This will iterate through the reports in your report config ```report_schedule.py```,
+check whether a report is due to run now and whether the data for the report is
+available in Google Analytics.
 
---email
-:   whether or not to inline the stylesheet for better email compatibility
+If the data is available for the dependent sites, the scheduler will trigger
+the report to run and email its recipients.
 
---template
-:   which file, relative to templates/, to use for formatting the output.  Templates are in Django format.
-
-output-file
-:   a file, or - for stdout
-
-
-To pipe the output to an email, just send the right headers.
-
-```shell
-PYTHONIOENCODING=utf-8 env/bin/python stats_dash.py <period> \
-	| PYTHONIOENCODING=utf-8 env/bin/python format.py - \
-	| mail -a "Content-Type: text/html; charset=utf-8" -s "statsdash" <email-address>
-```
-
-If you don't have a working local sendmail, then you're on your own (python has excellent SMTP libraries!)
+It is advised that an hourly cron runs scheduler.py so that stats reports are
+available soon after the data becomes available on Google Analytics.
