@@ -11,7 +11,8 @@ class TestStatsRange(unittest.TestCase):
         end = datetime(2015,06,13)
         stats_range = StatsRange("Now", start, end)
         self.assertEqual(stats_range.get_start(), "2015-06-12T00:00:00")
-        self.assertEqual(stats_range.get_end(), "2015-06-13T00:00:00")
+        #self.assertEqual(stats_range.get_end(), "2015-06-13T00:00:00")
+        self.assertEqual(stats_range.get_end(), "2015-06-13T00:10:00")
 
 if __name__ == '__main__':
     unittest.main()
