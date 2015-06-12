@@ -18,3 +18,4 @@ simplejson==3.6.5
 six==1.8.0
 uritemplate==0.6
 wsgiref==0.1.2
+nose
