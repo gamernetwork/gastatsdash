@@ -184,5 +184,5 @@ if __name__ == '__main__':
     yesterday_stats_range = StatsRange("Yesterday", yesterday, yesterday)
     day_before = yesterday - timedelta(days=1)
     day_before_stats_range = StatsRange("Day Before", day_before, day_before)
-    article_breakdown = NetworkArticleBreakdown('foo@example.net', 'eurogamer.net,vg247.com,gamesindustry.biz,usgamer.net', yesterday_stats_range, day_before_stats_range, article_limit=25)
-    print article_breakdown.generate_report()
+    article_breakdown = ArticleBreakdown(['foo@example.net'], 'vg247.com', yesterday_stats_range, day_before_stats_range, topic="E3", extra_filters="ga:dimension2=@e3", article_limit=10)
+    data = article_breakdown.get_article_breakdown_for_site('ga:6872882')

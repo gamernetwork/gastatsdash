@@ -32,12 +32,18 @@ class Analytics(object):
         article_data = OrderedDict()
         for row in result_rows:
             title, path, host, pageviews = row
-            article_data[path] = {
-                'title': title,
-                'path': path,
-                'host': host,
-                'pageviews': int(pageviews)
-            }
+            # Changed page titles will lead to duplicate rows
+            # So, firstly try to increment pageviews on the article we have
+            # And then add it to the structure if necessary
+            try:
+                article_data[path]['pageviews'] += int(pageviews)
+            except KeyError:
+                article_data[path] = {
+                    'title': title,
+                    'path': path,
+                    'host': host,
+                    'pageviews': int(pageviews)
+                }
         return article_data
 
     def data_available_for_site(self, site_id, stats_date):
