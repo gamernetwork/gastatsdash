@@ -1,10 +1,11 @@
 import sqlite3, os
 
 from sqlite3 import OperationalError
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 import config
 from report_schedule import reports
+from dateutils import find_last_weekday, subtract_one_month
 
 class RunLogger(object):
     """
@@ -52,15 +53,19 @@ class RunLogger(object):
         )
         self.conn.commit()
 
-    def needs_run(self, identifier, frequency):
+    def needs_run(self, identifier, frequency, frequency_options={}):
         """
         Can we run the report given an identifier and frequency.
         """
         last_run = self.get_last_run(identifier)
         today = date.today()
-        if frequency == 'DAILY':
+        threshold = datetime(year=today.year, month=today.month, 
+            day=today.day)
+        if frequency == 'WEEKLY':
+            threshold = find_last_weekday(threshold, frequency_options['weekday']) 
+        if frequency == 'MONTHLY':
             threshold = datetime(year=today.year, month=today.month, 
-                day=today.day)
+                day=frequency_options['day'])
         return last_run < threshold
 
 
@@ -73,8 +78,9 @@ def run_schedule():
     for config in reports:
         identifier = config['identifier']
         frequency = config['frequency']
+        frequency_options = config.get('frequency_options', {})
         report = config['report']
-        needs_run = run_logger.needs_run(identifier, frequency)
+        needs_run = run_logger.needs_run(identifier, frequency, frequency_options)
         if needs_run and report.data_available():
             report.send_report()
             run_logger.record_run(identifier)

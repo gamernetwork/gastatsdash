@@ -9,6 +9,7 @@ from collections import OrderedDict
 import config
 from analytics import get_analytics, StatsRange
 from renderer import render_template
+from dateutils import subtract_one_month
 
 analytics = get_analytics()
 
@@ -51,30 +52,24 @@ class Report(object):
     """
     template = ""
 
-    def __init__(self, recipients, site, period):
+    def __init__(self, recipients, subject, sites, period):
         self.recipients = recipients
-        self.site = site
+        self.sites = sites
         self.period = period
         self.emailer = Emailer()
-
-    def get_site_gaid(self):
-        return config.TABLES[self.site]
+        self.subject = subject
 
     def data_available(self):
         """
-        Query GA to see if the data is available for this report.
+        Iterate through all sites and check that their data is available.
         """
-        return analytics.data_available_for_site(self.get_site_gaid(), 
-            self.period.get_end())
-
-    def get_subject(self):
-        """
-        Get the subject line for this report.
-        """
-        report_name_parts = re.findall('[A-Z][^A-Z]*', self.__class__.__name__)
-        report_name = ' '.join(report_name_parts)
-        subject = "%s - %s" % (report_name, self.period.get_start())
-        return subject
+        for site in self.sites:
+            site_ga_id = config.TABLES[site]
+            site_data_available = analytics.data_available_for_site(site_ga_id, 
+                self.period.get_end())
+            if site_data_available == False:
+                return False
+        return True
 
     def generate_report(self):
         """
@@ -87,27 +82,21 @@ class Report(object):
         Generate and send the report to the recipients.
         """
         html = self.generate_report()
-        subject = self.get_subject()
+        subject = self.subject
         recipients = self.recipients
         self.emailer.send_email(recipients, subject, html)
-        print "Sent '%s' Report for site %s" % (self.get_subject(), self.site)
+        print "Sent '%s' Report for site %s" % (self.subject, ','.join(self.sites))
 
 
 class ArticleBreakdown(Report):
     template = "article_dash.html"
 
-    def __init__(self, recipients, site, period, second_period, topic, extra_filters="", article_limit=10):
-        super(ArticleBreakdown, self).__init__(recipients, site, period)
+    def __init__(self, recipients, subject, sites, period, second_period, topic, extra_filters="", article_limit=10):
+        super(ArticleBreakdown, self).__init__(recipients, subject, sites, period)
         self.second_period = second_period
         self.topic = topic
         self.extra_filters = extra_filters
         self.article_limit = article_limit
-
-    def get_subject(self):
-        subject = super(ArticleBreakdown, self).get_subject()
-        if self.topic:
-            subject += ' - Topic: %s' % self.topic
-        return subject
 
     def get_article_breakdown_for_site(self, site_id):
         data = analytics.get_article_breakdown_two_periods(site_id, 
@@ -116,12 +105,12 @@ class ArticleBreakdown(Report):
         return data
 
     def generate_report(self):
-        site_ga_id = config.TABLES[self.site]
+        site_ga_id = config.TABLES[self.sites[0]]
         data = self.get_article_breakdown_for_site(site_ga_id)
         data = list(data.items())[:self.article_limit]
         report_html = render_template(self.template, {
             'data': data,
-            'site': self.site,
+            'site': self.sites[0],
             'start_date': self.period.get_start(),
             'end_date': self.period.get_end(),
             'topic': self.topic,
@@ -133,32 +122,12 @@ class ArticleBreakdown(Report):
 class NetworkArticleBreakdown(ArticleBreakdown):
     template = "article_dash.html"
 
-    def __init__(self, recipients, site, period, second_period, topic, extra_filters="", article_limit=10):
-        super(NetworkArticleBreakdown, self).__init__(
-            recipients, site, period, 
-            second_period, topic, extra_filters, article_limit
-        )
-        self.sites = site.split(',')
-
     def format_top_data(self, top_data):
         formatted = []
         for article in top_data:
             formatted.append((article['path'], article))
         return formatted
 
-    def data_available(self):
-        """
-        Iterate through all sites and check that their data is available.
-        """
-        # TODO: move this up in to an AggregateReport mixin class which is aware
-        #   of multiple sites
-        for site in self.sites:
-            site_ga_id = config.TABLES[site]
-            site_data_available = analytics.data_available_for_site(site_ga_id, 
-                self.period.get_end())
-            if site_data_available == False:
-                return False
-        return True
 
     def generate_report(self):
         all_network_data = []
@@ -179,10 +148,119 @@ class NetworkArticleBreakdown(ArticleBreakdown):
         })
         return report_html
 
+class NetworkBreakdown(Report):
+    template = "dash.html"
+
+    def __init__(self, recipients, subject, sites, period, second_period, report_span="1", extra_filters=""):
+        super(NetworkBreakdown, self).__init__(recipients, subject, sites, period)
+        self.second_period = second_period
+        self.extra_filters = extra_filters
+        self.report_span = report_span
+
+    def _get_change(self, first_period_totals, second_period_totals):
+        """
+        """
+        change = {}
+        current_visitors = first_period_totals.get('visitors', 0)
+        previous_visitors = second_period_totals.get('visitors', 0)
+        change['visitors'] = current_visitors - previous_visitors
+        current_pageviews = first_period_totals.get('pageviews', 0)
+        previous_pageviews = second_period_totals.get('pageviews', 0)
+        change['pageviews'] = current_pageviews - previous_pageviews
+        return change
+        
+    def generate_report(self):
+        aggregate_pageviews = 0
+        aggregate_visitors = 0
+        site_data = []
+        countries = ["Czec", "Germa", "Denma", "Spai", "Franc", "Italy", 
+            "Portug", "Swede", "Polan", "Brazi", "Belgiu", "Netherl", 
+            "United Ki", "Irela", "United St", "Canad", "Austral", "New Ze"]
+        for site in self.sites:
+            site_ga_id = config.TABLES[site]
+            first_period_totals = analytics.get_site_totals_for_period(
+                site_ga_id, self.period)[0]
+            second_period_totals = analytics.get_site_totals_for_period(
+                site_ga_id, self.second_period)[0]
+            if self.report_span == 'month':
+                start = self.period.start_date - timedelta(days=365)
+                end = self.period.end_date - timedelta(days=365)
+                last_year_period = StatsRange("This Month Last Year", start, end)
+                last_year_totals = analytics.get_site_totals_for_period(
+                    site_ga_id, last_year_period)[0]
+            change_totals = self._get_change(first_period_totals, second_period_totals)
+            country_data = analytics.get_country_breakdown_for_period(site_ga_id, self.period, countries)
+            data = {
+                'name': site,
+                'totals': first_period_totals,
+                'previous_totals': second_period_totals,
+                'change': change_totals,
+                'country_metrics': country_data,
+            }
+            if self.report_span == 'month':
+                data['yoy_totals'] = last_year_totals
+                data['yoy_change'] = self._get_change(first_period_totals, last_year_totals)
+            site_data.append(data)
+            aggregate_pageviews += first_period_totals['pageviews']
+            aggregate_visitors += first_period_totals['visitors']
+        site_data = sorted(site_data, key=lambda k: k['totals']['pageviews'],
+            reverse=True)
+
+        country_data = {}
+        for data in site_data:
+            for country, metrics in data['country_metrics'].items():
+                try:
+                    country_data[country]['metrics']['pageviews'] += metrics['pageviews']
+                    country_data[country]['metrics']['visitors'] += metrics['visitors']
+                except KeyError:
+                    country_data[country] = {
+                        'name': country,
+                        'metrics': {
+                            'pageviews': metrics['pageviews'],
+                            'visitors': metrics['visitors'],
+                        }
+                    }
+        country_metrics = country_data.values()
+        country_metrics = sorted(country_metrics, 
+            key=lambda k: k['metrics']['pageviews'], reverse=True)
+        cumulative_pageviews = 0
+        cumulative_visitors = 0
+        for country_stats in country_metrics:
+            cumulative_pageviews += country_stats['metrics']['pageviews']
+            cumulative_visitors += country_stats['metrics']['visitors']
+            country_stats['cum'] = {
+                'pageviews': cumulative_pageviews,
+                'visitors': cumulative_visitors,
+            }
+
+        report_html = render_template(self.template, {
+            'start_date': self.period.get_start(),
+            'end_date': self.period.get_end(),
+            'period': self.report_span,
+            'totals': {'pageviews': aggregate_pageviews, 'visitors': aggregate_visitors},
+            'sites': site_data,
+            'countries': country_metrics
+        })
+        return report_html
+
+
 if __name__ == '__main__':
-    yesterday = date.today() - timedelta(days=1)
-    yesterday_stats_range = StatsRange("Yesterday", yesterday, yesterday)
-    day_before = yesterday - timedelta(days=1)
-    day_before_stats_range = StatsRange("Day Before", day_before, day_before)
-    article_breakdown = ArticleBreakdown(['foo@example.net'], 'vg247.com', yesterday_stats_range, day_before_stats_range, topic="E3", extra_filters="ga:dimension2=@e3", article_limit=10)
-    data = article_breakdown.get_article_breakdown_for_site('ga:6872882')
+    #yesterday = date.today() - timedelta(days=2)
+    #yesterday_stats_range = StatsRange("Yesterday", yesterday, yesterday)
+    #day_before = yesterday - timedelta(days=1)
+    #day_before_stats_range = StatsRange("Day Before", day_before, day_before)
+    #all_sites = config.TABLES.keys()
+    #network_breakdown = NetworkBreakdown(['foo@example.net'], all_sites, 
+    #    yesterday_stats_range, day_before_stats_range, "1")
+    all_sites = config.TABLES.keys()
+    today = date.today() - timedelta(days=2)
+    end_date = today - timedelta(days=1)
+    start_date = subtract_one_month(today)
+    last_month_stats_range = StatsRange("This Month", start_date, end_date)
+    month_before_start_date = subtract_one_month(start_date)
+    end_date = start_date - timedelta(days=1)
+    month_before_stats_range = StatsRange("Last Month", month_before_start_date, end_date)
+    
+    network_breakdown = NetworkBreakdown(['foo@example.net'], all_sites, 
+        last_month_stats_range, month_before_stats_range, "month")
+    print network_breakdown.generate_report()
