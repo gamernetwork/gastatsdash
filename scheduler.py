@@ -1,4 +1,4 @@
-import sqlite3, os
+import sqlite3, os, traceback, sys
 
 from sqlite3 import OperationalError
 from datetime import date, datetime, timedelta
@@ -69,7 +69,7 @@ class RunLogger(object):
         return last_run < threshold
 
 
-def run_schedule():
+def _run():
     """
     The main loop.  Iterate over our report config and try to run reports that
     are scheduled to run now.
@@ -84,6 +84,14 @@ def run_schedule():
         if needs_run and report.data_available():
             report.send_report()
             run_logger.record_run(identifier)
+
+def run_schedule():
+    print "** Running schedule at %s" % datetime.now().isoformat()
+    try:
+        _run()
+    except Exception:
+        traceback.print_exc()
+    print "** Finished run at %s" % datetime.now().isoformat()
 
 if __name__ == '__main__':
     run_schedule()
