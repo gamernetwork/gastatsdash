@@ -81,7 +81,10 @@ def _run():
         frequency_options = config.get('frequency_options', {})
         report = config['report']
         needs_run = run_logger.needs_run(identifier, frequency, frequency_options)
-        if needs_run and report.data_available():
+        data_available = report.data_available()
+        if needs_run:
+            print "%s needs run.  Data available: %s" % (identifier, data_available)
+        if needs_run and data_available:
             report.send_report()
             run_logger.record_run(identifier)
 
