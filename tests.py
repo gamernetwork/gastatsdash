@@ -3,7 +3,7 @@ import unittest
 from datetime import datetime, date, timedelta
 
 from analytics import StatsRange
-from dateutils import find_last_weekday
+from dateutils import find_last_weekday, find_next_weekday
 
 class TestStatsRange(unittest.TestCase):
     
@@ -34,6 +34,24 @@ class TestDateUtils(unittest.TestCase):
         day = "Wednesday"
         result = find_last_weekday(today, day)
         self.assertEqual(result, datetime(year=2015, month=7, day=1))
+
+    def test_next_weekday_currentWeekdayMatches(self):
+        today = datetime(year=2015, month=7, day=2)
+        day = "Thursday"
+        result = find_next_weekday(today, day)
+        self.assertEqual(result, datetime(year=2015, month=7, day=2))
+
+    def test_next_weekday_currentWeekdayBelowDesired(self):
+        today = datetime(year=2015, month=7, day=2)
+        day = "Friday"
+        result = find_next_weekday(today, day)
+        self.assertEqual(result, datetime(year=2015, month=7, day=3))
+
+    def test_next_weekday_currentWeekdayAboveDesired(self):
+        today = datetime(year=2015, month=7, day=2)
+        day = "Wednesday"
+        result = find_next_weekday(today, day)
+        self.assertEqual(result, datetime(year=2015, month=7, day=8))
 
 
 

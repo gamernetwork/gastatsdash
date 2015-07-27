@@ -199,9 +199,6 @@ class Analytics(object):
         formatted_results['ROW'] = formatted_row_results[0]
         return formatted_results
 
-
-
-
 class StatsRange(object):
     
     def __init__(self, name, start_date, end_date):
@@ -226,6 +223,28 @@ class StatsRange(object):
         return delta.days + 1
 
     @classmethod
+    def get_period(cls, date, frequency):
+        if frequency == 'DAILY':
+            return cls.get_one_day_period(date)
+        if frequency == 'WEEKLY':
+            return cls.get_one_week_period(date)
+        if frequency == 'MONTHLY':
+            return cls.get_one_month_period(date)
+
+    @classmethod
+    def get_previous_period(cls, current_period, frequency):
+        if frequency == 'DAILY':
+            previous_date = current_period.start_date - timedelta(days=1)
+            return cls.get_one_day_period(previous_date)
+        if frequency == 'WEEKLY':
+            previous_date = current_period.end_date - timedelta(days=7)
+            return cls.get_one_week_period(previous_date)
+        if frequency == 'MONTHLY':
+            previous_start = subtract_one_month(current_period.start_date)
+            previous_end = current_period.start_date - timedelta(days=1)
+            return cls("Previous Month", previous_start, previous_end)
+
+    @classmethod
     def get_one_day_period(cls, date):
         """
         Return instantiated one day period for date.
@@ -237,11 +256,11 @@ class StatsRange(object):
         """
         Return instantiated one day period for date.
         """
-        return cls("One week", date-timedelta(days=7), date)
+        return cls("One week", date-timedelta(days=6), date)
 
     @classmethod
     def get_one_month_period(cls, date):
         """
         Return instantiated one day period for date.
         """
-        return cls("One month", subtract_one_month(date) + timedelta(days=1), date)
+        return cls("One month", subtract_one_month(date), date - timedelta(days=1))

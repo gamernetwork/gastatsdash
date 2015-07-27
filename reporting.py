@@ -59,6 +59,9 @@ class Report(object):
         self.emailer = Emailer()
         self.subject = subject
 
+    def get_subject(self):
+        return self.subject
+
     def data_available(self):
         """
         Iterate through all sites and check that their data is available.
@@ -82,7 +85,7 @@ class Report(object):
         Generate and send the report to the recipients.
         """
         html = self.generate_report()
-        subject = self.subject
+        subject = self.get_subject()
         recipients = self.recipients
         self.emailer.send_email(recipients, subject, html)
         print "Sent '%s' Report for site %s" % (self.subject, ','.join(self.sites))
@@ -97,6 +100,10 @@ class ArticleBreakdown(Report):
         self.topic = topic
         self.extra_filters = extra_filters
         self.article_limit = article_limit
+
+    def get_subject(self):
+        subject = ' - '.join([self.subject, self.period.get_end()])
+        return subject
 
     def get_article_breakdown_for_site(self, site_id):
         data = analytics.get_article_breakdown_two_periods(site_id, 
@@ -128,7 +135,6 @@ class NetworkArticleBreakdown(ArticleBreakdown):
             formatted.append((article['path'], article))
         return formatted
 
-
     def generate_report(self):
         all_network_data = []
         for site in self.sites:
@@ -156,6 +162,17 @@ class NetworkBreakdown(Report):
         self.second_period = second_period
         self.extra_filters = extra_filters
         self.report_span = report_span
+
+    def get_subject(self):
+        if self.report_span == '1':
+            subject = ' for '.join([self.subject, self.period.get_end()])
+        if self.report_span == '7':
+            subject = ' for '.join([self.subject, '%s to %s' % 
+                (self.period.get_start(), self.period.get_end())
+            ])
+        if self.report_span == 'month':
+            subject = ' for '.join([self.subject, self.period.start_date.strftime("%M")])
+        return subject
 
     def _get_change(self, first_period_totals, second_period_totals):
         """
@@ -243,15 +260,23 @@ class NetworkBreakdown(Report):
         })
         return report_html
 
+def create_report(report_class, config, run_date):
+    """
+    Factory function for instantiating report.
+    """
+    frequency = config['frequency']
+    period = StatsRange.get_period(run_date, frequency)
+    kwargs = config['kwargs']
+    if config.get('second_period'):
+        # Handle other second period types here
+        if config['second_period'] == 'immediate_before':
+            kwargs['second_period'] = StatsRange.get_previous_period(period, frequency)
+    report = report_class(config['recipients'], config['subject'], 
+        config['sites'], period, **kwargs)
+    return report
+
 
 if __name__ == '__main__':
-    #yesterday = date.today() - timedelta(days=2)
-    #yesterday_stats_range = StatsRange("Yesterday", yesterday, yesterday)
-    #day_before = yesterday - timedelta(days=1)
-    #day_before_stats_range = StatsRange("Day Before", day_before, day_before)
-    #all_sites = config.TABLES.keys()
-    #network_breakdown = NetworkBreakdown(['foo@example.net'], all_sites, 
-    #    yesterday_stats_range, day_before_stats_range, "1")
     all_sites = config.TABLES.keys()
     today = date.today() - timedelta(days=2)
     end_date = today - timedelta(days=1)
