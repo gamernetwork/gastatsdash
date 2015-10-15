@@ -237,7 +237,7 @@ class StatsRange(object):
         """
         Return instantiated one day period for date.
         """
-        return cls("One week", date-timedelta(days=7), date)
+        return cls("One week", date-timedelta(days=6), date)
 
     @classmethod
     def get_one_month_period(cls, date):
