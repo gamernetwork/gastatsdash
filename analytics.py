@@ -125,7 +125,13 @@ class Analytics(object):
         Get pageview breakdown grouped by articles for a particular stats daterange
         and extra_filters (optional).
         """
-        filters = ''
+        
+        blackList = ["/forum", "/messages/updates", "/mods"]                
+        filterList= 'ga:pagePathLevel1!=/'
+        for i in blackList:
+        	filterList += ';ga:pagePath!=%s' %i
+        	
+        filters = ''        	
         if extra_filters:
             filters = '%s;' % extra_filters
         results = self._execute_stats_query(site_id=site_id, 
@@ -133,7 +139,8 @@ class Analytics(object):
             metrics='ga:pageviews',
             sort='-ga:pageviews',
             dimensions='ga:pageTitle,ga:pagePath,ga:hostname',
-            filters=filters)
+            filters = filterList )
+            #filters= 'ga:pagePathLevel1!=/;ga:pagePath!@%s;ga:pagePath!@%s' %blackList )
         article_data = self._format_article_breakdown_results(results)
         return article_data
 
