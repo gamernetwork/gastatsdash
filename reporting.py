@@ -279,19 +279,9 @@ def create_report(report_class, config, run_date):
 if __name__ == '__main__':
     all_sites = config.TABLES.keys()
     today = date.today() - timedelta(days=2)
-    today_end_date = today - timedelta(days=1)
     day_before = date.today() - timedelta(days=3)
-    day_before_end_date = today - timedelta(days=2)
     yesterday_stats_range = StatsRange("Yesterday", today, today)
     day_before_stats_range = StatsRange("Day Before", day_before, day_before)
-    #start_date = subtract_one_month(today)
-    #last_month_stats_range = StatsRange("This Month", start_date, end_date)
-    #month_before_start_date = subtract_one_month(start_date)
-    #end_date = start_date - timedelta(days=1)
-    #month_before_stats_range = StatsRange("Last Month", month_before_start_date, end_date)
-    
-    #network_breakdown = NetworkBreakdown(['foo@example.net'], 'Network Breakdown', all_sites, 
-    #    last_month_stats_range, month_before_stats_range, "month")
     network_breakdown = NetworkArticleBreakdown(['foo@example.net'], 'Network Article Breakdown', all_sites, 
         yesterday_stats_range, day_before_stats_range, "Daily Summary", article_limit=25)
     generated_html = network_breakdown.generate_report()
