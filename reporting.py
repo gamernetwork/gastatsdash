@@ -207,6 +207,7 @@ class NetworkBreakdown(Report):
                     site_ga_id, last_year_period)[0]
             change_totals = self._get_change(first_period_totals, second_period_totals)
             country_data = analytics.get_country_breakdown_for_period(site_ga_id, self.period, countries)
+            analytics.get
             data = {
                 'name': site,
                 'totals': first_period_totals,
@@ -260,6 +261,72 @@ class NetworkBreakdown(Report):
         })
         return report_html
 
+
+class TrafficSourceBreakdown(Report):
+    template='trafficSource.html'
+    
+    #init
+    def __init__(self, recipients, subject, sites, period, second_period):
+        super(TrafficSourceBreakdown, self).__init__(recipients, subject, sites, period)
+        self.second_period = second_period
+        
+    def print_subject(self):
+        
+        print "%s" % self.subject
+        
+    def print_report(self):
+        i = 0
+
+        compound_results = {}
+        for site in self.sites:
+            site_ga_id = config.TABLES[site]
+            print 'Calculation for %s' % site
+            results = analytics.get_site_traffic_for_period(site_ga_id, self.period)
+            
+            for source in results:
+                source_label = source['source/medium']
+                if source_label == 'google / organic':
+                    print source['visitors'], source['pageviews']
+                if compound_results.has_key(source_label):
+                    compound_results[source_label]['visitors'] += source['visitors']
+                    compound_results[source_label]['pageviews'] += source['pageviews']
+                else:
+                    compound_results[source_label] = {'visitors': source['visitors'], 'pageviews': source['pageviews']}
+                    
+                
+            print compound_results['google / organic']
+        
+            i+=1
+            print ' %d / 24 sites complete ' % i
+            
+            break
+                
+        report_html = render_template(self.template, {
+            'start_date': self.period.get_start(),
+            'end_date': self.period.get_end(),
+            'compound' : compound_results
+        })
+        return report_html
+        
+            
+    #way to calculate between timeperiods
+    """
+    current = first_period
+    previous = second_period
+    total_change = current - previous
+    """
+    
+    #generate report 
+    """ 
+    get analytics - foreach site then aggregate
+    1 - traffic source, use source/medium with users and pageviews 
+    2 - device /todo
+    3 - social networks /todo
+    """
+    
+    #render template
+
+
 def create_report(report_class, config, run_date):
     """
     Factory function for instantiating report.
@@ -282,7 +349,11 @@ if __name__ == '__main__':
     day_before = date.today() - timedelta(days=3)
     yesterday_stats_range = StatsRange("Yesterday", today, today)
     day_before_stats_range = StatsRange("Day Before", day_before, day_before)
-    network_breakdown = NetworkArticleBreakdown(['foo@example.net'], 'Network Article Breakdown', all_sites, 
-        yesterday_stats_range, day_before_stats_range, "Daily Summary", article_limit=25)
-    generated_html = network_breakdown.generate_report()
-    print generated_html.encode("utf-8")
+    network_breakdown = TrafficSourceBreakdown(['foo@example.net'], 'Network Article Breakdown', all_sites, 
+        yesterday_stats_range, day_before_stats_range)
+    #network_breakdown = NetworkBreakdown(['foo@example.net'], 'Network Article Breakdown', all_sites, 
+		#yesterday_stats_range, day_before_stats_range)
+    #generated_html = network_breakdown.generate_report()
+    #print generated_html.encode("utf-8")
+    generated = network_breakdown.print_report()
+    print generated.encode("utf-8")

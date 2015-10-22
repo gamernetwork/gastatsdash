@@ -1,0 +1,30 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html>
+	<head>
+	</head>
+<body>
+    <h1> Traffic Source Analytics </h1>
+    <table>
+        <thead>
+            <tr>
+                <th> Source / Medium </th>
+                <th> Visitors </th>
+                <th> Page Views </th>
+                
+            </tr>
+        </thead>
+        <tbody>
+            {% for source, metrics in compound.items %}
+                <tr>
+                    <th> {{source}} </th>
+                    <th> {{metrics.visitors}}</th>
+                    <th> {{metrics.pageviews}} </th>
+                </tr>
+            {% endfor %}
+            
+        </tbody>
+        
+    </table>
+    
+</body>

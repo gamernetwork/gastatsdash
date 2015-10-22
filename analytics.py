@@ -84,6 +84,7 @@ class Analytics(object):
             formatted_row = self._cast_formatted_row(formatted_row)
             formatted_results[formatted_row[grouping_key]] = formatted_row
         return formatted_results
+     
 
     def data_available_for_site(self, site_id, stats_date):
         # TODO: Persist these results in a cache so we don't smash our rate limit
@@ -170,11 +171,32 @@ class Analytics(object):
         if extra_filters:
             filters = '%s;' % extra_filters
         results = self._execute_stats_query(site_id=site_id, 
-            stats_range=stats_range,
+        	stats_range=stats_range,
             metrics='ga:pageviews,ga:visitors',
             filters=filters)
         formatted_results = self._format_results_flat(results, ['pageviews', 'visitors'])
         return formatted_results
+        	
+        
+    def get_site_traffic_for_period(self, site_id, stats_range, 
+            extra_filters=""):
+        """
+        Get total pageviews and visitors for a period for a given site.
+        """
+        filters = ''
+        if extra_filters:
+            filters = '%s;' % extra_filters
+        print 'in source for period!'
+        results = self._execute_stats_query(site_id=site_id, stats_range=stats_range, 
+			metrics = 'ga:pageviews, ga:users', 
+			sort = '-ga:pageviews,-ga:users', 
+			dimensions = 'ga:sourceMedium',
+			filters = '')
+        formatted_results = self._format_results_flat(results, ['source/medium', 'pageviews', 'visitors'])
+        return formatted_results
+        
+        #return results
+        
 
     def get_country_breakdown_for_period(self, site_id, stats_range, 
             countries, extra_filters=""):
@@ -205,9 +227,22 @@ class Analytics(object):
         formatted_row_results[0]['country'] = 'ROW'
         formatted_results['ROW'] = formatted_row_results[0]
         return formatted_results
+        
+"""def get_source_for_period(self, site_id, stats_range, extra_filters=""):
+		print "in source for period!"
+		results = self._execute_stats_query(site_id=site_id, stats_range=stats_range, 
+			metrics = 'ga:pageviews, ga:users', 
+			sort = '-ga:pageviews,-ga:users', 
+			dimensions = 'ga:sourceMedium',
+			filters = '',
+			max_results= '25')
+		return results
+		#formatted_results = self._format_results_flat(self, results, ['source/medium','pageviews', 'visitors'])
+		#return formatted_results"""
+	
 
 class StatsRange(object):
-    
+   
     def __init__(self, name, start_date, end_date):
         self.name = name
         self.start_date = start_date
