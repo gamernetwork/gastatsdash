@@ -125,7 +125,13 @@ class Analytics(object):
         Get pageview breakdown grouped by articles for a particular stats daterange
         and extra_filters (optional).
         """
-        filters = ''
+        
+        black_list = ["/forum", "/messages/updates", "/mods"]                
+        filter_list= 'ga:pagePathLevel1!=/'
+        for i in black_list:
+        	filter_list += ';ga:pagePath!=%s' %i
+        	
+        filters = ''        	
         if extra_filters:
             filters = '%s;' % extra_filters
         results = self._execute_stats_query(site_id=site_id, 
@@ -133,7 +139,8 @@ class Analytics(object):
             metrics='ga:pageviews',
             sort='-ga:pageviews',
             dimensions='ga:pageTitle,ga:pagePath,ga:hostname',
-            filters=filters)
+            filters = filter_list )
+            #filters= 'ga:pagePathLevel1!=/;ga:pagePath!@%s;ga:pagePath!@%s' %blackList )
         article_data = self._format_article_breakdown_results(results)
         return article_data
 
@@ -199,9 +206,6 @@ class Analytics(object):
         formatted_results['ROW'] = formatted_row_results[0]
         return formatted_results
 
-
-
-
 class StatsRange(object):
     
     def __init__(self, name, start_date, end_date):
@@ -226,6 +230,28 @@ class StatsRange(object):
         return delta.days + 1
 
     @classmethod
+    def get_period(cls, date, frequency):
+        if frequency == 'DAILY':
+            return cls.get_one_day_period(date)
+        if frequency == 'WEEKLY':
+            return cls.get_one_week_period(date)
+        if frequency == 'MONTHLY':
+            return cls.get_one_month_period(date)
+
+    @classmethod
+    def get_previous_period(cls, current_period, frequency):
+        if frequency == 'DAILY':
+            previous_date = current_period.start_date - timedelta(days=1)
+            return cls.get_one_day_period(previous_date)
+        if frequency == 'WEEKLY':
+            previous_date = current_period.end_date - timedelta(days=7)
+            return cls.get_one_week_period(previous_date)
+        if frequency == 'MONTHLY':
+            previous_start = subtract_one_month(current_period.start_date)
+            previous_end = current_period.start_date - timedelta(days=1)
+            return cls("Previous Month", previous_start, previous_end)
+
+    @classmethod
     def get_one_day_period(cls, date):
         """
         Return instantiated one day period for date.
@@ -244,4 +270,4 @@ class StatsRange(object):
         """
         Return instantiated one day period for date.
         """
-        return cls("One month", subtract_one_month(date) + timedelta(days=1), date)
+        return cls("One month", subtract_one_month(date), date - timedelta(days=1))
