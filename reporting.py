@@ -171,7 +171,7 @@ class NetworkBreakdown(Report):
                 (self.period.get_start(), self.period.get_end())
             ])
         if self.report_span == 'month':
-            subject = ' for '.join([self.subject, self.period.start_date.strftime("%M")])
+            subject = ' for '.join([self.subject, self.period.start_date.strftime("%B")])
         return subject
 
     def _get_change(self, first_period_totals, second_period_totals):

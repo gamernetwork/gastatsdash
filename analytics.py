@@ -173,7 +173,10 @@ class Analytics(object):
             stats_range=stats_range,
             metrics='ga:pageviews,ga:visitors',
             filters=filters)
-        formatted_results = self._format_results_flat(results, ['pageviews', 'visitors'])
+        try:
+            formatted_results = self._format_results_flat(results, ['pageviews', 'visitors'])
+        except KeyError:
+            formatted_results = [{'visitors': 0, 'pageviews': 0}]
         return formatted_results
 
     def get_country_breakdown_for_period(self, site_id, stats_range, 
