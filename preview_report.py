@@ -22,22 +22,20 @@ day_before_stats_range = StatsRange("Day Before", day_before, day_before)
     
 if report_type == "NetworkArticleBreakdown":
     network_breakdown = reporting.NetworkArticleBreakdown(['foo@example.net'], 'Network Article Breakdown', all_sites, 
-        yesterday_stats_range, day_before_stats_range, "Daily Summary", article_limit=25)
-    generated_html = network_breakdown.generate_report()
-    #print generated_html.encode("utf-8")  
+        yesterday_stats_range, day_before_stats_range, "Daily Summary", article_limit=25)  
     
 elif report_type == "NetworkBreakdown":
     network_breakdown = reporting.NetworkBreakdown(['foo@example.net'], 'Network Breakdown', all_sites, 
         yesterday_stats_range, day_before_stats_range)
-    generated_html = network_breakdown.generate_report() 
     
 elif report_type == "ArticleBreakdown":
     network_breakdown = reporting.NetworkBreakdown(['foo@example.net'], 'Article Breakdown', all_sites, 
         yesterday_stats_range, day_before_stats_range, "Daily Summary")
-    generated_html = network_breakdown.generate_report() 
     
 else:
 	print "unknown report type"	
 
+generated_html = network_breakdown.generate_report() 
+    
 with open(file_src, 'w') as file:
 	file.write(generated_html.encode("utf-8"))	

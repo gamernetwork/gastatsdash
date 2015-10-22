@@ -124,7 +124,7 @@ class ArticleBreakdown(Report):
             'article_limit': self.article_limit,
         })
         return report_html
-
+	
 
 class NetworkArticleBreakdown(ArticleBreakdown):
     template = "article_dash.html"
@@ -276,7 +276,7 @@ def create_report(report_class, config, run_date):
     return report
 
 
-"""if __name__ == '__main__':
+if __name__ == '__main__':
     all_sites = config.TABLES.keys()
     today = date.today() - timedelta(days=2)
     day_before = date.today() - timedelta(days=3)
@@ -285,4 +285,4 @@ def create_report(report_class, config, run_date):
     network_breakdown = NetworkArticleBreakdown(['foo@example.net'], 'Network Article Breakdown', all_sites, 
         yesterday_stats_range, day_before_stats_range, "Daily Summary", article_limit=25)
     generated_html = network_breakdown.generate_report()
-    print generated_html.encode("utf-8")"""
+    print generated_html.encode("utf-8")
