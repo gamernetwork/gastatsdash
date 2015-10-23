@@ -269,62 +269,84 @@ class TrafficSourceBreakdown(Report):
     def __init__(self, recipients, subject, sites, period, second_period):
         super(TrafficSourceBreakdown, self).__init__(recipients, subject, sites, period)
         self.second_period = second_period
-        
-    def print_subject(self):
-        
-        print "%s" % self.subject
-        
-    def print_report(self):
-        i = 0
-
+    
+    def aggregate_site_traffic(self, results):
         compound_results = {}
+        for source in results:
+            source_label = source['source/medium']
+            if compound_results.has_key(source_label):
+                compound_results[source_label]['visitors'] += source['visitors']
+                compound_results[source_label]['pageviews'] += source['pageviews']
+            else:
+                compound_results[source_label] = {'visitors': source['visitors'], 'pageviews': source['pageviews']}
+        return compound_results        
+        
+    def sort_site_traffic(self, compound_results):
+        def sortKey(item):
+            return item[1][0]
+                
+        compound_list = []
+        for key in compound_results.keys():
+            src = [key]
+            src.append([v for k,v in compound_results[key].items()])
+            compound_list.append(src)
+            
+        sorted_list = sorted(compound_list, key=sortKey, reverse=True)
+        top_results = sorted_list[:26] 
+        return top_results  
+                    
+    def aggregate_site_socials(self, results):
+        compound_socials = {}    
+        for network in results:
+            network_label = network['socialNetwork']
+            if network_label in compound_socials:
+                compound_socials[network_label] += network['visitors']
+            else:
+                compound_socials[network_label] = network['visitors']
+        return compound_socials 
+        
+    def sort_site_socials(self, compound_results):
+        def sortSocial(item):
+            return item[1]                
+        social_list=[]
+        for key in compound_results.keys():
+            social_list.append([key, compound_results[key]])
+        sorted_social_list = sorted(social_list, key = sortSocial, reverse = True)
+        top_results = sorted_social_list[:26]
+        return top_results   
+                          
+    def generate_report(self):
+        #still to do movement period-period 
+        i = 0
+        compound_results={}
+        results = []
+        results_device =[]
+        results_social =[]
         for site in self.sites:
             site_ga_id = config.TABLES[site]
-            print 'Calculation for %s' % site
-            results = analytics.get_site_traffic_for_period(site_ga_id, self.period)
-            
-            for source in results:
-                source_label = source['source/medium']
-                if source_label == 'google / organic':
-                    print source['visitors'], source['pageviews']
-                if compound_results.has_key(source_label):
-                    compound_results[source_label]['visitors'] += source['visitors']
-                    compound_results[source_label]['pageviews'] += source['pageviews']
-                else:
-                    compound_results[source_label] = {'visitors': source['visitors'], 'pageviews': source['pageviews']}
-                    
-                
-            print compound_results['google / organic']
-        
+            print 'Calculation for %s ...' % site
+            results += analytics.get_site_traffic_for_period(site_ga_id, self.period)
+            results_device += analytics.get_site_devices_for_period(site_ga_id, self.period)
+            results_social += analytics.get_site_socials_for_period(site_ga_id, self.period)
             i+=1
-            print ' %d / 24 sites complete ' % i
-            
-            break
-                
+            print ' %d / 24 sites complete ' % i           
+               
+        compound_results = self.aggregate_site_traffic(results)
+        compound_socials = self.aggregate_site_socials(results_social)
+        top_results = self.sort_site_traffic(compound_results)  
+        top_social_results = self.sort_site_socials(compound_socials)         
+        
+        #still to do device aggregate
+        top_device_results = results_device[:26]
+                            
         report_html = render_template(self.template, {
             'start_date': self.period.get_start(),
             'end_date': self.period.get_end(),
-            'compound' : compound_results
+            'compound_list' : top_results,
+            'devices_list' : top_device_results,  
+            'social_list' : top_social_results          
         })
         return report_html
-        
-            
-    #way to calculate between timeperiods
-    """
-    current = first_period
-    previous = second_period
-    total_change = current - previous
-    """
-    
-    #generate report 
-    """ 
-    get analytics - foreach site then aggregate
-    1 - traffic source, use source/medium with users and pageviews 
-    2 - device /todo
-    3 - social networks /todo
-    """
-    
-    #render template
 
 
 def create_report(report_class, config, run_date):
@@ -353,7 +375,5 @@ if __name__ == '__main__':
         yesterday_stats_range, day_before_stats_range)
     #network_breakdown = NetworkBreakdown(['foo@example.net'], 'Network Article Breakdown', all_sites, 
 		#yesterday_stats_range, day_before_stats_range)
-    #generated_html = network_breakdown.generate_report()
+    generated_html = network_breakdown.generate_report()
     #print generated_html.encode("utf-8")
-    generated = network_breakdown.print_report()
-    print generated.encode("utf-8")

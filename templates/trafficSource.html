@@ -4,10 +4,38 @@
 	<head>
 	</head>
 <body>
-    <h1> Traffic Source Analytics </h1>
+	<style>
+	body, p{
+		font-family: sans-serif;
+		text-align: left;
+		font-weight: normal;
+	}
+	td, th {
+		padding: 0.3em 1em 0.3em 0.5em;
+		vertical-align: top;
+	}
+	th.src {
+    	font-weight: lighter;
+	}
+	th.num {
+    	text-align: right;
+    	font-weight: lighter;
+	}	
+
+	</style>
+    <h1>Traffic Source Analytics </h1>
+    <p> 
+        Between the period : {{start_date}} - {{end_date}} 
+    </p>
+    <h2> 
+        Traffic Sourcing 
+    </h2>
+    <p> 
+        Shows the number of visitors referred from a specific source and the type of referral (medium). 
+    </p>
     <table>
         <thead>
-            <tr>
+            <tr class = 'column_header'>
                 <th> Source / Medium </th>
                 <th> Visitors </th>
                 <th> Page Views </th>
@@ -15,14 +43,64 @@
             </tr>
         </thead>
         <tbody>
-            {% for source, metrics in compound.items %}
+            {% for source in compound_list %}
                 <tr>
-                    <th> {{source}} </th>
-                    <th> {{metrics.visitors}}</th>
-                    <th> {{metrics.pageviews}} </th>
+                    <th class = 'src'> {{source.0}} </th>
+                    <th class = 'num'> {{source.1.0}} </th>
+                    <th class = 'num'> {{source.1.1}} </th>
                 </tr>
             {% endfor %}
             
+        </tbody>
+        
+    </table>
+    <h2> 
+        Devices Used 
+    </h2>
+    <p>
+        Shows the number of visitors using each device, browser and operating system.
+    </p>
+    <table>
+        <thead>
+            <tr class = 'column_header'>
+                <th> Device Category </th>
+                <th> Browser </th>
+                <th> Operating System </th>
+                <th> Visitors </th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for source in devices_list %}
+                <tr>
+                    <th class = 'src'> {{source.deviceCategory}} </th>
+                    <th class = 'src'> {{source.browser}}</th>
+                    <th class = 'src'> {{source.OS}} </th>
+                    <th class = 'num'> {{source.visitors}} </th>
+                </tr>
+            {% endfor %}
+        </tbody>
+       
+    </table>
+    <h2> 
+        Social Networks Used 
+    </h2> 
+    <p> 
+        Shows the number of visitors being referred from social networks.
+    </p>
+    <table>
+        <thead>
+            <tr class = 'column_header'>
+                <th> Social Network </th>
+                <th> Visitors </th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for source in social_list %}
+                <tr>
+                    <th class = 'src'> {{source.0}} </th>
+                    <th class = 'num'> {{source.1}} </th>
+                </tr>
+            {% endfor %}
         </tbody>
         
     </table>
