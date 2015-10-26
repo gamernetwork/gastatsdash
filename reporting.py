@@ -211,6 +211,7 @@ class NetworkBreakdown(Report):
                     site_ga_id, last_year_period)[0]
             change_totals = self._get_change(first_period_totals, second_period_totals)
             country_data = analytics.get_country_breakdown_for_period(site_ga_id, self.period, countries)
+            analytics.get
             data = {
                 'name': site,
                 'totals': first_period_totals,
@@ -365,6 +366,10 @@ class TrafficSourceBreakdown(Report):
             'totals': {'pageviews': total_pageviews, 'visitors': total_visitors, 'socials' : total_social_visitors}       
         })
         return report_html
+            'social_list' : top_social_results          
+        })
+        return report_html
+
 
 def create_report(report_class, config, run_date):
     """
@@ -388,7 +393,9 @@ if __name__ == '__main__':
     day_before = date.today() - timedelta(days=3)
     yesterday_stats_range = StatsRange("Yesterday", today, today)
     day_before_stats_range = StatsRange("Day Before", day_before, day_before)
-    network_breakdown = NetworkArticleBreakdown(['foo@example.net'], 'Network Article Breakdown', all_sites, 
-        yesterday_stats_range, day_before_stats_range, "Daily Summary", article_limit=25)
+    network_breakdown = TrafficSourceBreakdown(['foo@example.net'], 'Network Article Breakdown', all_sites, 
+        yesterday_stats_range, day_before_stats_range)
+    #network_breakdown = NetworkBreakdown(['foo@example.net'], 'Network Article Breakdown', all_sites, 
+		#yesterday_stats_range, day_before_stats_range)
     generated_html = network_breakdown.generate_report()
-    print generated_html.encode("utf-8")
+    #print generated_html.encode("utf-8")
