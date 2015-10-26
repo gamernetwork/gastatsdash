@@ -4,7 +4,7 @@ import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from datetime import date, timedelta
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 
 import config
 from analytics import get_analytics, StatsRange
@@ -137,14 +137,13 @@ class NetworkArticleBreakdown(ArticleBreakdown):
 
     def generate_report(self):
         all_network_data = []
-        i =0
-        for site in self.sites:
+        for count, site in enumerate(self.sites):
             print "Calculating for %s..." % site           
             site_ga_id = config.TABLES[site]
             data = self.get_article_breakdown_for_site(site_ga_id)
             all_network_data.extend(data.values())
-            i += 1
-            print "%d/24 sites complete" % i
+            print "%d/24 sites complete" % (count+1)
+            
         sorted_data = sorted(all_network_data, key=lambda article: article['pageviews'], reverse=True)
         top_network_data = list(sorted_data)[:self.article_limit]
         formatted_network_data = self.format_top_data(top_network_data)
@@ -267,34 +266,33 @@ class NetworkBreakdown(Report):
 
 
 class TrafficSourceBreakdown(Report):
-    template='trafficSource.html'
+    template='traffic_source.html'
     
     #init
     def __init__(self, recipients, subject, sites, period, second_period):
         super(TrafficSourceBreakdown, self).__init__(recipients, subject, sites, period)
         self.second_period = second_period
     
+    #COULD I MERGE THESE FUNCTIONS AS A LOT OF REPITITION?
     def aggregate_site_traffic(self, results):
         compound_results = {}
         for source in results:
             source_label = source['source/medium']
-            if compound_results.has_key(source_label):
+            try:
                 compound_results[source_label]['visitors'] += source['visitors']
                 compound_results[source_label]['pageviews'] += source['pageviews']
-            else:
+            except KeyError:
                 compound_results[source_label] = {'visitors': source['visitors'], 'pageviews': source['pageviews']}
         return compound_results        
         
     def sort_site_traffic(self, compound_results):
         def sortKey(item):
-            return item[1][0]
-                
+            return item['visitors']
+              
         compound_list = []
         for key in compound_results.keys():
-            src = [key]
-            src.append([v for k,v in compound_results[key].items()])
-            compound_list.append(src)
-            
+            src = {'source': key, 'visitors': compound_results[key]['visitors'], 'pageviews':compound_results[key]['pageviews']}
+            compound_list.append(src)       
         sorted_list = sorted(compound_list, key=sortKey, reverse=True)
         top_results = sorted_list[:26] 
         return top_results  
@@ -303,34 +301,62 @@ class TrafficSourceBreakdown(Report):
         compound_socials = {}    
         for network in results:
             network_label = network['socialNetwork']
-            if network_label in compound_socials:
+            try:
                 compound_socials[network_label] += network['visitors']
-            else:
-                compound_socials[network_label] = network['visitors']
+            except KeyError:
+                compound_socials[network_label] = network['visitors']                
         return compound_socials 
         
     def sort_site_socials(self, compound_results):
         def sortSocial(item):
-            return item[1]                
+            return item['visitors']
+                            
         social_list=[]
         for key in compound_results.keys():
-            social_list.append([key, compound_results[key]])
+            item = {'social' : key, 'visitors' : compound_results[key]}
+            social_list.append(item)
+            #social_list.append([key, compound_results[key]])
         sorted_social_list = sorted(social_list, key = sortSocial, reverse = True)
         top_results = sorted_social_list[:26]
+        return top_results  
+         
+    def aggregate_site_devices(self, results):
+        compound_devices = {}
+        for item in results:
+            dev_category = item['deviceCategory']
+            browser = item['browser']
+            os = item['OS']
+            number = item['visitors']
+            try:
+                compound_devices[(dev_category, browser, os)] += number                     
+            except KeyError:
+                compound_devices[(dev_category, browser, os)] = number 
+                
+        return compound_devices 
+        
+    def sort_site_devices(self, compound_results):
+        def sortDev(item):
+            return item['visitors']                
+        device_list=[]
+        for key in compound_results.keys():  
+            item = {'device_category': key[0], 'browser' : key[1], 'os' : key[2], 'visitors' : compound_results[key]}
+            device_list.append(item)
+            #device_list.append([key, compound_results[key]])
+        sorted_device_list = sorted(device_list, key = sortDev, reverse = True)
+        top_results = sorted_device_list[:26]      
         return top_results   
-                          
+                                
     def generate_report(self):
         #still to do movement period-period 
-        i = 0
-        compound_results={}
+        #compound_results = {}
         results = []
-        results_device =[]
-        results_social =[]
-        total_visitors=0
-        total_pageviews=0
-        total_social_visitors=0
-        totals ={}
-        for site in self.sites:
+        results_device = []
+        results_social = []
+        total_visitors = 0
+        total_pageviews = 0
+        total_social_visitors = 0
+        #totals = {}
+        for count, site in enumerate(self.sites):
             site_ga_id = config.TABLES[site]
             print 'Calculation for %s ...' % site
             results += analytics.get_site_traffic_for_period(site_ga_id, self.period)
@@ -339,18 +365,17 @@ class TrafficSourceBreakdown(Report):
             totals = analytics.get_site_totals_for_period(site_ga_id, self.period)[0]
             total_visitors += totals['visitors']
             total_pageviews += totals['pageviews']
-            i+=1
-            print ' %d / 24 sites complete ' % i  
-            #if i ==2: break          
+            print ' %d / 24 sites complete ' % (count+1)
+            #if count ==4: break          
                
         compound_results = self.aggregate_site_traffic(results)
         compound_socials = self.aggregate_site_socials(results_social)
+        compound_devices = self.aggregate_site_devices(results_device)
         top_results = self.sort_site_traffic(compound_results)  
         top_social_results = self.sort_site_socials(compound_socials)         
+        top_device_results = self.sort_site_devices(compound_devices) 
         
-        #still to do device aggregate
-        top_device_results = results_device[:26]
-        
+        #print top_device_results
         #total number visitors use social networks
         for social in compound_socials:
             visitors = compound_socials[social]
@@ -364,9 +389,6 @@ class TrafficSourceBreakdown(Report):
             'devices_list' : top_device_results,  
             'social_list' : top_social_results,
             'totals': {'pageviews': total_pageviews, 'visitors': total_visitors, 'socials' : total_social_visitors}       
-        })
-        return report_html
-            'social_list' : top_social_results          
         })
         return report_html
 
@@ -393,9 +415,9 @@ if __name__ == '__main__':
     day_before = date.today() - timedelta(days=3)
     yesterday_stats_range = StatsRange("Yesterday", today, today)
     day_before_stats_range = StatsRange("Day Before", day_before, day_before)
+    #network_breakdown = NetworkArticleBreakdown(['foo@example.net'], 'Network Article Breakdown', all_sites, 
+        #yesterday_stats_range, day_before_stats_range, "Daily Summary", article_limit=25)
     network_breakdown = TrafficSourceBreakdown(['foo@example.net'], 'Network Article Breakdown', all_sites, 
         yesterday_stats_range, day_before_stats_range)
-    #network_breakdown = NetworkBreakdown(['foo@example.net'], 'Network Article Breakdown', all_sites, 
-		#yesterday_stats_range, day_before_stats_range)
     generated_html = network_breakdown.generate_report()
     #print generated_html.encode("utf-8")
