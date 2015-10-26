@@ -126,7 +126,7 @@ class Analytics(object):
         and extra_filters (optional).
         """
         
-        black_list = ["/forum", "/messages/updates", "/mods"]                
+        black_list = ["/forum", "/messages/updates", "/mods", "/accounts", "/page"]                
         filter_list= 'ga:pagePathLevel1!=/'
         for i in black_list:
         	filter_list += ';ga:pagePath!=%s' %i
@@ -140,7 +140,6 @@ class Analytics(object):
             sort='-ga:pageviews',
             dimensions='ga:pageTitle,ga:pagePath,ga:hostname',
             filters = filter_list )
-            #filters= 'ga:pagePathLevel1!=/;ga:pagePath!@%s;ga:pagePath!@%s' %blackList )
         article_data = self._format_article_breakdown_results(results)
         return article_data
 

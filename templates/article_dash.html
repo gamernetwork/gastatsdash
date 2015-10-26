@@ -65,7 +65,7 @@
         <tbody>
             {% for path, article in data %}
             <tr {% if forloop.counter|divisibleby:2 %}class="odd"{% endif %}>
-                <td>{{article.host}}</td>
+                <td>{{article.host|cut:"www."|cut:".com"|capfirst}}</td>
                 <td><a href="http://{{article.host}}{{article.path}}">{{article.title}}</a></td>
                 <td>{{article.pageviews}}</td>
                 <td>{% if article.change == article.pageviews %}-{% else %}<span style="color: {% if article.change > 0 %}green{% else %}red{% endif %};">{{article.change|as_percentage_of:article.previous_pageviews}}</span>{% endif %}</td>
