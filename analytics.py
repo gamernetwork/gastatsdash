@@ -64,7 +64,12 @@ class Analytics(object):
         unpack the results in to a list of dictionaries.
         """
         formatted_results = []
-        for row in results['rows']:
+        #added a catch here, as sometimes queries return no results (from social)
+        try:
+            results_rows = results['rows']
+        except KeyError:
+            return formatted_results
+        for row in results_rows:
             key_value_pairs = zip(keys, row)
             formatted_row = dict(key_value_pairs)
             formatted_row = self._cast_formatted_row(formatted_row)

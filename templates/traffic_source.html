@@ -44,16 +44,18 @@
                 <th> Page Views </th>
                 <th> Percentage of Total Visitors </th>
                 <th> Percentage of Total Pageviews </th>
+                <th> Day to Day Visitors Change </th>
             </tr>
         </thead>
         <tbody>
-            {% for source in compound_list %}
+            {% for source in traffic_list %}
                 <tr>
-                    <td class = 'src'> {{source.source}} </td>
-                    <td class = 'num'> {{source.visitors|intcomma}} </td>
-                    <td class = 'num'> {{source.pageviews|intcomma}} </td>
-                    <td class = 'num'> {{source.visitors|as_percentage_of:totals.visitors}} </td>
-                    <td class = 'num'> {{source.pageviews|as_percentage_of:totals.pageviews}} </td>
+                    <td class = 'src'> {{source.dimensions.source}} </td>
+                    <td class = 'num'> {{source.metrics.visitors|intcomma}} </td>
+                    <td class = 'num'> {{source.metrics.pageviews|intcomma}} </td>
+                    <td class = 'num'> {{source.metrics.visitors|as_percentage_of:totals.visitors}} </td>
+                    <td class = 'num'> {{source.metrics.pageviews|as_percentage_of:totals.pageviews}} </td>
+                    <td class = 'num'> {{source.metrics.change|as_percentage_of:source.metrics.second_visitors}} </td>
             {% endfor %}
         </tbody>
         
@@ -72,16 +74,18 @@
                 <th> Operating System </th>
                 <th> Visitors </th>
                 <th> Percentage of Visitors </th>
+                <th> Day to Day Change </th>
             </tr>
         </thead>
         <tbody>
             {% for source in devices_list %}
                 <tr>
-                    <td class = 'src'> {{source.device_category}} </td>
-                    <td class = 'src'> {{source.browser}}</td>
-                    <td class = 'src'> {{source.os}} </td>
-                    <td class = 'num'> {{source.visitors|intcomma}} </td>
-                    <td class = 'num'> {{source.visitors|as_percentage_of:totals.visitors}} </td>
+                    <td class = 'src'> {{source.dimensions.device_category}} </td>
+                    <td class = 'src'> {{source.dimensions.browser}}</td>
+                    <td class = 'src'> {{source.dimensions.os}} </td>
+                    <td class = 'num'> {{source.metrics.visitors|intcomma}} </td>
+                    <td class = 'num'> {{source.metrics.visitors|as_percentage_of:totals.visitors}} </td>
+                    <td class = 'num'> {{source.metrics.change|as_percentage_of:source.metrics.second_visitors}} </td>
                 </tr>
             {% endfor %}
         </tbody>
@@ -105,14 +109,16 @@
                 <th> Social Network </th>
                 <th> Visitors </th>
                 <th> Percentage of Visitors </th>
+                <th> Day to Day Change </th>
             </tr>
         </thead>
         <tbody>
             {% for source in social_list %}
                 <tr>
-                    <td class = 'src'> {{source.social}} </td>
-                    <td class = 'num'> {{source.visitors|intcomma}} </td>
-                    <td class = 'num'> {{source.visitors|as_percentage_of:totals.socials}} </td>
+                    <td class = 'src'> {{source.dimensions.socialNetwork}} </td>
+                    <td class = 'num'> {{source.metrics.visitors|intcomma}} </td>
+                    <td class = 'num'> {{source.metrics.visitors|as_percentage_of:totals.socials}} </td>
+                    <td class = 'num'> {{source.metrics.change|as_percentage_of:source.metrics.second_visitors}} </td>
                 </tr>
             {% endfor %}
         </tbody>

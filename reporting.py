@@ -274,6 +274,7 @@ class TrafficSourceBreakdown(Report):
         self.second_period = second_period
     
     #COULD I MERGE THESE FUNCTIONS AS A LOT OF REPITITION?
+    """"
     def aggregate_site_traffic(self, results):
         compound_results = {}
         for source in results:
@@ -284,7 +285,75 @@ class TrafficSourceBreakdown(Report):
             except KeyError:
                 compound_results[source_label] = {'visitors': source['visitors'], 'pageviews': source['pageviews']}
         return compound_results        
+                    
+    def aggregate_site_socials(self, results):
+        compound_socials = {}    
+        for network in results:
+            network_label = network['socialNetwork']
+            try:
+                compound_socials[network_label] += network['visitors']
+            except KeyError:
+                compound_socials[network_label] = network['visitors']                
+        return compound_socials
         
+    def aggregate_site_devices(self, results):
+        compound_devices = {}
+        for item in results:
+            dev_category = item['deviceCategory']
+            browser = item['browser']
+            os = item['OS']
+            number = item['visitors']
+            try:#should it be if they all equal the same? 
+                compound_devices[(dev_category, browser, os)] += number                     
+            except KeyError:
+                compound_devices[(dev_category, browser, os)] = number 
+                
+        return compound_devices         
+    """
+    #condensing functions       
+     
+    def aggregate_data(self, results, table_type):
+        compound_results = {}  
+        unsorted_list = []  
+        if table_type == 'socials':
+            for item in results:
+                label = item['socialNetwork']
+                try:
+                    compound_results[label] += item['visitors']
+                except KeyError:
+                    compound_results[label] = item['visitors']   
+            for key in compound_results.keys():              
+                list_item = {'dimensions':{'socialNetwork': key},'metrics': {'visitors': compound_results[key]}}
+                unsorted_list.append(list_item)      
+            return unsorted_list 
+            
+        elif table_type == 'traffic':
+            for item in results:
+                label = item['source/medium']
+                try:
+                    compound_results[label]['visitors'] += item['visitors']
+                    compound_results[label]['pageviews'] += item['pageviews']
+                except KeyError:
+                    compound_results[label] = {'visitors': item['visitors'], 'pageviews': item['pageviews']}  
+                  
+            for key in compound_results.keys():              
+                list_item = {'dimensions':{'source': key}, 'metrics':{'visitors': compound_results[key]['visitors'], 'pageviews':compound_results[key]['pageviews']}}
+                unsorted_list.append(list_item)      
+            return unsorted_list 
+                            
+        elif table_type == 'devices':  
+            for item in results:
+                label = (item['deviceCategory'], item['browser'], item['OS'])
+                try:
+                    compound_results[label] += item['visitors']
+                except KeyError:
+                    compound_results[label] = item['visitors']
+            for key in compound_results.keys():              
+                list_item = {'dimensions':{'device_category': key[0], 'browser' : key[1], 'os' : key[2]}, 'metrics':{'visitors' : compound_results[key]}}
+                unsorted_list.append(list_item)      
+            return unsorted_list                               
+    
+    """"     
     def sort_site_traffic(self, compound_results):
         def sortKey(item):
             return item['visitors']
@@ -295,44 +364,19 @@ class TrafficSourceBreakdown(Report):
             compound_list.append(src)       
         sorted_list = sorted(compound_list, key=sortKey, reverse=True)
         top_results = sorted_list[:26] 
-        return top_results  
-                    
-    def aggregate_site_socials(self, results):
-        compound_socials = {}    
-        for network in results:
-            network_label = network['socialNetwork']
-            try:
-                compound_socials[network_label] += network['visitors']
-            except KeyError:
-                compound_socials[network_label] = network['visitors']                
-        return compound_socials 
-        
+        return top_results 
+                 
     def sort_site_socials(self, compound_results):
         def sortSocial(item):
             return item['visitors']
                             
         social_list=[]
         for key in compound_results.keys():
-            item = {'social' : key, 'visitors' : compound_results[key]}
+            item = {'socialNetwork' : key, 'visitors' : compound_results[key]}
             social_list.append(item)
-            #social_list.append([key, compound_results[key]])
         sorted_social_list = sorted(social_list, key = sortSocial, reverse = True)
         top_results = sorted_social_list[:26]
         return top_results  
-         
-    def aggregate_site_devices(self, results):
-        compound_devices = {}
-        for item in results:
-            dev_category = item['deviceCategory']
-            browser = item['browser']
-            os = item['OS']
-            number = item['visitors']
-            try:
-                compound_devices[(dev_category, browser, os)] += number                     
-            except KeyError:
-                compound_devices[(dev_category, browser, os)] = number 
-                
-        return compound_devices 
         
     def sort_site_devices(self, compound_results):
         def sortDev(item):
@@ -341,54 +385,148 @@ class TrafficSourceBreakdown(Report):
         for key in compound_results.keys():  
             item = {'device_category': key[0], 'browser' : key[1], 'os' : key[2], 'visitors' : compound_results[key]}
             device_list.append(item)
-            #device_list.append([key, compound_results[key]])
         sorted_device_list = sorted(device_list, key = sortDev, reverse = True)
         top_results = sorted_device_list[:26]      
-        return top_results   
-                                
+        return top_results    
+    """    
+    def sort_data(self, unsorted_list, metric, limit = 26):
+        def sortDev(item):
+            return item['metrics'][metric]                
+                    
+        sorted_list = sorted(unsorted_list, key = sortDev, reverse = True)
+        top_results = sorted_list[:limit]      
+        return top_results  
+        
+    def add_change(self, top_results, second_period):
+        for item in top_results:
+            item['metrics']['change'] = 0            
+            item['metrics']['second_visitors'] = 0
+            for it in second_period:
+                if item['dimensions'] == it['dimensions']:
+                    change = item['metrics']['visitors'] - it['metrics']['visitors']
+                    item['metrics']['change'] = change            
+                    item['metrics']['second_visitors'] = it['metrics']['visitors']
+        return top_results       
+                 
     def generate_report(self):
         #still to do movement period-period 
-        #compound_results = {}
-        results = []
+        #refactor these into one, just pass in variable either traffic, social or device?
+        tables = ['traffic', 'devices', 'socials']
+        results_traffic = []
         results_device = []
         results_social = []
+        second_results_traffic = []
+        second_results_device = []
+        second_results_social = []
         total_visitors = 0
         total_pageviews = 0
         total_social_visitors = 0
-        #totals = {}
+        second_total_visitors = 0
+        second_total_pageviews = 0
+        second_total_social_visitors = 0
         for count, site in enumerate(self.sites):
             site_ga_id = config.TABLES[site]
             print 'Calculation for %s ...' % site
-            results += analytics.get_site_traffic_for_period(site_ga_id, self.period)
+            results_traffic += analytics.get_site_traffic_for_period(site_ga_id, self.period)
+            second_results_traffic += analytics.get_site_traffic_for_period(site_ga_id, self.second_period)
+            print '-- traffic'
             results_device += analytics.get_site_devices_for_period(site_ga_id, self.period)
+            second_results_device += analytics.get_site_devices_for_period(site_ga_id, self.second_period)
+            print '-- devices'
             results_social += analytics.get_site_socials_for_period(site_ga_id, self.period)
+            second_results_social += analytics.get_site_socials_for_period(site_ga_id, self.second_period)
+            print '-- social networks'
             totals = analytics.get_site_totals_for_period(site_ga_id, self.period)[0]
             total_visitors += totals['visitors']
             total_pageviews += totals['pageviews']
+            
+            second_totals = analytics.get_site_totals_for_period(site_ga_id, self.second_period)[0]
+            second_total_visitors += second_totals['visitors']
+            second_total_pageviews += second_totals['pageviews']
+               
+               
             print ' %d / 24 sites complete ' % (count+1)
             #if count ==4: break          
-               
-        compound_results = self.aggregate_site_traffic(results)
+        
+        unsorted_traffic = self.aggregate_data(results_traffic, 'traffic')
+        unsorted_devices = self.aggregate_data(results_device, 'devices')
+        unsorted_socials = self.aggregate_data(results_social, 'socials')
+        
+        second_traffic = self.aggregate_data(second_results_traffic, 'traffic')
+        second_devices = self.aggregate_data(second_results_device, 'devices')
+        second_socials = self.aggregate_data(second_results_social, 'socials')        
+        
+        sorted_traffic = self.sort_data(unsorted_traffic, 'visitors', 26)
+        sorted_devices = self.sort_data(unsorted_devices, 'visitors', 26)
+        sorted_socials = self.sort_data(unsorted_socials, 'visitors', 26)
+        
+        top_traffic_results = self.add_change(sorted_traffic, second_traffic)
+        top_device_results = self.add_change(sorted_devices, second_devices)
+        top_social_results = self.add_change(sorted_socials, second_socials)
+        
+
+        """"       
+        compound_traffic = self.aggregate_site_traffic(results_traffic)
         compound_socials = self.aggregate_site_socials(results_social)
         compound_devices = self.aggregate_site_devices(results_device)
-        top_results = self.sort_site_traffic(compound_results)  
+        
+        second_compound_traffic = self.aggregate_site_traffic(second_results_traffic)
+        second_compound_socials = self.aggregate_site_socials(second_results_social)
+        second_compound_devices = self.aggregate_site_devices(second_results_device)
+        print '-- aggregated'
+        
+        top_traffic_results = self.sort_site_traffic(compound_traffic)  
         top_social_results = self.sort_site_socials(compound_socials)         
         top_device_results = self.sort_site_devices(compound_devices) 
-        
-        #print top_device_results
+        """
+        #sort the second period data tot he same order as first period, so correct comparison
+        """"        
+        for item in top_traffic_results:
+            key = item['source']
+            try:
+                change = item['visitors'] - second_compound_traffic[key]['visitors']
+                item['change'] = change
+                item['second_visitors'] = second_compound_traffic[key]['visitors']
+            except KeyError:
+                item['change'] = 0
+                item['second_visitors'] = 0  
+                
+        for item in top_social_results:
+            key = item['socialNetwork']
+            try:
+                change = item['visitors'] - second_compound_socials[key]
+                item['change'] = change
+                item['second_visitors'] = second_compound_socials[key]
+            except KeyError:
+                item['change'] = 0 
+                item['second_visitors'] = 0  
+                  
+        for item in top_device_results:
+            dev_category = item['device_category']
+            browser = item['browser']
+            os = item['os']
+            key = (dev_category, browser, os)
+            try:#if devcat, browser and os all equal the same 
+                change = item['visitors'] - second_compound_devices[key]
+                item['change'] = change
+                item['second_visitors'] = second_compound_devices[key]
+            except KeyError:
+                item['change'] = 0
+                item['second_visitors'] = 0   
+        """
         #total number visitors use social networks
-        for social in compound_socials:
-            visitors = compound_socials[social]
-            total_social_visitors += visitors
-            
+        for social in unsorted_socials:
+            visitors = social['metrics']['visitors']
+            total_social_visitors += visitors           
                                                     
         report_html = render_template(self.template, {
             'start_date': self.period.get_start(),
-            'end_date': self.period.get_end(),
-            'compound_list' : top_results,
+            'end_date': self.second_period.get_end(),
+            'traffic_list' : top_traffic_results,
             'devices_list' : top_device_results,  
             'social_list' : top_social_results,
-            'totals': {'pageviews': total_pageviews, 'visitors': total_visitors, 'socials' : total_social_visitors}       
+            'totals': {'pageviews': total_pageviews, 'visitors': total_visitors, 'socials' : total_social_visitors, 
+                        'second_visitors': second_total_visitors}       
         })
         return report_html
 
