@@ -1,5 +1,8 @@
 import re, pprint
 import smtplib
+import matplotlib
+matplotlib.use('AGG')
+import matplotlib.pyplot as plt
 
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -269,9 +272,10 @@ class TrafficSourceBreakdown(Report):
     template='traffic_source.html'
     
     #init
-    def __init__(self, recipients, subject, sites, period, second_period):
+    def __init__(self, recipients, subject, sites, period, second_period, destination_path):
         super(TrafficSourceBreakdown, self).__init__(recipients, subject, sites, period)
         self.second_period = second_period
+        self.destination_path = destination_path
     
     #COULD I MERGE THESE FUNCTIONS AS A LOT OF REPITITION?
     """"
@@ -406,8 +410,51 @@ class TrafficSourceBreakdown(Report):
                     change = item['metrics']['visitors'] - it['metrics']['visitors']
                     item['metrics']['change'] = change            
                     item['metrics']['second_visitors'] = it['metrics']['visitors']
-        return top_results       
-                 
+        return top_results    
+           
+    def draw_graph(self, results, total, result_type, dest_path):
+        """"
+        labels =['google', 'facebook', 'reddit']
+        percents = [60,15,25]
+        colors =['darkcyan', 'indigo', 'forestgreen']
+        explode = (0.1,0.1,0.1)
+        plt.pie(percents, explode=explode, labels=labels, colors=colors,
+            autopct='%1.1f%%', shadow=False)
+        plt.axis('equal')
+        plt.savefig('/var/www/dev/faye/statsdash_reports/test.png')
+        """
+        
+        labels = []
+        percents = []
+        for item in results:
+            label = item['dimensions'].values() # use join and split 
+            labels.append(label)
+            percent = (item['metrics']['visitors'] / float(total)) * 100
+            percents.append(percent)
+            
+        new_labels = []
+        for li in labels:
+            new = ";".join(li)
+            new_labels.append(new)
+            
+        legend_labels=[]    
+        for count, i in enumerate(new_labels):
+            label = "%s, %d.1%%" %(i,percents[count])
+            legend_labels.append(label)  
+                  
+        colors =['red', 'orangered','gold', 'limegreen', 'blue', 'indigo', 'violet']
+        plt.close('all')
+        patches, text = plt.pie(percents, colors=colors,shadow=False)
+        plt.legend(patches, legend_labels, loc = 'center left', prop={'size':8})
+        plt.axis('equal')
+        image_path = '%s/%s.png' % (dest_path, result_type)
+        plt.savefig(image_path)
+            
+            
+            #appending a list to a list [[],[],[]] each individual list be made into one string 
+            #for i in main list ( each list), string = ';'.join(i)
+                         
+                     
     def generate_report(self):
         #still to do movement period-period 
         #refactor these into one, just pass in variable either traffic, social or device?
@@ -464,7 +511,6 @@ class TrafficSourceBreakdown(Report):
         top_device_results = self.add_change(sorted_devices, second_devices)
         top_social_results = self.add_change(sorted_socials, second_socials)
         
-
         """"       
         compound_traffic = self.aggregate_site_traffic(results_traffic)
         compound_socials = self.aggregate_site_socials(results_social)
@@ -517,11 +563,16 @@ class TrafficSourceBreakdown(Report):
         #total number visitors use social networks
         for social in unsorted_socials:
             visitors = social['metrics']['visitors']
-            total_social_visitors += visitors           
+            total_social_visitors += visitors        
+            
+        self.draw_graph(top_traffic_results, total_visitors, 'traffic', self.destination_path)
+        self.draw_graph(top_device_results, total_visitors, 'device', self.destination_path)
+        self.draw_graph(top_social_results, total_social_visitors, 'social', self.destination_path)   
                                                     
         report_html = render_template(self.template, {
             'start_date': self.period.get_start(),
             'end_date': self.second_period.get_end(),
+            'img_path' : {'traffic' : './traffic.png', 'device' : './device.png', 'social' : './social.png'},
             'traffic_list' : top_traffic_results,
             'devices_list' : top_device_results,  
             'social_list' : top_social_results,
@@ -556,6 +607,7 @@ if __name__ == '__main__':
     #network_breakdown = NetworkArticleBreakdown(['foo@example.net'], 'Network Article Breakdown', all_sites, 
         #yesterday_stats_range, day_before_stats_range, "Daily Summary", article_limit=25)
     network_breakdown = TrafficSourceBreakdown(['foo@example.net'], 'Network Article Breakdown', all_sites, 
-        yesterday_stats_range, day_before_stats_range)
+        yesterday_stats_range, day_before_stats_range, '.')
     generated_html = network_breakdown.generate_report()
     #print generated_html.encode("utf-8")
+    #network_breakdown.draw_graph()

@@ -1,8 +1,10 @@
+import json
 from datetime import timedelta
 from collections import OrderedDict
 
 from oauth2client.client import SignedJwtAssertionCredentials
 from httplib2 import Http
+from googleapiclient import errors
 from apiclient.discovery import build
 
 import config
@@ -123,7 +125,21 @@ class Analytics(object):
         if filters:
             kwargs['filters'] = filters
         query = self.ga.get(**kwargs)
-        return query.execute()
+        
+        for i in range(1,6):
+            try:
+                return query.execute()
+            except errors.HttpError, e:
+                error = json.loads(e.content)
+                if i == 5:
+                    print 'Error, request has failed 5 times'
+                    raise
+                if error.get('code') == 500:
+                    print '500 Error #%d, trying again ...' % i
+                else:
+                    raise
+
+        return None   
 
     def get_article_breakdown(self, site_id, stats_range, 
             extra_filters="", min_pageviews=1):
