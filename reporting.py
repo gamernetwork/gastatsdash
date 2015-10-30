@@ -369,23 +369,37 @@ class TrafficSourceBreakdown(Report):
         
         #list of dates
         dates = []
-        for date in periods:
-            dates.append(date.get_start())    
         #list of data
         desktop_results = []
         mobile_results = []
         tablet_results = []
-        for n in results:
-            for i in n:
-                if i['dimensions']['deviceCategory'] == 'desktop':
-                    percent = (i['metrics']['visitors'] / float(total)) * 100
-                    desktop_results.append(percent)
-                elif i['dimensions']['deviceCategory'] == 'mobile':
-                    percent = (i['metrics']['visitors'] / float(total)) * 100
-                    mobile_results.append(percent)
-                elif i['dimensions']['deviceCategory'] == 'tablet':
-                    percent = (i['metrics']['visitors'] / float(total)) * 100
-                    tablet_results.append(percent)     
+
+        for date in periods:
+            dates.append(date.get_start())  
+            #for month in results[key]:
+            #print 'MONTH : ',month
+        for month in results: 
+            desktop_total = 0
+            mobile_total = 0
+            tablet_total = 0  
+            for device in results[month]:
+                if device['deviceCategory'] == 'desktop':
+                    desktop_total += device['visitors']
+                elif device['deviceCategory'] == 'mobile':
+                    mobile_total += device['visitors']
+                elif device['deviceCategory'] == 'tablet':
+                    tablet_total += device['visitors']
+                                
+            desktop_percent = (desktop_total / float(total[month])) * 100
+            desktop_results.append(desktop_percent)
+            mobile_percent = (mobile_total / float(total[month])) * 100
+            mobile_results.append(mobile_percent)
+            tablet_percent = (tablet_total / float(total[month])) * 100
+            tablet_results.append(tablet_percent)
+                        
+        print desktop_results
+        print mobile_results
+        print tablet_results
                                          
         x = [datetime.strptime(d,'%Y-%m-%d').date() for d in dates] #list of datetime objects
         new_dates = pld.date2num(x) #converts dates tofloating poit numbers      
@@ -427,6 +441,7 @@ class TrafficSourceBreakdown(Report):
         second_total_visitors = 0
         second_total_pageviews = 0
         second_total_social_visitors = 0
+        
         for count, site in enumerate(self.sites):
             site_ga_id = config.TABLES[site]
             print 'Calculation for %s ...' % site
@@ -473,16 +488,22 @@ class TrafficSourceBreakdown(Report):
         top_browser_results = self.add_change(sorted_browsers, second_browsers)
         top_social_results = self.add_change(sorted_socials, second_socials)
         
-        devices ={}             
+        devices ={}  
+        total_dict = {}           
         for count, date in enumerate(self.period_list):
             value = []
+            visitors =0
+            totals_list = []
             for count_site, site in enumerate(self.sites):
                 key = 'month_%d' % count 
                 site_ga_id = config.TABLES[site]
                 value += analytics.get_site_devices_for_period(site_ga_id, date)
-                devices[key] = value 
+                devices[key] = value
+                totals_list = analytics.get_site_totals_for_period(site_ga_id, date)[0]
+                visitors += totals_list['visitors']
+                total_dict[key] = visitors
             print '-- devices (month)' 
-      
+
         devices_list = []
         for month in devices:
             results = devices[month]
@@ -493,14 +514,14 @@ class TrafficSourceBreakdown(Report):
         #total number visitors use social networks
         for social in unsorted_socials:
             visitors = social['metrics']['visitors']
-            total_social_visitors += visitors        
+            total_social_visitors += visitors      
             
         self.draw_graph(top_traffic_results, total_visitors, 'traffic', self.destination_path)
         self.draw_graph(top_browser_results, total_visitors, 'browser', self.destination_path)
         self.draw_graph(top_social_results, total_social_visitors, 'social', self.destination_path)   
         
-        self.plot_line_graph(devices_list, self.period_list, total_visitors, self.destination_path)
-                                                    
+        self.plot_line_graph(devices, self.period_list, total_dict, self.destination_path)
+                                                  
         report_html = render_template(self.template, {
             'start_date': self.period.get_start(),
             'end_date': self.period.get_end(),
