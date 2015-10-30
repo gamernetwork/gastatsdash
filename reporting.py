@@ -3,10 +3,11 @@ import smtplib
 import matplotlib
 matplotlib.use('AGG')
 import matplotlib.pyplot as plt
+import matplotlib.dates as pld
 
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 from collections import OrderedDict, defaultdict
 
 import config
@@ -272,9 +273,10 @@ class TrafficSourceBreakdown(Report):
     template='traffic_source.html'
     
     #init
-    def __init__(self, recipients, subject, sites, period, second_period, destination_path):
+    def __init__(self, recipients, subject, sites, period, second_period, period_list, destination_path):
         super(TrafficSourceBreakdown, self).__init__(recipients, subject, sites, period)
         self.second_period = second_period
+        self.period_list = period_list
         self.destination_path = destination_path
     
     #COULD I MERGE THESE FUNCTIONS AS A LOT OF REPITITION?
@@ -313,49 +315,7 @@ class TrafficSourceBreakdown(Report):
                 compound_devices[(dev_category, browser, os)] = number 
                 
         return compound_devices         
-    """
-    #condensing functions       
-     
-    def aggregate_data(self, results, table_type):
-        compound_results = {}  
-        unsorted_list = []  
-        if table_type == 'socials':
-            for item in results:
-                label = item['socialNetwork']
-                try:
-                    compound_results[label] += item['visitors']
-                except KeyError:
-                    compound_results[label] = item['visitors']   
-            for key in compound_results.keys():              
-                list_item = {'dimensions':{'socialNetwork': key},'metrics': {'visitors': compound_results[key]}}
-                unsorted_list.append(list_item)      
-            return unsorted_list 
-            
-        elif table_type == 'traffic':
-            for item in results:
-                label = item['source/medium']
-                try:
-                    compound_results[label]['visitors'] += item['visitors']
-                    compound_results[label]['pageviews'] += item['pageviews']
-                except KeyError:
-                    compound_results[label] = {'visitors': item['visitors'], 'pageviews': item['pageviews']}  
-                  
-            for key in compound_results.keys():              
-                list_item = {'dimensions':{'source': key}, 'metrics':{'visitors': compound_results[key]['visitors'], 'pageviews':compound_results[key]['pageviews']}}
-                unsorted_list.append(list_item)      
-            return unsorted_list 
-                            
-        elif table_type == 'devices':  
-            for item in results:
-                label = (item['deviceCategory'], item['browser'], item['OS'])
-                try:
-                    compound_results[label] += item['visitors']
-                except KeyError:
-                    compound_results[label] = item['visitors']
-            for key in compound_results.keys():              
-                list_item = {'dimensions':{'device_category': key[0], 'browser' : key[1], 'os' : key[2]}, 'metrics':{'visitors' : compound_results[key]}}
-                unsorted_list.append(list_item)      
-            return unsorted_list                               
+    """                            
     
     """"     
     def sort_site_traffic(self, compound_results):
@@ -392,7 +352,55 @@ class TrafficSourceBreakdown(Report):
         sorted_device_list = sorted(device_list, key = sortDev, reverse = True)
         top_results = sorted_device_list[:26]      
         return top_results    
-    """    
+    """   
+    
+    def aggregate_data(self, results, table_type, metrics = ['visitors']):
+        """compound_results = {}  
+        unsorted_list = []  
+        for item in results:
+            label = item[table_type]
+            for n in metrics:
+                try:
+                    compound_results[label]
+                    unsorted_list.append({'dimensions':{table_type : label}, 'metrics':{n : item[n]}})
+                except KeyError:
+                    compound_results[label] = item[n]
+                    unsorted_list.append({'dimensions':{table_type : label}, 'metrics':{n : item[n]}})                   
+        for key in compound_results.keys():
+            list_item = {'dimensions':{table_type : key}, 'metrics':{'visitors':compound_results[key]}}
+            unsorted_list.append(list_item)
+        return unsorted_list"""
+        
+        compound_results = {}  
+        unsorted_list = []  
+        if table_type == 'traffic':
+            for item in results:
+                label = item['source/medium']
+                try:
+                    compound_results[label]['visitors'] += item['visitors']
+                    compound_results[label]['pageviews'] += item['pageviews']
+                except KeyError:
+                    compound_results[label] = {'visitors': item['visitors'], 'pageviews': item['pageviews']}  
+                  
+            for key in compound_results.keys():              
+                list_item = {'dimensions':{'source': key}, 'metrics':{'visitors': compound_results[key]['visitors'], 'pageviews':compound_results[key]['pageviews']}}
+                unsorted_list.append(list_item)      
+            return unsorted_list    
+        else:     
+            for item in results:
+                label = item[table_type]
+                try:
+                    compound_results[label] += item['visitors']
+                except KeyError:
+                    compound_results[label] = item['visitors']
+                        
+            for key in compound_results.keys():
+                list_item = {'dimensions':{table_type : key}, 'metrics':{'visitors':compound_results[key]}}
+                unsorted_list.append(list_item)
+            return unsorted_list       
+        
+                            
+     
     def sort_data(self, unsorted_list, metric, limit = 26):
         def sortDev(item):
             return item['metrics'][metric]                
@@ -413,17 +421,7 @@ class TrafficSourceBreakdown(Report):
         return top_results    
            
     def draw_graph(self, results, total, result_type, dest_path):
-        """"
-        labels =['google', 'facebook', 'reddit']
-        percents = [60,15,25]
-        colors =['darkcyan', 'indigo', 'forestgreen']
-        explode = (0.1,0.1,0.1)
-        plt.pie(percents, explode=explode, labels=labels, colors=colors,
-            autopct='%1.1f%%', shadow=False)
-        plt.axis('equal')
-        plt.savefig('/var/www/dev/faye/statsdash_reports/test.png')
-        """
-        
+               
         labels = []
         percents = []
         for item in results:
@@ -436,35 +434,95 @@ class TrafficSourceBreakdown(Report):
         for li in labels:
             new = ";".join(li)
             new_labels.append(new)
-            
+        
+        filtered_labels = []
+        filtered_percents = []
+        for count, i in enumerate(percents):
+            if i > 1.0:
+                filtered_labels.append(new_labels[count])
+                filtered_percents.append(i)
+            else:
+                continue        
+                
         legend_labels=[]    
-        for count, i in enumerate(new_labels):
-            label = "%s, %d.1%%" %(i,percents[count])
+        for count, i in enumerate(filtered_labels):
+            label = "%s, %d.1%%" %(i,filtered_percents[count])
             legend_labels.append(label)  
-                  
+                                 
         colors =['red', 'orangered','gold', 'limegreen', 'blue', 'indigo', 'violet']
         plt.close('all')
-        patches, text = plt.pie(percents, colors=colors,shadow=False)
-        plt.legend(patches, legend_labels, loc = 'center left', prop={'size':8})
+        patches, text = plt.pie(filtered_percents, colors=colors,shadow=False)
+        plt.legend(patches, legend_labels, loc = 'best', prop={'size':12})
         plt.axis('equal')
         image_path = '%s/%s.png' % (dest_path, result_type)
         plt.savefig(image_path)
-            
-            
-            #appending a list to a list [[],[],[]] each individual list be made into one string 
-            #for i in main list ( each list), string = ';'.join(i)
-                         
+
+    def plot_line_graph(self, results, periods, total, dest_path):
+        
+        #list of dates
+        dates = []
+        for date in periods:
+            dates.append(date.get_start())    
+        #list of data
+        desktop_results = []
+        mobile_results = []
+        tablet_results = []
+        for n in results:
+            #list of results 
+            for i in n:
+                if i['dimensions']['deviceCategory'] == 'desktop':
+                    percent = (i['metrics']['visitors'] / float(total)) * 100
+                    desktop_results.append(percent)
+                elif i['dimensions']['deviceCategory'] == 'mobile':
+                    percent = (i['metrics']['visitors'] / float(total)) * 100
+                    mobile_results.append(percent)
+                elif i['dimensions']['deviceCategory'] == 'tablet':
+                    percent = (i['metrics']['visitors'] / float(total)) * 100
+                    tablet_results.append(percent)                
+                       
+        x = [datetime.strptime(d,'%Y-%m-%d').date() for d in dates] #list of datetime objects
+        new_dates = pld.date2num(x) #converts dates tofloating poit numbers      
+        
+        plt.close('all')
+        fig, ax = plt.subplots()
+
+        ax.plot_date(new_dates, desktop_results, '-', linewidth=2.0, solid_joinstyle='bevel')
+        ax.plot_date(new_dates, mobile_results, '-', linewidth=2.0, solid_joinstyle='bevel')
+        ax.plot_date(new_dates, tablet_results, '-', linewidth=2.0, solid_joinstyle='bevel')
+                        
+        ax.xaxis.set_minor_locator(pld.DayLocator())
+        ax.xaxis.set_major_locator(pld.MonthLocator())
+        ax.xaxis.set_major_formatter(pld.DateFormatter('%Y-%m'))
+        
+        plt.xlabel('Dates')
+        plt.ylabel('Percentage of Visitors')
+        ax.legend(['desktop', 'mobile', 'tablet']) 
+        
+        ax.fmt_xdata = pld.DateFormatter('%Y-%m')
+        fig.autofmt_xdate()
+        image_path = '%s/device.png' % dest_path
+        plt.savefig(image_path)
+         
+        #need to seperate the results into one list for each device category - use percentages 
+        #need to put time along x axis
+        #draw graph 
+        #legend? 
+        #save out 
+        
                      
     def generate_report(self):
         #still to do movement period-period 
         #refactor these into one, just pass in variable either traffic, social or device?
-        tables = ['traffic', 'devices', 'socials']
+        #tables = ['traffic', 'devices', 'socials']
         results_traffic = []
         results_device = []
+        results_browser = []
         results_social = []
         second_results_traffic = []
         second_results_device = []
+        second_results_browser = []
         second_results_social = []
+        third_results_device = []
         total_visitors = 0
         total_pageviews = 0
         total_social_visitors = 0
@@ -477,9 +535,15 @@ class TrafficSourceBreakdown(Report):
             results_traffic += analytics.get_site_traffic_for_period(site_ga_id, self.period)
             second_results_traffic += analytics.get_site_traffic_for_period(site_ga_id, self.second_period)
             print '-- traffic'
-            results_device += analytics.get_site_devices_for_period(site_ga_id, self.period)
-            second_results_device += analytics.get_site_devices_for_period(site_ga_id, self.second_period)
+            #do this how many times? how much data?
+            #create a list of lists in a looop?
+            results_device += analytics.get_site_devices_for_period(site_ga_id, self.period_list[0])
+            second_results_device += analytics.get_site_devices_for_period(site_ga_id, self.period_list[1])
+            third_results_device += analytics.get_site_devices_for_period(site_ga_id, self.period_list[2])
             print '-- devices'
+            results_browser += analytics.get_site_browsers_for_period(site_ga_id, self.period)
+            second_results_browser += analytics.get_site_browsers_for_period(site_ga_id, self.second_period)
+            print '-- broswer'
             results_social += analytics.get_site_socials_for_period(site_ga_id, self.period)
             second_results_social += analytics.get_site_socials_for_period(site_ga_id, self.second_period)
             print '-- social networks'
@@ -496,85 +560,66 @@ class TrafficSourceBreakdown(Report):
             #if count ==4: break          
         
         unsorted_traffic = self.aggregate_data(results_traffic, 'traffic')
-        unsorted_devices = self.aggregate_data(results_device, 'devices')
-        unsorted_socials = self.aggregate_data(results_social, 'socials')
+        #unsorted_devices = self.aggregate_data(results_device, 'deviceCategory')
+        unsorted_browsers = self.aggregate_data(results_browser, 'browser')
+        unsorted_socials = self.aggregate_data(results_social, 'socialNetwork')
         
         second_traffic = self.aggregate_data(second_results_traffic, 'traffic')
-        second_devices = self.aggregate_data(second_results_device, 'devices')
-        second_socials = self.aggregate_data(second_results_social, 'socials')        
+        #second_devices = self.aggregate_data(second_results_device, 'deviceCategory')
+        second_browsers = self.aggregate_data(second_results_browser, 'browser')
+        second_socials = self.aggregate_data(second_results_social, 'socialNetwork') 
+               
+        #third_devices = self.aggregate_data(third_results_device, 'deviceCategory')
         
         sorted_traffic = self.sort_data(unsorted_traffic, 'visitors', 26)
-        sorted_devices = self.sort_data(unsorted_devices, 'visitors', 26)
+        #sorted_devices = self.sort_data(unsorted_devices, 'visitors', 26)
+        sorted_browsers = self.sort_data(unsorted_browsers, 'visitors', 26)
         sorted_socials = self.sort_data(unsorted_socials, 'visitors', 26)
         
         top_traffic_results = self.add_change(sorted_traffic, second_traffic)
-        top_device_results = self.add_change(sorted_devices, second_devices)
+        #top_device_results = self.add_change(sorted_devices, second_devices)
+        top_browser_results = self.add_change(sorted_browsers, second_browsers)
         top_social_results = self.add_change(sorted_socials, second_socials)
         
-        """"       
-        compound_traffic = self.aggregate_site_traffic(results_traffic)
-        compound_socials = self.aggregate_site_socials(results_social)
-        compound_devices = self.aggregate_site_devices(results_device)
-        
-        second_compound_traffic = self.aggregate_site_traffic(second_results_traffic)
-        second_compound_socials = self.aggregate_site_socials(second_results_social)
-        second_compound_devices = self.aggregate_site_devices(second_results_device)
-        print '-- aggregated'
-        
-        top_traffic_results = self.sort_site_traffic(compound_traffic)  
-        top_social_results = self.sort_site_socials(compound_socials)         
-        top_device_results = self.sort_site_devices(compound_devices) 
-        """
-        #sort the second period data tot he same order as first period, so correct comparison
-        """"        
-        for item in top_traffic_results:
-            key = item['source']
-            try:
-                change = item['visitors'] - second_compound_traffic[key]['visitors']
-                item['change'] = change
-                item['second_visitors'] = second_compound_traffic[key]['visitors']
-            except KeyError:
-                item['change'] = 0
-                item['second_visitors'] = 0  
+        #DEVICESSSSSS
+        devices ={}
+        #does this work
+        #how does this feed into aggregate 
+        #key as month - add up all sites                
+        for count, date in enumerate(self.period_list):
+            value = []
+            for count_site, site in enumerate(self.sites):
+                key = 'month_%d' % count 
+                value += analytics.get_site_devices_for_period(site_ga_id, date)
+                devices[key] = value  
+        devices = []
+        for month in devices:
+            results = []
+            results = month.values()
+            #do aggregate on results, then sort  
+            unsorted_devices = self.aggregate_data(results, 'deviceCategory')
+            sorted_devices = self.sort_data(unsorted_devices, 'visitors', 26)
+            devices.append(sorted_devices)
                 
-        for item in top_social_results:
-            key = item['socialNetwork']
-            try:
-                change = item['visitors'] - second_compound_socials[key]
-                item['change'] = change
-                item['second_visitors'] = second_compound_socials[key]
-            except KeyError:
-                item['change'] = 0 
-                item['second_visitors'] = 0  
-                  
-        for item in top_device_results:
-            dev_category = item['device_category']
-            browser = item['browser']
-            os = item['os']
-            key = (dev_category, browser, os)
-            try:#if devcat, browser and os all equal the same 
-                change = item['visitors'] - second_compound_devices[key]
-                item['change'] = change
-                item['second_visitors'] = second_compound_devices[key]
-            except KeyError:
-                item['change'] = 0
-                item['second_visitors'] = 0   
-        """
         #total number visitors use social networks
         for social in unsorted_socials:
             visitors = social['metrics']['visitors']
             total_social_visitors += visitors        
             
         self.draw_graph(top_traffic_results, total_visitors, 'traffic', self.destination_path)
-        self.draw_graph(top_device_results, total_visitors, 'device', self.destination_path)
+        self.draw_graph(top_browser_results, total_visitors, 'browser', self.destination_path)
         self.draw_graph(top_social_results, total_social_visitors, 'social', self.destination_path)   
+        
+        
+        self.plot_line_graph(devices, self.period_list, total_visitors, self.destination_path)
                                                     
         report_html = render_template(self.template, {
             'start_date': self.period.get_start(),
-            'end_date': self.second_period.get_end(),
-            'img_path' : {'traffic' : './traffic.png', 'device' : './device.png', 'social' : './social.png'},
+            'end_date': self.period.get_end(),
+            'img_path' : {'traffic' : './traffic.png', 'browser' : './browser.png', 'social' : './social.png', 'device': './device.png'},
             'traffic_list' : top_traffic_results,
-            'devices_list' : top_device_results,  
+            'devices_list' : top_device_results, 
+            'browsers_list' : top_browser_results, 
             'social_list' : top_social_results,
             'totals': {'pageviews': total_pageviews, 'visitors': total_visitors, 'socials' : total_social_visitors, 
                         'second_visitors': second_total_visitors}       
@@ -601,9 +646,11 @@ def create_report(report_class, config, run_date):
 if __name__ == '__main__':
     all_sites = config.TABLES.keys()
     today = date.today() - timedelta(days=2)
-    day_before = date.today() - timedelta(days=3)
+    day_before = date.today() - timedelta(days=2)
     yesterday_stats_range = StatsRange("Yesterday", today, today)
     day_before_stats_range = StatsRange("Day Before", day_before, day_before)
+
+    
     #network_breakdown = NetworkArticleBreakdown(['foo@example.net'], 'Network Article Breakdown', all_sites, 
         #yesterday_stats_range, day_before_stats_range, "Daily Summary", article_limit=25)
     network_breakdown = TrafficSourceBreakdown(['foo@example.net'], 'Network Article Breakdown', all_sites, 

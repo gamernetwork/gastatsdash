@@ -65,14 +65,12 @@
         Devices 
     </h2>
     <p>
-        Shows the number of visitors using each device, browser and operating system.
+        Shows the number of visitors using each device and then for each browser.
     </p>
     <table>
         <thead>
             <tr class = 'column_header'>
                 <th> Device Category </th>
-                <th> Browser </th>
-                <th> Operating System </th>
                 <th> Visitors </th>
                 <th> Percentage of Visitors </th>
                 <th> Day to Day Change </th>
@@ -81,9 +79,7 @@
         <tbody>
             {% for source in devices_list %}
                 <tr>
-                    <td class = 'src'> {{source.dimensions.device_category}} </td>
-                    <td class = 'src'> {{source.dimensions.browser}}</td>
-                    <td class = 'src'> {{source.dimensions.os}} </td>
+                    <td class = 'src'> {{source.dimensions.deviceCategory}} </td>
                     <td class = 'num'> {{source.metrics.visitors|intcomma}} </td>
                     <td class = 'num'> {{source.metrics.visitors|as_percentage_of:totals.visitors}} </td>
                     <td class = 'num'> {{source.metrics.change|as_percentage_of:source.metrics.second_visitors}} </td>
@@ -93,6 +89,28 @@
        
     </table>
     <img src ={{img_path.device}} />
+    <table>
+        <thead>
+            <tr class = 'column_header'>
+                <th> Browser </th>
+                <th> Visitors </th>
+                <th> Percentage of Visitors </th>
+                <th> Day to Day Change </th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for source in browsers_list %}
+                <tr>
+                    <td class = 'src'> {{source.dimensions.browser}} </td>
+                    <td class = 'num'> {{source.metrics.visitors|intcomma}} </td>
+                    <td class = 'num'> {{source.metrics.visitors|as_percentage_of:totals.visitors}} </td>
+                    <td class = 'num'> {{source.metrics.change|as_percentage_of:source.metrics.second_visitors}} </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+       
+    </table>
+    <img src ={{img_path.browser}} />
     <h2> 
         Social Networks 
     </h2> 
