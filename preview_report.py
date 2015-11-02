@@ -27,11 +27,10 @@ yesterday_stats_range = StatsRange("Yesterday", today, today)
 day_before_stats_range = StatsRange("Day Before", day_before, day_before)
 
 
-previous_months = 12
+previous_months = 3
 end_date = today
 month_stats_range = []
 for i in range(0, previous_months):
-    print end_date 
     start_date = subtract_one_month(end_date)
     month_stats_range.append(StatsRange("month_%d" % i, start_date, end_date))
     end_date = start_date

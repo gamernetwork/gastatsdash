@@ -214,7 +214,7 @@ class Analytics(object):
 			sort = '-ga:pageviews,-ga:users', 
 			dimensions = 'ga:sourceMedium',
 			filters = '')
-        formatted_results = self._format_results_flat(results, ['source/medium', 'pageviews', 'visitors'])
+        formatted_results = self._format_results_flat(results, ['source', 'pageviews', 'visitors'])
         return formatted_results
         
     def get_site_devices_for_period(self, site_id, stats_range, 
