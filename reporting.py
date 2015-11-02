@@ -408,8 +408,7 @@ class TrafficSourceBreakdown(Report):
 
         for date in periods:
             dates.append(date.get_start())  
-            #for month in results[key]:
-            #print 'MONTH : ',month
+
         for month in results: 
             desktop_total = 0
             mobile_total = 0
@@ -431,24 +430,44 @@ class TrafficSourceBreakdown(Report):
                                                    
         x = [datetime.strptime(d,'%Y-%m-%d').date() for d in dates] #list of datetime objects
         new_dates = plotdates.date2num(x) #converts dates tofloating poit numbers      
-        
-        plot.close('all')
-        figure, axis = plot.subplots()
 
-        axis.plot_date(new_dates, desktop_results, '-', linewidth=2.0, solid_joinstyle='bevel')
-        axis.plot_date(new_dates, mobile_results, '-', linewidth=2.0, solid_joinstyle='bevel')
-        axis.plot_date(new_dates, tablet_results, '-', linewidth=2.0, solid_joinstyle='bevel')
+        plot.close('all')
+        figure, axis = plot.subplots(1,1,figsize=(12,9))
+        
+        last_num = len(new_dates)
+        x_min = new_dates[last_num-1]
+        x_max = new_dates[0]
+
+        axis.spines['top'].set_visible(False)
+        axis.spines['bottom'].set_visible(False)
+        axis.spines['right'].set_visible(False)
+        axis.spines['left'].set_visible(False)
+        
+        axis.get_xaxis().tick_bottom()
+        axis.get_yaxis().tick_left()
+        
+        plot.xlim(x_min, x_max)
+        plot.ylim(0,100)
+        
+        for y in range(0,100,10):
+            plot.plot(new_dates, [y] * len(new_dates), '--', lw=0.5, color='black', alpha=0.3)
+            
+        plot.tick_params(axis='both', which='both', bottom='off', top='off', labelbottom='on', left='off', right='off', labelleft='on')
                         
-        axis.xaxis.set_minor_locator(plotdates.DayLocator())
+        #axis.xaxis.set_minor_locator(plotdates.DayLocator())
         axis.xaxis.set_major_locator(plotdates.MonthLocator())
         axis.xaxis.set_major_formatter(plotdates.DateFormatter('%Y-%m'))
         
+        line_1, = axis.plot_date(new_dates, desktop_results, '-', linewidth=2.0, solid_joinstyle='bevel', marker='|', markeredgewidth=1.0)
+        line_2, = axis.plot_date(new_dates, mobile_results, '-', linewidth=2.0, solid_joinstyle='bevel', marker='|', markeredgewidth=1.0)
+        line_3, = axis.plot_date(new_dates, tablet_results, '-', linewidth=2.0, solid_joinstyle='bevel', marker='|', markeredgewidth=1.0)
+        
         plot.xlabel('Dates')
         plot.ylabel('Percentage of Visitors')
-        axis.legend(['desktop', 'mobile', 'tablet']) 
+        axis.legend((line_1, line_2, line_3), ('desktop', 'mobile', 'tablet')) 
         
         axis.fmt_xdata = plotdates.DateFormatter('%Y-%m')
-        figure.autofmt_xdate()
+        #figure.autofmt_xdate()
         image_path = '%s/device1.png' % dest_path
         plot.savefig(image_path)
                      
