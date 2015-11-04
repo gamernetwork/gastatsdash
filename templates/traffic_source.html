@@ -22,20 +22,60 @@
 	}	
 
 	</style>
-    <h1>Traffic Source Analytics </h1>
+    <h1>{{report_span|capfirst}} Report </h1>
     <p> 
         Between the period : {{start_date}} - {{end_date}} 
     </p>
+    <p>
+        For {% if num_sites == 24 %} all sites in network {% else %}{% for name in site_names %} {{name}} {% endfor %}{% endif %} 
+    <h2>
+        Overview
+    </h2>
+    <table>
+        <thead>
+            <tr>
+                <th> Total Visitors </th>
+                <th> Total Page Views </th>
+                <th> Average Pages/Visitor </th>
+                <th> Average Time Spent on Site </th>
+                {% if num_sites == 1 %}
+                <th> Peak Cumulative Visitors </th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td> {{totals.first_period.visitors|intcomma|cut:".0"}} </td>
+                <td> {{totals.first_period.pageviews|intcomma|cut:".0"}} </td>
+                <td> {{totals.first_period.pv_per_session|floatformat}} </td>
+                <td> {{totals.first_period.avg_time|floatformat}} minutes </td>
+                {% if num_sites == 1 %}
+                <td> {{peak.sessions|intcomma}} on {{peak.day}} at {{peak.hour}}:{{peak.minute}}</td>
+                {% endif %}
+            <tr>
+            <tr>
+                <td style="color: {% if totals.change.visitors > 0 %}green{% else %}red{% endif %};"> {{totals.change.visitors|as_percentage_of:totals.first_period.visitors}} </td>
+                <td style="color: {% if totals.change.pageviews > 0 %}green{% else %}red{% endif %};"> {{totals.change.pageviews|as_percentage_of:totals.first_period.pageviews}}</td>
+                <td style="color: {% if totals.change.pv_per_session > 0 %}green{% else %}red{% endif %};"> {{totals.change.pv_per_session|as_percentage_of:totals.first_period.pv_per_session}} </td>
+                <td style="color: {% if totals.change.avg_time > 0 %}green{% else %}red{% endif %};"> {{totals.change.avg_time|as_percentage_of:totals.first_period.avg_time}} </td>
+                <td>  </td>
+            <tr>  
+            <tr>
+                <td> {{totals.second_period.visitors|intcomma|cut:".0"}} </td>
+                <td> {{totals.second_period.pageviews|intcomma|cut:".0"}} </td>
+                <td> {{totals.second_period.pv_per_session|floatformat}} </td>
+                <td> {{totals.second_period.avg_time|floatformat}} minutes </td>
+                <!--<td> {{totals.peak|intcomma}}</td>-->
+            <tr>             
+        </tbody>
+    </table>
+       
     <h2> 
         Traffic Sourcing 
     </h2>
     <p> 
         Shows the number of visitors referred from a specific source and the type of referral (medium). 
-    </p>
-    <p> 
-        Total visitors :  {{totals.visitors}}
-        Total pageviews : {{totals.pageviews}} 
-    </p>    
+    </p> 
     <table>
         <thead>
             <tr class = 'column_header'>
@@ -44,7 +84,7 @@
                 <th> Page Views </th>
                 <th> Percentage of Total Visitors </th>
                 <th> Percentage of Total Pageviews </th>
-                <th> Day to Day Visitors Change </th>
+                <th> {{report_span|capfirst}} Visitors Change </th>
             </tr>
         </thead>
         <tbody>
@@ -53,14 +93,38 @@
                     <td class = 'src'> {{source.dimensions.source}} </td>
                     <td class = 'num'> {{source.metrics.visitors|intcomma}} </td>
                     <td class = 'num'> {{source.metrics.pageviews|intcomma}} </td>
-                    <td class = 'num'> {{source.metrics.visitors|as_percentage_of:totals.visitors}} </td>
-                    <td class = 'num'> {{source.metrics.pageviews|as_percentage_of:totals.pageviews}} </td>
-                    <td class = 'num'> {{source.metrics.change|as_percentage_of:source.metrics.second_visitors}} </td>
+                    <td class = 'num'> {{source.metrics.visitors|as_percentage_of:totals.first_period.visitors}} </td>
+                    <td class = 'num'> {{source.metrics.pageviews|as_percentage_of:totals.first_period.pageviews}} </td>
+                    <td class = 'num' style="color: {% if source.metrics.change_visitors > 0 %}green{% else %}red{% endif %};"> {{source.metrics.change_visitors|as_percentage_of:source.metrics.second_visitors}} </td>
             {% endfor %}
         </tbody>
         
     </table>
     <img src ={{img_path.traffic}} />
+    
+    <p>
+        Top Site Referrals
+    </p>
+    <table>
+        <thead>
+            <tr>
+                <th> Source </th>
+                <th> Top Article Linked to </th>
+                <th> Page Views </th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for key, value in site_referrals.items %}
+            <tr>
+                <td> {{key}} </td>
+                <td> {% for article in value %}<p>{{article.dimensions.title}}</p> {% endfor %}</td>
+                <td> {% for article in value %}<p>{{article.metrics.pageviews}}</p> {% endfor %}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    
     <h2> 
         Devices 
     </h2>
@@ -73,7 +137,7 @@
                 <th> Device Category </th>
                 <th> Visitors </th>
                 <th> Percentage of Visitors </th>
-                <th> Day to Day Change </th>
+                <th> {{report_span|capfirst}} Change </th>
             </tr>
         </thead>
         <tbody>
@@ -81,15 +145,15 @@
                 <tr>
                     <td class = 'src'> {{source.dimensions.deviceCategory}} </td>
                     <td class = 'num'> {{source.metrics.visitors|intcomma}} </td>
-                    <td class = 'num'> {{source.metrics.visitors|as_percentage_of:totals.visitors}} </td>
-                    <td class = 'num'> {{source.metrics.change|as_percentage_of:source.metrics.second_visitors}} </td>
+                    <td class = 'num'> {{source.metrics.visitors|as_percentage_of:totals.first_period.visitors}} </td>
+                    <td class = 'num' style="color: {% if source.metrics.change_visitors > 0 %}green{% else %}red{% endif %};"> {{source.metrics.change_visitors|as_percentage_of:source.metrics.second_visitors}} </td>
                 </tr>
             {% endfor %}
         </tbody>
        
     </table>
     <img src ={{img_path.device}} />
-    <table>
+    <!--<table>
         <thead>
             <tr class = 'column_header'>
                 <th> Browser </th>
@@ -110,7 +174,7 @@
         </tbody>
        
     </table>
-    <img src ={{img_path.browser}} />
+    <img src ={{img_path.browser}} />-->
     <h2> 
         Social Networks 
     </h2> 
@@ -118,18 +182,19 @@
         Shows the number of visitors being referred from social networks.
     </p>
     <p>
-        Total Visitors use social networks: {{totals.socials}}
+        Total Visitors use social networks: {{totals.first_period.social_visitors}}
     </p>
     <p>
-        Percentage of visitors use social networks: {{totals.socials|as_percentage_of:totals.visitors}}
+        Percentage of total visitors that use social networks: {{totals.first_period.social_visitors|as_percentage_of:totals.first_period.visitors}}
     </p>
     <table>
         <thead>
             <tr class = 'column_header'>
                 <th> Social Network </th>
                 <th> Visitors </th>
-                <th> Percentage of Visitors </th>
-                <th> Day to Day Change </th>
+                <th> Percentage of Total Social Visitors </th>
+                <th> Page Views </th>
+                <th> Top Linked Article </th>
             </tr>
         </thead>
         <tbody>
@@ -137,8 +202,17 @@
                 <tr>
                     <td class = 'src'> {{source.dimensions.socialNetwork}} </td>
                     <td class = 'num'> {{source.metrics.visitors|intcomma}} </td>
-                    <td class = 'num'> {{source.metrics.visitors|as_percentage_of:totals.socials}} </td>
-                    <td class = 'num'> {{source.metrics.change|as_percentage_of:source.metrics.second_visitors}} </td>
+                    <td class = 'num'> {{source.metrics.visitors|as_percentage_of:totals.first_period.social_visitors}} </td>
+                    <td class = 'num'> {{source.metrics.pageviews|intcomma}} </td>
+                {% for k, v in social_articles.items %}
+                    {% if source.dimensions.socialNetwork == k %}
+                    <td class = 'src'>
+                        {% for article in v %}
+                            <p> {{article.dimensions.title}} </p>
+                        {% endfor %}
+                    </td> 
+                    {% endif %}
+                {% endfor %}
                 </tr>
             {% endfor %}
         </tbody>

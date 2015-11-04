@@ -109,7 +109,7 @@ class Analytics(object):
             return False
         return data_available
 
-    def _execute_stats_query(self, site_id, stats_range, metrics, sort=None, dimensions=None, filters=None):
+    def _execute_stats_query(self, site_id, stats_range, metrics, sort=None, dimensions=None, filters=None, max_results=None):
         """
         """
         kwargs = {
@@ -124,20 +124,28 @@ class Analytics(object):
             kwargs['dimensions'] = dimensions
         if filters:
             kwargs['filters'] = filters
-        query = self.ga.get(**kwargs)
+        if max_results:
+            kwargs['max_results'] = max_results   
+        query = self.ga.get(**kwargs)	
         
         for i in range(1,6):
             try:
-                return query.execute()
+                return query.execute()	
             except errors.HttpError, e:
                 error = json.loads(e.content)
                 if i == 5:
                     print 'Error, request has failed 5 times'
                     raise
-                if error.get('code') == 500:
+                if error['error'].get('code') == 500:
                     print '500 Error #%d, trying again ...' % i
                 else:
                     raise
+            except Exception, e:
+                print 'We got an unknown error from GA'
+                print 'Type:'
+                print type(e)
+                print e
+                
 
         return None   
 
@@ -152,10 +160,10 @@ class Analytics(object):
         filter_list= 'ga:pagePathLevel1!=/'
         for i in black_list:
         	filter_list += ';ga:pagePath!=%s' %i
-        	
-        filters = ''        	
+        	        	
         if extra_filters:
-            filters = '%s;' % extra_filters
+            filter_list += ';%s' % extra_filters
+            
         results = self._execute_stats_query(site_id=site_id, 
             stats_range=stats_range,
             metrics='ga:pageviews',
@@ -192,14 +200,31 @@ class Analytics(object):
             filters = '%s;' % extra_filters
         results = self._execute_stats_query(site_id=site_id, 
         	stats_range=stats_range,
-            metrics='ga:pageviews,ga:visitors',
+            metrics='ga:pageviews,ga:visitors, ga:pageviewsPerSession, ga:avgSessionDuration',
             filters=filters)
         try:
-            formatted_results = self._format_results_flat(results, ['pageviews', 'visitors'])
+            formatted_results = self._format_results_flat(results, ['pageviews', 'visitors', 'pv_per_session', 'avg_time'])
         except KeyError:
-            formatted_results = [{'visitors': 0, 'pageviews': 0}]
+            formatted_results = [{'visitors': 0, 'pageviews': 0, 'pv_per_session': 0, 'avg_time': 0}]
         return formatted_results
-        	
+        
+    def get_site_peak_for_period(self, site_id, stats_range, 
+            extra_filters=""):
+        """
+        Get total peak session time for a period for a given site.
+        """
+        filters = ''
+        if extra_filters:
+            filters = '%s;' % extra_filters
+        results = self._execute_stats_query(site_id=site_id, 
+        	stats_range=stats_range,
+            metrics='ga:sessions',
+            dimensions ='ga:day, ga:hour, ga:minute',
+            sort = '-ga:sessions',
+            filters=filters,
+            max_results=1)
+        formatted_results = self._format_results_flat(results, ['day', 'hour', 'minute', 'sessions'])
+        return formatted_results       	
         
     def get_site_traffic_for_period(self, site_id, stats_range, 
             extra_filters=""):
@@ -233,11 +258,9 @@ class Analytics(object):
         formatted_results = self._format_results_flat(results, ['deviceCategory', 'visitors'])
         return formatted_results 
           
+    """
     def get_site_browsers_for_period(self, site_id, stats_range, 
             extra_filters=""):
-        """
-        Get total pageviews and visitors for a period for a given site.
-        """
         filters = ''
         if extra_filters:
             filters = '%s;' % extra_filters
@@ -247,7 +270,7 @@ class Analytics(object):
 			dimensions = 'ga:browser',
 			filters = '')
         formatted_results = self._format_results_flat(results, ['browser', 'visitors'])
-        return formatted_results 
+        return formatted_results """
                   
     def get_site_socials_for_period(self, site_id, stats_range, 
             extra_filters=""):
@@ -258,11 +281,11 @@ class Analytics(object):
         if extra_filters:
             filters = '%s;' % extra_filters
         results = self._execute_stats_query(site_id=site_id, stats_range=stats_range, 
-			metrics = 'ga:users', 
+			metrics = 'ga:users, ga:pageviews', 
 			sort = '-ga:users', 
 			dimensions = 'ga:socialNetwork',
 			filters = 'ga:socialNetwork!=(not set)')
-        formatted_results = self._format_results_flat(results, ['socialNetwork','visitors'])
+        formatted_results = self._format_results_flat(results, ['socialNetwork','visitors', 'pageviews'])
         return formatted_results               
         
 
