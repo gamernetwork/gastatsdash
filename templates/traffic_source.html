@@ -2,6 +2,7 @@
 <!DOCTYPE html>
 <html>
 	<head>
+    	<meta charset="UTF-8">
 	</head>
 <body>
 	<style>
@@ -9,6 +10,9 @@
 		font-family: sans-serif;
 		text-align: left;
 		font-weight: normal;
+	}
+	thead th{
+    	border-bottom: 1px solid #d0d9e0;
 	}
 	td, th {
 		padding: 0.3em 1em 0.3em 0.5em;
@@ -19,7 +23,19 @@
 	}
 	td.num {
     	text-align: right;
+	}
+	
+	tr.odd {
+    	background-color: #f0f2f4;
 	}	
+	
+	tr.even {
+    	
+	}
+	ul {
+    	list-style-type: none;
+	}
+	
 
 	</style>
     <h1>{{report_span|capfirst}} Report </h1>
@@ -27,45 +43,50 @@
         Between the period : {{start_date}} - {{end_date}} 
     </p>
     <p>
-        For {% if num_sites == 24 %} all sites in network {% else %}{% for name in site_names %} {{name}} {% endfor %}{% endif %} 
+        For {% if num_sites == 24 %} all sites in network {% else %}{% for name in site_names %} {{name|capfirst}} {% endfor %}{% endif %} 
+    </p>
     <h2>
         Overview
     </h2>
     <table>
         <thead>
             <tr>
+                <th></th>
                 <th> Total Visitors </th>
                 <th> Total Page Views </th>
                 <th> Average Pages/Visitor </th>
                 <th> Average Time Spent on Site </th>
                 {% if num_sites == 1 %}
-                <th> Peak Cumulative Visitors </th>
+                <th> Peak Cumulative Sessions </th>
                 {% endif %}
             </tr>
         </thead>
         <tbody>
-            <tr>
+            <tr class="odd">
+                <th> Current Data </th>
                 <td> {{totals.first_period.visitors|intcomma|cut:".0"}} </td>
                 <td> {{totals.first_period.pageviews|intcomma|cut:".0"}} </td>
                 <td> {{totals.first_period.pv_per_session|floatformat}} </td>
                 <td> {{totals.first_period.avg_time|floatformat}} minutes </td>
                 {% if num_sites == 1 %}
-                <td> {{peak.sessions|intcomma}} on {{peak.day}} at {{peak.hour}}:{{peak.minute}}</td>
+                <td> {{peak.sessions|intcomma}} sessions on {{peak.day}} at {{peak.hour}}:{{peak.minute}}</td>
                 {% endif %}
-            <tr>
-            <tr>
+            </tr>
+            <tr class="even">
+                <th> {{report_span|capfirst}} Percentage Change </th>
                 <td style="color: {% if totals.change.visitors > 0 %}green{% else %}red{% endif %};"> {{totals.change.visitors|as_percentage_of:totals.first_period.visitors}} </td>
                 <td style="color: {% if totals.change.pageviews > 0 %}green{% else %}red{% endif %};"> {{totals.change.pageviews|as_percentage_of:totals.first_period.pageviews}}</td>
                 <td style="color: {% if totals.change.pv_per_session > 0 %}green{% else %}red{% endif %};"> {{totals.change.pv_per_session|as_percentage_of:totals.first_period.pv_per_session}} </td>
                 <td style="color: {% if totals.change.avg_time > 0 %}green{% else %}red{% endif %};"> {{totals.change.avg_time|as_percentage_of:totals.first_period.avg_time}} </td>
-                <td>  </td>
-            <tr>  
-            <tr>
+                <td> -- </td>
+            </tr>  
+            <tr class="odd">
+                <th> Previous Data </th>
                 <td> {{totals.second_period.visitors|intcomma|cut:".0"}} </td>
                 <td> {{totals.second_period.pageviews|intcomma|cut:".0"}} </td>
                 <td> {{totals.second_period.pv_per_session|floatformat}} </td>
                 <td> {{totals.second_period.avg_time|floatformat}} minutes </td>
-                <!--<td> {{totals.peak|intcomma}}</td>-->
+                <td> -- </td>
             <tr>             
         </tbody>
     </table>
@@ -89,25 +110,29 @@
         </thead>
         <tbody>
             {% for source in traffic_list %}
-                <tr>
+                <tr class="{% cycle 'odd' 'even' %}">
                     <td class = 'src'> {{source.dimensions.source}} </td>
                     <td class = 'num'> {{source.metrics.visitors|intcomma}} </td>
                     <td class = 'num'> {{source.metrics.pageviews|intcomma}} </td>
                     <td class = 'num'> {{source.metrics.visitors|as_percentage_of:totals.first_period.visitors}} </td>
                     <td class = 'num'> {{source.metrics.pageviews|as_percentage_of:totals.first_period.pageviews}} </td>
                     <td class = 'num' style="color: {% if source.metrics.change_visitors > 0 %}green{% else %}red{% endif %};"> {{source.metrics.change_visitors|as_percentage_of:source.metrics.second_visitors}} </td>
+                </tr>
             {% endfor %}
         </tbody>
         
     </table>
-    <img src ={{img_path.traffic}} />
+    <!--<img src ={{img_path.traffic}} />-->
     
-    <p>
+    <h3>
         Top Site Referrals
+    </h3>
+    <p>
+        Top sites with the top articles they've linked to
     </p>
     <table>
         <thead>
-            <tr>
+            <tr class = 'column_header'>
                 <th> Source </th>
                 <th> Top Article Linked to </th>
                 <th> Page Views </th>
@@ -115,10 +140,10 @@
         </thead>
         <tbody>
             {% for key, value in site_referrals.items %}
-            <tr>
+            <tr class="{% cycle 'odd' 'even' %}">
                 <td> {{key}} </td>
-                <td> {% for article in value %}<p>{{article.dimensions.title}}</p> {% endfor %}</td>
-                <td> {% for article in value %}<p>{{article.metrics.pageviews}}</p> {% endfor %}</td>
+                <td> <ul>{% for article in value %}<li>{{article.dimensions.title}}</li> {% endfor %}</ul></td>
+                <td> <ul>{% for article in value %}<li>{{article.metrics.pageviews}}</li> {% endfor %}</ul></td>
             </tr>
             {% endfor %}
         </tbody>
@@ -142,7 +167,7 @@
         </thead>
         <tbody>
             {% for source in devices_list %}
-                <tr>
+                <tr class="{% cycle 'odd' 'even' %}">
                     <td class = 'src'> {{source.dimensions.deviceCategory}} </td>
                     <td class = 'num'> {{source.metrics.visitors|intcomma}} </td>
                     <td class = 'num'> {{source.metrics.visitors|as_percentage_of:totals.first_period.visitors}} </td>
@@ -152,29 +177,7 @@
         </tbody>
        
     </table>
-    <img src ={{img_path.device}} />
-    <!--<table>
-        <thead>
-            <tr class = 'column_header'>
-                <th> Browser </th>
-                <th> Visitors </th>
-                <th> Percentage of Visitors </th>
-                <th> Day to Day Change </th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for source in browsers_list %}
-                <tr>
-                    <td class = 'src'> {{source.dimensions.browser}} </td>
-                    <td class = 'num'> {{source.metrics.visitors|intcomma}} </td>
-                    <td class = 'num'> {{source.metrics.visitors|as_percentage_of:totals.visitors}} </td>
-                    <td class = 'num'> {{source.metrics.change|as_percentage_of:source.metrics.second_visitors}} </td>
-                </tr>
-            {% endfor %}
-        </tbody>
-       
-    </table>
-    <img src ={{img_path.browser}} />-->
+    <!--<img src ={{img_path.device}} />-->
     <h2> 
         Social Networks 
     </h2> 
@@ -182,10 +185,10 @@
         Shows the number of visitors being referred from social networks.
     </p>
     <p>
-        Total Visitors use social networks: {{totals.first_period.social_visitors}}
+        Total Visitors use social networks: <b>{{totals.first_period.social_visitors|intcomma}}</b>
     </p>
     <p>
-        Percentage of total visitors that use social networks: {{totals.first_period.social_visitors|as_percentage_of:totals.first_period.visitors}}
+        Percentage of total visitors that use social networks: <b>{{totals.first_period.social_visitors|as_percentage_of:totals.first_period.visitors}}</b>
     </p>
     <table>
         <thead>
@@ -199,7 +202,7 @@
         </thead>
         <tbody>
             {% for source in social_list %}
-                <tr>
+                <tr class="{% cycle 'odd' 'even' %}">
                     <td class = 'src'> {{source.dimensions.socialNetwork}} </td>
                     <td class = 'num'> {{source.metrics.visitors|intcomma}} </td>
                     <td class = 'num'> {{source.metrics.visitors|as_percentage_of:totals.first_period.social_visitors}} </td>
@@ -207,9 +210,11 @@
                 {% for k, v in social_articles.items %}
                     {% if source.dimensions.socialNetwork == k %}
                     <td class = 'src'>
+                        <ul>
                         {% for article in v %}
-                            <p> {{article.dimensions.title}} </p>
+                            <li> {{article.dimensions.title}} </li>
                         {% endfor %}
+                        </ul>
                     </td> 
                     {% endif %}
                 {% endfor %}
@@ -218,6 +223,31 @@
         </tbody>
         
     </table>
-    <img src ={{img_path.social}} />
-    
+    <!--<img src ={{img_path.social}} />-->
+    <h2> 
+        Top Ten Articles 
+    </h2>
+    <p>
+        Top articles during the period
+    </p>
+    <table>
+        <thead>
+            <tr class = 'column_header'>
+                <th> Site </th>
+                <th> Title </th>
+                <th> Page Views </th>
+                <th> {{report_span|capfirst}} Change </th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for article in top_articles %}
+            <tr class="{% cycle 'odd' 'even' %}">
+                <td>{{article.dimensions.host|cut:"www."|cut:".com"|capfirst}}</td>
+                <td>{{article.dimensions.title}}</td>
+                <td>{{article.metrics.pageviews}}</td>
+                <td>{% if article.metrics.change_pageviews == 0 %}--{% else %}<span style="color: {% if article.metrics.change_pageviews > 0 %}green{% else %}red{% endif %};">{{article.metrics.change_pageviews|as_percentage_of:article.metrics.second_pageviews}}</span>{% endif %}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </body>

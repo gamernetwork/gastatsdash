@@ -478,7 +478,6 @@ class TrafficSourceBreakdown(Report):
         plot.savefig(image_path)
                      
     def generate_report(self):
-        #refactor these into one, just pass in variable either traffic, social, browser or device?
         """
         main function 
         gather data from analytics, call functions to aggregate/sort data and draw charts 
@@ -500,6 +499,7 @@ class TrafficSourceBreakdown(Report):
         num_sites = len(self.sites)
         site_names=[]
         
+        #MAIN LOOP TO GET DATA 
         for count, site in enumerate(self.sites):
             site_ga_id = config.TABLES[site]
             print 'Calculation for %s ...' % site
@@ -526,13 +526,15 @@ class TrafficSourceBreakdown(Report):
             print '-- totals'
             if num_sites == 1:
                 peak = analytics.get_site_peak_for_period(site_ga_id, self.period)[0]
+            else:
+                peak = 0
                 
             if num_sites < 24:
                 site_names.append(site)
                
             print ' %d / %d sites complete ' % (count+1, num_sites)
             #if count ==4: break          
-        
+        #AGGREGATE AND SORT ALL DATA 
         unsorted_traffic = self.aggregate_data(results_traffic, ['source'], ['visitors', 'pageviews'])
         unsorted_devices = self.aggregate_data(results_device, ['deviceCategory'], ['visitors'])
         #unsorted_browsers = self.aggregate_data(results_browser, ['browser'], ['visitors'])
@@ -552,14 +554,17 @@ class TrafficSourceBreakdown(Report):
         top_device_results = self.add_change(sorted_devices, second_devices, ['visitors'])
         #top_browser_results = self.add_change(sorted_browsers, second_browsers)
         top_social_results = self.add_change(sorted_socials, second_socials, ['visitors'])
-
         
-        totals['first_period']['pv_per_session'] = totals['first_period']['pv_per_session']/24.0
-        totals['first_period']['avg_time'] = (totals['first_period']['avg_time']/24.0)/60.0
-        
-        totals['second_period']['pv_per_session'] = totals['first_period']['pv_per_session']/24.0
-        totals['second_period']['avg_time'] = (totals['first_period']['avg_time']/24.0)/60.0
-
+        #OVERVIEW
+        if num_sites > 1 :
+            totals['first_period']['pv_per_session'] = totals['first_period']['pv_per_session']/float(num_sites)
+            totals['first_period']['avg_time'] = (totals['first_period']['avg_time']/float(num_sites))/60.0
+            
+            totals['second_period']['pv_per_session'] = totals['second_period']['pv_per_session']/float(num_sites)
+            totals['second_period']['avg_time'] = (totals['second_period']['avg_time']/float(num_sites))/60.0
+        else:
+            totals['first_period']['avg_time'] = totals['first_period']['avg_time']/60.0
+            totals['second_period']['avg_time'] = totals['second_period']['avg_time']/60.0
         
         totals['change'] = {}
         for key in totals['first_period']:
@@ -572,108 +577,115 @@ class TrafficSourceBreakdown(Report):
             visitors = social['metrics']['visitors']
             totals['first_period']['social_visitors'] += visitors   
 
-        #SITE REFERRALS
-        site_referrals = {}   
-        if self.report_span == 'daily':     
-            for item in top_traffic_results:
-                source_medium = item['dimensions']['source']
-                source = source_medium.split(' / ')[0]
-                print 'SOURCE SITE : ', source   
-                if source == 'google' or source == '(direct)' or source == 'eurogamer':
-                    continue;
-                    #do nothing, move onto next, do not include in site referrals
-                elif len(site_referrals.keys()) == 3:
-                    break;
-                else:   
-                    for site in self.sites:
-                        site_ga_id = config.TABLES[site]
-                        print "site : ", site
-                        data = analytics.get_article_breakdown(site_ga_id, self.period, extra_filters='ga:source==%s' % source)
-                        data = list(data.items())[:6]
-                        separated_data = []
-                        for article in data:
-                            separated_data.append(article[1])
-                        try:
-                            site_referrals[source] +=  separated_data
-                        except KeyError:
-                            site_referrals[source] = separated_data                           
-            for source in site_referrals:
-                un_sorted = self.aggregate_data(site_referrals[source], ['title', 'host'], ['pageviews'])
-                sorted = self.sort_data(un_sorted, 'pageviews', 1)
-                site_referrals[source] = sorted                        
+        #ARTICLES 
+        top_sites = self.sort_data(unsorted_traffic, 'visitors', 25)
+        print len(top_sites)
+        site_referrals = OrderedDict()   
+        social_articles = OrderedDict()
+        second_site_referrals = OrderedDict()
+        second_social_articles = OrderedDict()
+        top_articles = []
+        second_top_articles = []
+        num_articles = 0
+        num_referrals = 0
+        if self.report_span == 'daily':
+            num_articles = 1
+            num_referrals = 3
         elif self.report_span == 'weekly':
-            for item in top_traffic_results:
+            num_articles = 5
+            num_referrals = 5
+        #LOOP TO GET ARTICLES 
+        for site in self.sites:
+            site_ga_id = config.TABLES[site]
+            print 'site : ', site 
+            #TOP SITE REFERRAL ARTICLES
+            count = 0
+            for item in top_sites:
                 source_medium = item['dimensions']['source']
                 source = source_medium.split(' / ')[0]
-                print 'SOURCE SITE : ', source   
-                if source == 'google' or source == '(direct)' or source == 'eurogamer':
+                print 'SOURCE SITE : ', source 
+                black_list = ['google', '(direct)', 'eurogamer', 'facebook.com', 'm.facebook.com','Twitter', 'bing', 't.co', 'reddit.com', 'yahoo', 'l.facebook.com','google.de']
+                if source in black_list: 
                     continue;
                     #do nothing, move onto next, do not include in site referrals
-                elif len(site_referrals.keys()) == 5:
+                elif count == num_referrals:
                     break;
-                else:
-                    for site in self.sites:
-                        site_ga_id = config.TABLES[site]
-                        print "site : ", site
-                        data = analytics.get_article_breakdown_two_periods(site_ga_id, self.period, self.second_period, extra_filters='ga:source==%s' % source)
-                        data = list(data.items())[:6]
-                        separated_data = []
-                        for article in data:
-                            separated_data.append(article[1])
-                        try:
-                            site_referrals[source] +=  separated_data
-                        except KeyError:
-                            site_referrals[source] = separated_data                      
-            for source in site_referrals:
-                un_sorted = self.aggregate_data(site_referrals[source], ['title', 'host'], ['pageviews'])
-                sorted = self.sort_data(un_sorted, 'pageviews', 5)
-                site_referrals[source] = sorted        
-        
-        #TOP SOCIAL ARTICLES    
-        social_articles = {}   
-        if self.report_span == 'daily':     
-            for item in top_social_results:
-                social_network = item['dimensions']['socialNetwork']
-                print 'SOCIAL NETWORK : ', social_network       
-                for site in self.sites:
-                    site_ga_id = config.TABLES[site]
-                    print "site : ", site
-                    data = analytics.get_article_breakdown(site_ga_id, self.period, extra_filters='ga:socialNetwork==%s' % social_network)
+                else:  
+                    data = analytics.get_article_breakdown(site_ga_id, self.period, extra_filters='ga:source==%s' % source)
+                    second_data = analytics.get_article_breakdown(site_ga_id, self.second_period, extra_filters='ga:source==%s' % source)
                     data = list(data.items())[:6]
+                    second_data = list(second_data.items())[:6]
                     separated_data = []
                     for article in data:
                         separated_data.append(article[1])
                     try:
-                        social_articles[social_network] +=  separated_data
+                        site_referrals[source] +=  separated_data
                     except KeyError:
-                        social_articles[social_network] = separated_data
-            for social in social_articles:
-                un_sorted = self.aggregate_data(social_articles[social], ['title', 'host'], ['pageviews'])
-                sorted = self.sort_data(un_sorted, 'pageviews', 1)
-                social_articles[social] = sorted                        
-        elif self.report_span == 'weekly':
+                        site_referrals[source] = separated_data 
+                    second_separated_data = []
+                    for article in second_data:
+                        second_separated_data.append(article[1])
+                    try:
+                        second_site_referrals[source] +=  second_separated_data
+                    except KeyError:
+                        second_site_referrals[source] = second_separated_data 
+                    print 'add data'
+                    count += 1     
+            #TOP SOCIAL ARTICLES                                            
             for item in top_social_results:
-                social_network = item['dimensions']['socialNetwork']
+                social_network = item['dimensions']['socialNetwork'] 
                 print 'SOCIAL NETWORK : ', social_network
-                for site in self.sites:
-                    site_ga_id = config.TABLES[site]
-                    print "site : ", site
-                    data = analytics.get_article_breakdown_two_periods(site_ga_id, self.period, self.second_period, extra_filters='ga:socialNetwork==%s' % social_network)
-                    data = list(data.items())[:6]
-                    separated_data = []
-                    for article in data:
-                        separated_data.append(article[1])
-                    try:
-                        social_articles[social_network] +=  separated_data
-                    except KeyError:
-                        social_articles[social_network] = separated_data                      
-            for social in social_articles:
-                un_sorted = self.aggregate_data(social_articles[social], ['title', 'host'], ['pageviews'])
-                sorted = self.sort_data(un_sorted, 'pageviews', 5)
-                social_articles[social] = sorted
+                data = analytics.get_article_breakdown(site_ga_id, self.period, extra_filters='ga:socialNetwork==%s' % social_network)
+                second_data = analytics.get_article_breakdown(site_ga_id, self.second_period, extra_filters='ga:socialNetwork==%s' % social_network)
+                data = list(data.items())[:6]
+                second_data = list(second_data.items())[:6]
+                separated_data = []
+                for article in data:
+                    separated_data.append(article[1])
+                try:
+                    social_articles[social_network] +=  separated_data
+                except KeyError:
+                    social_articles[social_network] = separated_data                
+                second_separated_data = []
+                for article in second_data:
+                    second_separated_data.append(article[1])
+                try:
+                    second_social_articles[social_network] +=  second_separated_data
+                except KeyError:
+                    second_social_articles[social_network] = second_separated_data 
+            #TOP TEN ARTICLES 
+            articles_data = analytics.get_article_breakdown(site_ga_id, self.period)
+            separated_data = []
+            for item in articles_data:
+                separated_data.append(articles_data[item])
+            second_articles_data = analytics.get_article_breakdown(site_ga_id, self.second_period)
+            second_separated_data = []
+            for item in second_articles_data:
+                second_separated_data.append(second_articles_data[item])
+            top_articles += separated_data[:11]
+            second_top_articles = second_separated_data[:11]                      
+        #AGGREGATE AND SORT ALL ARTICLES            
+        for source in site_referrals:
+            un_sorted = self.aggregate_data(site_referrals[source], ['title', 'host'], ['pageviews'])
+            sorted = self.sort_data(un_sorted, 'pageviews', num_articles)   
+            second_aggregate = self.aggregate_data(second_site_referrals[source], ['title', 'host'], ['pageviews']) 
+            complete = self.add_change(sorted, second_aggregate, ['pageviews'])          
+            site_referrals[source] = complete 
+            
+        for social in social_articles:
+            un_sorted = self.aggregate_data(social_articles[social], ['title', 'host'], ['pageviews'])
+            sorted = self.sort_data(un_sorted, 'pageviews', num_articles)
+            second_aggregate = self.aggregate_data(second_social_articles[social], ['title', 'host'], ['pageviews'])
+            complete = self.add_change(sorted, second_aggregate, ['pageviews'])
+            social_articles[social] = complete            
 
+        un_sorted = self.aggregate_data(top_articles, ['title', 'host'], ['pageviews'])
+        sorted = self.sort_data(un_sorted, 'pageviews', 10)   
+        second_aggregate = self.aggregate_data(second_top_articles, ['title', 'host'], ['pageviews']) 
+        complete_articles = self.add_change(sorted, second_aggregate, ['pageviews'])
         
         #MONTHLY DEVICES
+        """"
         devices ={}  
         total_dict = {}           
         for count, date in enumerate(self.period_list):
@@ -696,11 +708,13 @@ class TrafficSourceBreakdown(Report):
             unsorted_devices = self.aggregate_data(results, ['deviceCategory'], ['visitors'])
             sorted_devices = self.sort_data(unsorted_devices, 'visitors', 26)
             devices_list.append(sorted_devices)
+        """
         
+    
         #DRAW GRAPHS    
-        self.draw_graph(top_traffic_results, totals['first_period']['visitors'], 'traffic1', self.destination_path)
-        self.draw_graph(top_social_results, totals['first_period']['social_visitors'], 'social1', self.destination_path)          
-        self.plot_line_graph(devices, self.period_list, total_dict, self.destination_path)
+        #self.draw_graph(top_traffic_results, totals['first_period']['visitors'], 'traffic1', self.destination_path)
+        #self.draw_graph(top_social_results, totals['first_period']['social_visitors'], 'social1', self.destination_path)          
+        #self.plot_line_graph(devices, self.period_list, total_dict, self.destination_path)
                    
           
         #RENDER TEMPLATE                                         
@@ -708,14 +722,15 @@ class TrafficSourceBreakdown(Report):
             'start_date': self.period.get_start(),
             'end_date': self.period.get_end(),
             'report_span': self.report_span,
-            'img_path' : {'traffic' : './traffic1.png', 'browser' : './browser1.png', 'social' : './social1.png', 'device': './device1.png'},
+            'img_path' : {'traffic' : './traffic1.png', 'browser' : './browser1.png', 'social' : './social1.png'""", 'device': './device1.png'"""},
             'traffic_list' : top_traffic_results,
             'devices_list' : top_device_results, 
             'social_list' : top_social_results,
             'social_articles': social_articles,
             'site_referrals': site_referrals,
+            'top_articles' : complete_articles,
             'num_sites': num_sites,
-        #if num_sites == 1: 'peak': peak,
+            'peak': peak,
             'site_names': site_names,
             'totals': totals      
         })
