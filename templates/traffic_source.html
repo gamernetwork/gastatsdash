@@ -32,10 +32,10 @@
 	tr.even {
     	
 	}
-	ul {
-    	list-style-type: none;
-	}
-	
+    span  {
+        display: list-item;
+        list-style-type: none;
+	}	
 
 	</style>
     <h1>{{report_span|capfirst}} Report </h1>
@@ -48,6 +48,9 @@
     <h2>
         Overview
     </h2>
+    <p>
+        {% if num_sites == 1 %} Peak Cumulative Sessions : {{peak.sessions|intcomma}} sessions on {{peak.day}} at {{peak.hour}}:{{peak.minute}} {% endif %}
+    </p>
     <table>
         <thead>
             <tr>
@@ -56,9 +59,6 @@
                 <th> Total Page Views </th>
                 <th> Average Pages/Visitor </th>
                 <th> Average Time Spent on Site </th>
-                {% if num_sites == 1 %}
-                <th> Peak Cumulative Sessions </th>
-                {% endif %}
             </tr>
         </thead>
         <tbody>
@@ -68,9 +68,6 @@
                 <td> {{totals.first_period.pageviews|intcomma|cut:".0"}} </td>
                 <td> {{totals.first_period.pv_per_session|floatformat}} </td>
                 <td> {{totals.first_period.avg_time|floatformat}} minutes </td>
-                {% if num_sites == 1 %}
-                <td> {{peak.sessions|intcomma}} sessions on {{peak.day}} at {{peak.hour}}:{{peak.minute}}</td>
-                {% endif %}
             </tr>
             <tr class="even">
                 <th> {{report_span|capfirst}} Percentage Change </th>
@@ -78,7 +75,6 @@
                 <td style="color: {% if totals.change.pageviews > 0 %}green{% else %}red{% endif %};"> {{totals.change.pageviews|as_percentage_of:totals.first_period.pageviews}}</td>
                 <td style="color: {% if totals.change.pv_per_session > 0 %}green{% else %}red{% endif %};"> {{totals.change.pv_per_session|as_percentage_of:totals.first_period.pv_per_session}} </td>
                 <td style="color: {% if totals.change.avg_time > 0 %}green{% else %}red{% endif %};"> {{totals.change.avg_time|as_percentage_of:totals.first_period.avg_time}} </td>
-                <td> -- </td>
             </tr>  
             <tr class="odd">
                 <th> Previous Data </th>
@@ -86,11 +82,13 @@
                 <td> {{totals.second_period.pageviews|intcomma|cut:".0"}} </td>
                 <td> {{totals.second_period.pv_per_session|floatformat}} </td>
                 <td> {{totals.second_period.avg_time|floatformat}} minutes </td>
-                <td> -- </td>
             <tr>             
         </tbody>
     </table>
-       
+    {% if num_sites > 1 %}
+        <h3>Peak Cumulative Graph </h3> 
+        <img src ={{img_url|add:img_name.peak}} />    
+    {% endif %}
     <h2> 
         Traffic Sourcing 
     </h2>
@@ -122,7 +120,7 @@
         </tbody>
         
     </table>
-    <!--<img src ={{img_path.traffic}} />-->
+    <!--<img src ={{img_url|add:img_name.traffic}} />-->
     
     <h3>
         Top Site Referrals
@@ -142,8 +140,8 @@
             {% for key, value in site_referrals.items %}
             <tr class="{% cycle 'odd' 'even' %}">
                 <td> {{key}} </td>
-                <td> <ul>{% for article in value %}<li>{{article.dimensions.title}}</li> {% endfor %}</ul></td>
-                <td> <ul>{% for article in value %}<li>{{article.metrics.pageviews}}</li> {% endfor %}</ul></td>
+                <td class = "src">{% for article in value %}<span>{{article.dimensions.title}}</span> {% endfor %}</td>
+                <td class="num">{% for article in value %}<span>{{article.metrics.pageviews}}</span> {% endfor %}</td>
             </tr>
             {% endfor %}
         </tbody>
@@ -154,7 +152,7 @@
         Devices 
     </h2>
     <p>
-        Shows the number of visitors using each device and then for each browser.
+        Shows the number of visitors using each device.
     </p>
     <table>
         <thead>
@@ -177,7 +175,8 @@
         </tbody>
        
     </table>
-    <!--<img src ={{img_path.device}} />-->
+    <h3> Monthly device trend </h3>
+    <img src ={{img_url|add:img_name.device}} />
     <h2> 
         Social Networks 
     </h2> 
@@ -196,7 +195,7 @@
                 <th> Social Network </th>
                 <th> Visitors </th>
                 <th> Percentage of Total Social Visitors </th>
-                <th> Page Views </th>
+                <th> Page Views per Article</th>
                 <th> Top Linked Article </th>
             </tr>
         </thead>
@@ -206,16 +205,19 @@
                     <td class = 'src'> {{source.dimensions.socialNetwork}} </td>
                     <td class = 'num'> {{source.metrics.visitors|intcomma}} </td>
                     <td class = 'num'> {{source.metrics.visitors|as_percentage_of:totals.first_period.social_visitors}} </td>
-                    <td class = 'num'> {{source.metrics.pageviews|intcomma}} </td>
+                    <!--<td class = 'num'> {{source.metrics.pageviews|intcomma}} </td>-->
                 {% for k, v in social_articles.items %}
                     {% if source.dimensions.socialNetwork == k %}
-                    <td class = 'src'>
-                        <ul>
+                        <td class = 'num'> 
                         {% for article in v %}
-                            <li> {{article.dimensions.title}} </li>
+                            <span>{{article.metrics.pageviews|intcomma}}</span>
                         {% endfor %}
-                        </ul>
-                    </td> 
+                        </td>
+                        <td class = 'src'>
+                        {% for article in v %}
+                            <span> {{article.dimensions.title}} </span>
+                        {% endfor %}
+                        </td> 
                     {% endif %}
                 {% endfor %}
                 </tr>
@@ -223,7 +225,7 @@
         </tbody>
         
     </table>
-    <!--<img src ={{img_path.social}} />-->
+    {% if report_span == 'weekly' %} <img src ={{img_url|add:img_name.social}} /> {% endif %}
     <h2> 
         Top Ten Articles 
     </h2>
@@ -242,10 +244,10 @@
         <tbody>
             {% for article in top_articles %}
             <tr class="{% cycle 'odd' 'even' %}">
-                <td>{{article.dimensions.host|cut:"www."|cut:".com"|capfirst}}</td>
-                <td>{{article.dimensions.title}}</td>
-                <td>{{article.metrics.pageviews}}</td>
-                <td>{% if article.metrics.change_pageviews == 0 %}--{% else %}<span style="color: {% if article.metrics.change_pageviews > 0 %}green{% else %}red{% endif %};">{{article.metrics.change_pageviews|as_percentage_of:article.metrics.second_pageviews}}</span>{% endif %}</td>
+                <td class="src">{{article.dimensions.host|cut:"www."|cut:".com"|capfirst}}</td>
+                <td class="src">{{article.dimensions.title}}</td>
+                <td class="num">{{article.metrics.pageviews|intcomma}}</td>
+                <td class="num">{% if article.metrics.change_pageviews == 0 %}--{% else %}<span style="color: {% if article.metrics.change_pageviews > 0 %}green{% else %}red{% endif %};">{{article.metrics.change_pageviews|as_percentage_of:article.metrics.second_pageviews}}</span>{% endif %}</td>
             </tr>
             {% endfor %}
         </tbody>

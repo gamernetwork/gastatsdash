@@ -4,6 +4,8 @@ import matplotlib
 matplotlib.use('AGG')
 import matplotlib.pyplot as plot
 import matplotlib.dates as plotdates
+from matplotlib.font_manager import FontProperties
+import random
 
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -141,12 +143,11 @@ class NetworkArticleBreakdown(ArticleBreakdown):
 
     def generate_report(self):
         all_network_data = []
-        for count, site in enumerate(self.sites):
-            print "Calculating for %s..." % site           
+        for site in self.sites:        
             site_ga_id = config.TABLES[site]
             data = self.get_article_breakdown_for_site(site_ga_id)
             all_network_data.extend(data.values())
-            print "%d/24 sites complete" % (count+1)
+
             
         sorted_data = sorted(all_network_data, key=lambda article: article['pageviews'], reverse=True)
         top_network_data = list(sorted_data)[:self.article_limit]
@@ -273,12 +274,13 @@ class TrafficSourceBreakdown(Report):
     template='traffic_source.html'
     
     #init
-    def __init__(self, recipients, subject, sites, period, second_period, report_span, period_list, destination_path):
+    def __init__(self, recipients, subject, sites, period, second_period, report_span, period_list, destination_path, black_list):
         super(TrafficSourceBreakdown, self).__init__(recipients, subject, sites, period)
         self.second_period = second_period
         self.period_list = period_list
         self.report_span = report_span
         self.destination_path = destination_path
+        self.black_list = black_list
     
     def aggregate_data(self, results, tables, metrics):
         """
@@ -401,6 +403,85 @@ class TrafficSourceBreakdown(Report):
         image_path = '%s/%s.png' % (dest_path, result_type)
         plot.savefig(image_path)
 
+    def plot_scatter_graph(self, results, period, dest_path):
+        """
+        scatter graph of peak points for all sites, saved to destination of file
+        """
+
+        dt = []
+        sessions = []
+        date = period.get_start()
+        values = date.split('-')
+        ym = values[0] + '/' + values[1]
+        print 'YM : ', ym
+        for site in results:
+            day = results[site]['day']
+            hour = results[site]['hour']
+            minute = results[site]['minute']
+            session = int(results[site]['sessions'])
+            time = hour + ':' + minute 
+            date = ym +'/' + day
+            dati = date + ' ' + time
+            dt.append(str(dati))
+            sessions.append(session)
+            
+   
+        print 'DT : ', dt
+        time_value = [datetime.strptime(t, '%Y/%m/%d %H:%M') for t in dt]       
+        print 'TIMES : ', time_value
+        print 'SESSIONS :', sessions
+       
+        plot.close('all')
+        figure, axis = plot.subplots(1,1)
+        min = time_value[0]
+        max = time_value[0]
+        for d in time_value:
+            if d < min:
+                min = d
+            elif d > max:
+                max = d
+
+        for count, site in enumerate(results):
+            label = site + ' ' + results[site]['day'] + ' at ' + results[site]['hour'] + ':' + results[site]['minute']        
+            axis.scatter(time_value[count], sessions[count], c=[random.random(), random.random(), random.random()], label=label, edgecolors='none')
+            
+            
+        plot.xlim(min, max)
+        axis.set_ylim(bottom=0)
+        
+        if self.report_span == 'daily':
+            axis.xaxis.set_major_locator(plotdates.HourLocator())
+            axis.xaxis.set_minor_locator(plotdates.MinuteLocator())
+        elif self.report_span == 'weekly':
+            axis.xaxis.set_major_locator(plotdates.DayLocator())
+            axis.xaxis.set_minor_locator(plotdates.HourLocator())       
+        axis.xaxis.set_major_formatter(plotdates.DateFormatter('%d %H:%M'))
+
+        axis.spines['top'].set_visible(False)
+        axis.spines['bottom'].set_visible(False)
+        axis.spines['right'].set_visible(False)
+        axis.spines['left'].set_visible(False)
+        
+        axis.get_xaxis().tick_bottom()
+        axis.get_yaxis().tick_left()
+                    
+        plot.tick_params(axis='both', which='both', bottom='on', top='off', labelbottom='on', left='on', right='off', labelleft='on')
+        plot.xticks(rotation='vertical')
+        
+        plot.xlabel('Date/Time')
+        plot.ylabel('Cumulative Peak Number Visitors')
+        
+        box = axis.get_position()
+
+        axis.set_position([box.x0, box.y0, box.width * 0.8, box.height * 0.8])
+
+        fontP = FontProperties()
+        fontP.set_size('small')
+        lgd = plot.legend(loc='center left', bbox_to_anchor=(1,0.5), prop=fontP)
+        
+        image_path = '%s/peak1.png' % dest_path
+        plot.savefig(image_path, bbox_extra_artists=(lgd,), bbox_inches='tight')
+
     def plot_line_graph(self, results, periods, total, dest_path):
         """
         line graph of percentages over a list of periods, saved to destination of file
@@ -499,6 +580,9 @@ class TrafficSourceBreakdown(Report):
         num_sites = len(self.sites)
         site_names=[]
         
+        if num_sites > 1:
+            peak = {}
+        
         #MAIN LOOP TO GET DATA 
         for count, site in enumerate(self.sites):
             site_ga_id = config.TABLES[site]
@@ -527,13 +611,14 @@ class TrafficSourceBreakdown(Report):
             if num_sites == 1:
                 peak = analytics.get_site_peak_for_period(site_ga_id, self.period)[0]
             else:
-                peak = 0
+                peak[site] = analytics.get_site_peak_for_period(site_ga_id, self.period)[0]
                 
             if num_sites < 24:
                 site_names.append(site)
                
             print ' %d / %d sites complete ' % (count+1, num_sites)
-            #if count ==4: break          
+            #if count ==4: break    
+        print peak       
         #AGGREGATE AND SORT ALL DATA 
         unsorted_traffic = self.aggregate_data(results_traffic, ['source'], ['visitors', 'pageviews'])
         unsorted_devices = self.aggregate_data(results_device, ['deviceCategory'], ['visitors'])
@@ -562,6 +647,8 @@ class TrafficSourceBreakdown(Report):
             
             totals['second_period']['pv_per_session'] = totals['second_period']['pv_per_session']/float(num_sites)
             totals['second_period']['avg_time'] = (totals['second_period']['avg_time']/float(num_sites))/60.0
+            
+            self.plot_scatter_graph(peak, self.period, self.destination_path)   
         else:
             totals['first_period']['avg_time'] = totals['first_period']['avg_time']/60.0
             totals['second_period']['avg_time'] = totals['second_period']['avg_time']/60.0
@@ -579,7 +666,6 @@ class TrafficSourceBreakdown(Report):
 
         #ARTICLES 
         top_sites = self.sort_data(unsorted_traffic, 'visitors', 25)
-        print len(top_sites)
         site_referrals = OrderedDict()   
         social_articles = OrderedDict()
         second_site_referrals = OrderedDict()
@@ -604,8 +690,12 @@ class TrafficSourceBreakdown(Report):
                 source_medium = item['dimensions']['source']
                 source = source_medium.split(' / ')[0]
                 print 'SOURCE SITE : ', source 
-                black_list = ['google', '(direct)', 'eurogamer', 'facebook.com', 'm.facebook.com','Twitter', 'bing', 't.co', 'reddit.com', 'yahoo', 'l.facebook.com','google.de']
-                if source in black_list: 
+                #black_list = ['google', '(direct)', 'eurogamer', 'facebook', 'Twitter', 'bing', '^t.co', 'reddit.com', 'yahoo']
+                black_ex = '|'
+                black_string = black_ex.join(self.black_list)
+                regex = re.compile(black_string)
+                m = regex.search(source)
+                if m: 
                     continue;
                     #do nothing, move onto next, do not include in site referrals
                 elif count == num_referrals:
@@ -685,7 +775,7 @@ class TrafficSourceBreakdown(Report):
         complete_articles = self.add_change(sorted, second_aggregate, ['pageviews'])
         
         #MONTHLY DEVICES
-        """"
+        
         devices ={}  
         total_dict = {}           
         for count, date in enumerate(self.period_list):
@@ -708,21 +798,22 @@ class TrafficSourceBreakdown(Report):
             unsorted_devices = self.aggregate_data(results, ['deviceCategory'], ['visitors'])
             sorted_devices = self.sort_data(unsorted_devices, 'visitors', 26)
             devices_list.append(sorted_devices)
-        """
         
     
         #DRAW GRAPHS    
         #self.draw_graph(top_traffic_results, totals['first_period']['visitors'], 'traffic1', self.destination_path)
-        #self.draw_graph(top_social_results, totals['first_period']['social_visitors'], 'social1', self.destination_path)          
-        #self.plot_line_graph(devices, self.period_list, total_dict, self.destination_path)
-                   
+        if self.report_span == 'weekly':
+            self.draw_graph(top_social_results, totals['first_period']['social_visitors'], 'social1', self.destination_path)          
+        self.plot_line_graph(devices, self.period_list, total_dict, self.destination_path)
+                  
           
         #RENDER TEMPLATE                                         
         report_html = render_template(self.template, {
             'start_date': self.period.get_start(),
             'end_date': self.period.get_end(),
             'report_span': self.report_span,
-            'img_path' : {'traffic' : './traffic1.png', 'browser' : './browser1.png', 'social' : './social1.png'""", 'device': './device1.png'"""},
+            'img_url': config.ASSETS_URL,
+            'img_name' : {'traffic' : 'traffic1.png', 'social' : 'social1.png', 'device': 'device1.png', 'peak':'peak1.png'},
             'traffic_list' : top_traffic_results,
             'devices_list' : top_device_results, 
             'social_list' : top_social_results,
@@ -749,6 +840,15 @@ def create_report(report_class, config, run_date):
         # Handle other second period types here
         if config['second_period'] == 'immediate_before':
             kwargs['second_period'] = StatsRange.get_previous_period(period, frequency)
+            
+    month_list =[]
+    end_date = period.start_date
+    for month in range(0, kwargs['period_list']):
+        #get previous months
+        start_date = subtract_one_month(end_date)
+        month_list.append(StatsRange("month_%d" % month, start_date, end_date))
+        end_date = start_date       
+    kwargs['period_list'] = month_list   
     report = report_class(config['recipients'], config['subject'], 
         config['sites'], period, **kwargs)
     return report

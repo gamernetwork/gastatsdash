@@ -38,6 +38,7 @@ for i in range(0, previous_months):
     month_stats_range.append(StatsRange("month_%d" % i, start_date, end_date))
     end_date = start_date
 
+black_list = ['google', '(direct)', 'eurogamer', 'facebook', 'Twitter', 'bing', '^t.co', 'reddit.com', 'yahoo']
    
 if report_type == "NetworkArticleBreakdown":
     network_breakdown = reporting.NetworkArticleBreakdown(['foo@example.net'], 'Network Article Breakdown', all_sites, 
@@ -52,8 +53,8 @@ elif report_type == "ArticleBreakdown":
         yesterday_stats_range, day_before_stats_range, "Daily Summary")
     
 elif report_type == "TrafficSourceBreakdown":
-    network_breakdown = reporting.TrafficSourceBreakdown(['foo@example.net'], 'Traffic Source Breakdown', ['eurogamer.net'], 
-        this_week_stats_range, last_week_stats_range, 'weekly', month_stats_range, args.destination)
+    network_breakdown = reporting.TrafficSourceBreakdown(['foo@example.net'], 'Traffic Source Breakdown', all_sites, 
+        this_week_stats_range, last_week_stats_range, 'weekly', month_stats_range, args.destination, black_list)
 else:
 	print "unknown report type"	
 
