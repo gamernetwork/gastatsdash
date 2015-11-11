@@ -842,12 +842,13 @@ def create_report(report_class, config, run_date):
             
     month_list =[]
     end_date = period.start_date
-    for month in range(0, kwargs['period_list']):
-        #get previous months
-        start_date = subtract_one_month(end_date)
-        month_list.append(StatsRange("month_%d" % month, start_date, end_date))
-        end_date = start_date       
-    kwargs['period_list'] = month_list   
+    if kwargs.get('period_list'):
+        for month in range(0, kwargs['period_list']):
+            #get previous months
+            start_date = subtract_one_month(end_date)
+            month_list.append(StatsRange("month_%d" % month, start_date, end_date))
+            end_date = start_date       
+        kwargs['period_list'] = month_list   
     report = report_class(config['recipients'], config['subject'], 
         config['sites'], period, **kwargs)
     return report
