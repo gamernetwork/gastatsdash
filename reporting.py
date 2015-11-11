@@ -215,7 +215,6 @@ class NetworkBreakdown(Report):
                     site_ga_id, last_year_period)[0]
             change_totals = self._get_change(first_period_totals, second_period_totals)
             country_data = analytics.get_country_breakdown_for_period(site_ga_id, self.period, countries)
-            analytics.get
             data = {
                 'name': site,
                 'totals': first_period_totals,
