@@ -36,6 +36,9 @@
         display: list-item;
         list-style-type: none;
 	}	
+	img {
+    	margin: 0.2em;
+	}
 
 	</style>
     <h1>{{report_span|capfirst}} Report </h1>
@@ -87,7 +90,7 @@
     </table>
     {% if num_sites > 1 %}
         <h3>Peak Cumulative Graph </h3> 
-        <img src ={{img_url|add:img_name.peak}} />    
+        <img src ={{img_name.peak}} />    
     {% endif %}
     <h2> 
         Traffic Sourcing 
@@ -120,7 +123,6 @@
         </tbody>
         
     </table>
-    <!--<img src ={{img_url|add:img_name.traffic}} />-->
     
     <h3>
         Top Site Referrals
@@ -176,7 +178,7 @@
        
     </table>
     <h3> Monthly device trend </h3>
-    <img src ={{img_url|add:img_name.device}} />
+    <img src ={{img_name.device}} />
     <h2> 
         Social Networks 
     </h2> 
@@ -225,7 +227,7 @@
         </tbody>
         
     </table>
-    {% if report_span == 'weekly' %} <img src ={{img_url|add:img_name.social}} /> {% endif %}
+    {% if report_span == 'weekly' %} <img src ={{img_name.social}} /> {% endif %}
     <h2> 
         Top Ten Articles 
     </h2>

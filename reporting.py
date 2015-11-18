@@ -6,6 +6,9 @@ import matplotlib.pyplot as plot
 import matplotlib.dates as plotdates
 from matplotlib.font_manager import FontProperties
 import random
+import StringIO
+import cStringIO
+import urllib, base64
 
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -400,8 +403,18 @@ class TrafficSourceBreakdown(Report):
         patches, text = plot.pie(filtered_percents, colors=colors,shadow=False)
         plot.legend(patches, legend_labels, loc = 'best', prop={'size':12})
         plot.axis('equal')
-        image_path = '%s/%s.png' % (dest_path, result_type)
-        plot.savefig(image_path)
+        #image_path = '%s/%s.png' % (dest_path, result_type)
+        #plot.savefig(image_path)
+        
+        imgdata = StringIO.StringIO()
+        plot.savefig(imgdata, format = 'png')
+        imgdata.seek(0)
+        uri = 'data:image/png;base64,' + urllib.quote(base64.b64encode(imgdata.buf))
+        return uri
+        
+        
+        
+        
 
     def plot_scatter_graph(self, results, period, dest_path):
         """
@@ -442,7 +455,7 @@ class TrafficSourceBreakdown(Report):
                 max = d
 
         for count, site in enumerate(results):
-            label = site + ' ' + results[site]['day'] + ' at ' + results[site]['hour'] + ':' + results[site]['minute']        
+            label = site + '  ' + results[site]['sessions'] + ' on ' + results[site]['day'] + ' at ' + results[site]['hour'] + ':' + results[site]['minute']        
             axis.scatter(time_value[count], sessions[count], c=[random.random(), random.random(), random.random()], label=label, edgecolors='none')
             
             
@@ -473,14 +486,24 @@ class TrafficSourceBreakdown(Report):
         
         box = axis.get_position()
 
-        axis.set_position([box.x0, box.y0, box.width * 0.8, box.height * 0.8])
+        axis.set_position([box.x0, box.y0, box.width * 0.6, box.height * 0.6])
 
         fontP = FontProperties()
         fontP.set_size('small')
         lgd = plot.legend(loc='center left', bbox_to_anchor=(1,0.5), prop=fontP)
         
-        image_path = '%s/peak1.png' % dest_path
-        plot.savefig(image_path, bbox_extra_artists=(lgd,), bbox_inches='tight')
+        #image_path = '%s/peak1.png' % dest_path
+        #plot.savefig(image_path, bbox_extra_artists=(lgd,), bbox_inches='tight')
+
+        imgdata = StringIO.StringIO()
+        plot.savefig(imgdata, format = 'png', bbox_extra_artists=(lgd,), bbox_inches='tight')
+        imgdata.seek(0)
+        uri = 'data:image/png;base64,' + urllib.quote(base64.b64encode(imgdata.buf))
+        print uri
+        return uri
+        
+        
+        
 
     def plot_line_graph(self, results, periods, total, dest_path):
         """
@@ -555,8 +578,14 @@ class TrafficSourceBreakdown(Report):
         
         axis.fmt_xdata = plotdates.DateFormatter('%Y-%m')
         #figure.autofmt_xdate()
-        image_path = '%s/device1.png' % dest_path
-        plot.savefig(image_path)
+        #image_path = '%s/device1.png' % dest_path
+        #plot.savefig(image_path)
+               
+        imgdata = StringIO.StringIO()
+        plot.savefig(imgdata, format = 'png')
+        imgdata.seek(0)
+        uri = 'data:image/png;base64,' + urllib.quote(base64.b64encode(imgdata.buf))
+        return uri
                      
     def generate_report(self):
         """
@@ -648,10 +677,11 @@ class TrafficSourceBreakdown(Report):
             totals['second_period']['pv_per_session'] = totals['second_period']['pv_per_session']/float(num_sites)
             totals['second_period']['avg_time'] = (totals['second_period']['avg_time']/float(num_sites))/60.0
             
-            self.plot_scatter_graph(peak, self.period, self.destination_path)   
+            peak_img = self.plot_scatter_graph(peak, self.period, self.destination_path)   
         else:
             totals['first_period']['avg_time'] = totals['first_period']['avg_time']/60.0
             totals['second_period']['avg_time'] = totals['second_period']['avg_time']/60.0
+            peak_img = 0
         
         totals['change'] = {}
         for key in totals['first_period']:
@@ -664,6 +694,7 @@ class TrafficSourceBreakdown(Report):
             visitors = social['metrics']['visitors']
             totals['first_period']['social_visitors'] += visitors   
 
+        
         #ARTICLES 
         top_sites = self.sort_data(unsorted_traffic, 'visitors', 25)
         site_referrals = OrderedDict()   
@@ -803,8 +834,10 @@ class TrafficSourceBreakdown(Report):
         #DRAW GRAPHS    
         #self.draw_graph(top_traffic_results, totals['first_period']['visitors'], 'traffic1', self.destination_path)
         if self.report_span == 'weekly':
-            self.draw_graph(top_social_results, totals['first_period']['social_visitors'], 'social1', self.destination_path)          
-        self.plot_line_graph(devices, self.period_list, total_dict, self.destination_path)
+            social_img = self.draw_graph(top_social_results, totals['first_period']['social_visitors'], 'social1', self.destination_path)   
+        else:
+            social_img = 0       
+        device_img = self.plot_line_graph(devices, self.period_list, total_dict, self.destination_path)
                   
           
         #RENDER TEMPLATE                                         
@@ -812,8 +845,8 @@ class TrafficSourceBreakdown(Report):
             'start_date': self.period.get_start(),
             'end_date': self.period.get_end(),
             'report_span': self.report_span,
-            'img_url': config.ASSETS_URL,
-            'img_name' : {'traffic' : 'traffic1.png', 'social' : 'social1.png', 'device': 'device1.png', 'peak':'peak1.png'},
+            #'img_url': config.ASSETS_URL,
+            'img_name' : {'social' : social_img, 'device': device_img, 'peak':peak_img},
             'traffic_list' : top_traffic_results,
             'devices_list' : top_device_results, 
             'social_list' : top_social_results,
