@@ -10,6 +10,7 @@ import StringIO
 import cStringIO
 import urllib, base64
 
+from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from datetime import date, timedelta, datetime
@@ -21,6 +22,8 @@ from renderer import render_template
 from dateutils import subtract_one_month
 
 analytics = get_analytics()
+
+image_strings = {}
 
 class Emailer(object):
     """
@@ -40,6 +43,7 @@ class Emailer(object):
         """
         Send an html email to a list of recipients.
         """
+
         msg = MIMEMultipart('alternative')
         msg.set_charset('utf8')
         msg['Subject'] = subject
@@ -47,6 +51,23 @@ class Emailer(object):
         msg['To'] = ', '.join(recipients)
         text_part = MIMEText("Please open with an HTML-enabled Email client.", 'plain')
         html_part = MIMEText(html.encode('utf-8'), 'html')
+        
+        #img = "iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg=="
+        #with open('download.png', 'r') as file:
+        #    img = file.read()
+        global image_strings
+        #img = image_string
+        #img_part = MIMEImage(img, 'png')
+        #img_part.add_header('Content-ID', '<image1>')
+        #msg.attach(img_part)
+        
+        for image in image_strings:
+            image_string = image_strings[image]
+            img_part = MIMEImage(image_string, 'png')
+            img_part.add_header('Content-ID', '<%s>' % image)
+            msg.attach(img_part)
+            
+        
         msg.attach(text_part)
         msg.attach(html_part)
         sender = self.get_smtp()
@@ -408,8 +429,13 @@ class TrafficSourceBreakdown(Report):
         imgdata = StringIO.StringIO()
         plot.savefig(imgdata, format = 'png')
         imgdata.seek(0)
-        uri = 'data:image/png;base64,' + urllib.quote(base64.b64encode(imgdata.buf))
-        return uri
+        
+        global image_strings
+        name = 'social_graph'
+        image_strings[name] = imgdata.buf
+        
+        return name
+
         
         
         
@@ -497,9 +523,12 @@ class TrafficSourceBreakdown(Report):
         imgdata = StringIO.StringIO()
         plot.savefig(imgdata, format = 'png', bbox_extra_artists=(lgd,), bbox_inches='tight')
         imgdata.seek(0)
-        uri = 'data:image/png;base64,' + urllib.quote(base64.b64encode(imgdata.buf))
-        print uri
-        return uri
+        global image_strings
+        name = 'peak_graph'
+        image_strings[name] = imgdata.buf
+        
+        return name
+
         
         
         
@@ -583,8 +612,12 @@ class TrafficSourceBreakdown(Report):
         imgdata = StringIO.StringIO()
         plot.savefig(imgdata, format = 'png')
         imgdata.seek(0)
-        uri = 'data:image/png;base64,' + urllib.quote(base64.b64encode(imgdata.buf))
-        return uri
+        
+        global image_strings
+        name = 'month_graph'
+        image_strings[name] = imgdata.buf
+        
+        return name
                      
     def generate_report(self):
         """

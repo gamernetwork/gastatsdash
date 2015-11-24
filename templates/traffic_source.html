@@ -90,7 +90,7 @@
     </table>
     {% if num_sites > 1 %}
         <h3>Peak Cumulative Graph </h3> 
-        <img src ={{img_name.peak}} />    
+        <img alt="embedded image" src ="cid:{{img_name.peak}}" />    
     {% endif %}
     <h2> 
         Traffic Sourcing 
@@ -178,7 +178,7 @@
        
     </table>
     <h3> Monthly device trend </h3>
-    <img src ={{img_name.device}} />
+    <img alt="embedded image" src ="cid:{{img_name.device}}" />
     <h2> 
         Social Networks 
     </h2> 
@@ -227,7 +227,7 @@
         </tbody>
         
     </table>
-    {% if report_span == 'weekly' %} <img src ={{img_name.social}} /> {% endif %}
+    {% if report_span == 'weekly' %} <img alt="embedded image" src ="cid:{{img_name.social}}" /> {% endif %}
     <h2> 
         Top Ten Articles 
     </h2>
