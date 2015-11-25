@@ -51,15 +51,8 @@ class Emailer(object):
         msg['To'] = ', '.join(recipients)
         text_part = MIMEText("Please open with an HTML-enabled Email client.", 'plain')
         html_part = MIMEText(html.encode('utf-8'), 'html')
-        
-        #img = "iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg=="
-        #with open('download.png', 'r') as file:
-        #    img = file.read()
+
         global image_strings
-        #img = image_string
-        #img_part = MIMEImage(img, 'png')
-        #img_part.add_header('Content-ID', '<image1>')
-        #msg.attach(img_part)
         
         for image in image_strings:
             image_string = image_strings[image]
