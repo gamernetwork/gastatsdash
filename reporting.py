@@ -39,7 +39,7 @@ class Emailer(object):
         sender = smtplib.SMTP(self.smtp_address)
         return sender
 
-    def send_email(self, recipients, subject, html):
+    def send_email(self, recipients, subject, html, images):
         """
         Send an html email to a list of recipients.
         """
@@ -52,13 +52,13 @@ class Emailer(object):
         text_part = MIMEText("Please open with an HTML-enabled Email client.", 'plain')
         html_part = MIMEText(html.encode('utf-8'), 'html')
 
-        global image_strings
-        
-        for image in image_strings:
-            image_string = image_strings[image]
-            img_part = MIMEImage(image_string, 'png')
-            img_part.add_header('Content-ID', '<%s>' % image)
-            msg.attach(img_part)
+
+        for img in images:
+            img_string = img['string']
+            label = img['name'] 
+            img_part = MIMEImage(img_string, 'png')
+            img_part.add_header('Content-ID', '<%s>' % label)
+            msg.attach(img_part)       
             
         
         msg.attach(text_part)
@@ -107,10 +107,12 @@ class Report(object):
         """
         Generate and send the report to the recipients.
         """
-        html = self.generate_report()
+        results = self.generate_report()
+        html = results['html']
+        images = results['images']
         subject = self.get_subject()
         recipients = self.recipients
-        self.emailer.send_email(recipients, subject, html)
+        self.emailer.send_email(recipients, subject, html, images)
         print "Sent '%s' Report for site %s" % (self.subject, ','.join(self.sites))
 
 
@@ -146,7 +148,12 @@ class ArticleBreakdown(Report):
             'topic': self.topic,
             'article_limit': self.article_limit,
         })
-        return report_html
+        
+        results = {
+            'html' : report_html,
+            'images' : []
+        }
+        return results
 	
 
 class NetworkArticleBreakdown(ArticleBreakdown):
@@ -177,7 +184,11 @@ class NetworkArticleBreakdown(ArticleBreakdown):
             'topic': self.topic,
             'article_limit': self.article_limit,
         })
-        return report_html
+        results = {
+            'html' : report_html,
+            'images' : []
+        }
+        return results
 
 class NetworkBreakdown(Report):
     template = "dash.html"
@@ -283,7 +294,11 @@ class NetworkBreakdown(Report):
             'sites': site_data,
             'countries': country_metrics
         })
-        return report_html
+        results = {
+            'html' : report_html,
+            'images' : []
+        }
+        return results
 
 
 class TrafficSourceBreakdown(Report):
@@ -423,11 +438,9 @@ class TrafficSourceBreakdown(Report):
         plot.savefig(imgdata, format = 'png')
         imgdata.seek(0)
         
-        global image_strings
         name = 'social_graph'
-        image_strings[name] = imgdata.buf
         
-        return name
+        return {'name' : name, 'string' : imgdata.buf}
 
         
         
@@ -516,11 +529,9 @@ class TrafficSourceBreakdown(Report):
         imgdata = StringIO.StringIO()
         plot.savefig(imgdata, format = 'png', bbox_extra_artists=(lgd,), bbox_inches='tight')
         imgdata.seek(0)
-        global image_strings
         name = 'peak_graph'
-        image_strings[name] = imgdata.buf
         
-        return name
+        return {'name' : name, 'string' : imgdata.buf}
 
         
         
@@ -605,12 +616,10 @@ class TrafficSourceBreakdown(Report):
         imgdata = StringIO.StringIO()
         plot.savefig(imgdata, format = 'png')
         imgdata.seek(0)
-        
-        global image_strings
+
         name = 'month_graph'
-        image_strings[name] = imgdata.buf
         
-        return name
+        return {'name' : name, 'string' : imgdata.buf}
                      
     def generate_report(self):
         """
@@ -627,6 +636,8 @@ class TrafficSourceBreakdown(Report):
         second_results_browser = []
         second_results_social = []
         third_results_device = []
+        
+        image_strings = []
 
         totals={'first_period':{'visitors':0, 'pageviews':0, 'pv_per_session':0.0, 'avg_time':0.0}, 'second_period':{'visitors':0, 'pageviews':0, 
                     'pv_per_session':0.0, 'avg_time':0.0}}
@@ -702,7 +713,9 @@ class TrafficSourceBreakdown(Report):
             totals['second_period']['pv_per_session'] = totals['second_period']['pv_per_session']/float(num_sites)
             totals['second_period']['avg_time'] = (totals['second_period']['avg_time']/float(num_sites))/60.0
             
-            peak_img = self.plot_scatter_graph(peak, self.period, self.destination_path)   
+            peak = self.plot_scatter_graph(peak, self.period, self.destination_path)
+            image_strings.append(peak)
+            peak_img = peak['name']  
         else:
             totals['first_period']['avg_time'] = totals['first_period']['avg_time']/60.0
             totals['second_period']['avg_time'] = totals['second_period']['avg_time']/60.0
@@ -859,10 +872,14 @@ class TrafficSourceBreakdown(Report):
         #DRAW GRAPHS    
         #self.draw_graph(top_traffic_results, totals['first_period']['visitors'], 'traffic1', self.destination_path)
         if self.report_span == 'weekly':
-            social_img = self.draw_graph(top_social_results, totals['first_period']['social_visitors'], 'social1', self.destination_path)   
+            social= self.draw_graph(top_social_results, totals['first_period']['social_visitors'], 'social1', self.destination_path)
+            social_img = social['name']
+            image_strings.append(social)
         else:
             social_img = 0       
-        device_img = self.plot_line_graph(devices, self.period_list, total_dict, self.destination_path)
+        device = self.plot_line_graph(devices, self.period_list, total_dict, self.destination_path)
+        device_img = device['name']
+        image_strings.append(device)
                   
           
         #RENDER TEMPLATE                                         
@@ -884,7 +901,14 @@ class TrafficSourceBreakdown(Report):
             'totals': totals      
         })
         
-        return report_html
+        #IMAGE STRINGS = [{'name': -imgname-, 'string': -imgstring-}, ...]
+        
+        results = {
+            'html': report_html,
+            'images':image_strings
+        }
+        
+        return results
         
 
 def create_report(report_class, config, run_date):
