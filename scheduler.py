@@ -99,6 +99,7 @@ def _run():
         next_run_date = run_logger.get_next_run(identifier, frequency, frequency_options).date()
         today = date.today()
         needs_run = next_run_date <= today
+        next_run_date = date.today() - timedelta(days=2)
         print "%s next run: %s.  Needs run: %s" % (identifier, next_run_date, needs_run)
         if needs_run:
             report = create_report(report_class, config, next_run_date)

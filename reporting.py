@@ -429,13 +429,16 @@ class TrafficSourceBreakdown(Report):
         colors =['red', 'orangered','gold', 'limegreen', 'blue', 'indigo', 'violet']
         plot.close('all')
         patches, text = plot.pie(filtered_percents, colors=colors,shadow=False)
+        figure.set_size_inches(6,4)
         plot.legend(patches, legend_labels, loc = 'best', prop={'size':12})
         plot.axis('equal')
         #image_path = '%s/%s.png' % (dest_path, result_type)
         #plot.savefig(image_path)
+        #box = axis.get_position()
+        #axis.set_position([box.x0, box.y0, box.width * 0.3, box.height * 0.3])
         
         imgdata = StringIO.StringIO()
-        plot.savefig(imgdata, format = 'png')
+        plot.savefig(imgdata, format = 'png', bbox_inches='tight')
         imgdata.seek(0)
         
         name = 'social_graph'
@@ -451,44 +454,77 @@ class TrafficSourceBreakdown(Report):
         """
         scatter graph of peak points for all sites, saved to destination of file
         """
+        
 
-        dt = []
-        sessions = []
+        sites = ['eurogamer.de', 'eurogamer.es', 'eurogamer.it', 'eurogamer.nl', 'eurogamer.pt', 'eurogamer.cz', 'eurogamer.se', 'eurogamer.dk', 'eurogamer.pl', 'brasilgamer.com.br']
+        #sites = []
+        dt_list = []
+        #sessions = []
+        dt_dict = {}
+        sessions = {}
         date = period.get_start()
         values = date.split('-')
         ym = values[0] + '/' + values[1]
+        peak_results = {}
         print 'YM : ', ym
         for site in results:
-            day = results[site]['day']
-            hour = results[site]['hour']
-            minute = results[site]['minute']
-            session = int(results[site]['sessions'])
-            time = hour + ':' + minute 
-            date = ym +'/' + day
-            dati = date + ' ' + time
-            dt.append(str(dati))
-            sessions.append(session)
+            if site not in sites:
+                print 'Site: ', results[site], 'is in the list'
+                day = results[site]['day']
+                hour = results[site]['hour']
+                minute = results[site]['minute']
+                session = int(results[site]['sessions'])
+                time = hour + ':' + minute 
+                date = ym +'/' + day
+                dati = date + ' ' + time
+                dt_list.append(str(dati))
+                #sessions.append(session)
+                dt_dict[site] = str(dati)
+                sessions[site] = session
+                peak_results[site] = results[site]
+            else:
+                continue
             
    
-        print 'DT : ', dt
-        time_value = [datetime.strptime(t, '%Y/%m/%d %H:%M') for t in dt]       
+        #print 'DT : ', dt
+        #time_value = [datetime.strptime(t, '%Y/%m/%d %H:%M') for t in dt]  
+        time_value = {}  
+        timings = []
+        for site in dt_dict:
+            timing = datetime.strptime(dt_dict[site], '%Y/%m/%d %H:%M')
+            time_value[site] = timing
+            timings.append(timing)
+           
         print 'TIMES : ', time_value
         print 'SESSIONS :', sessions
        
         plot.close('all')
         figure, axis = plot.subplots(1,1)
-        min = time_value[0]
-        max = time_value[0]
-        for d in time_value:
+        
+        figure.set_size_inches(6,4)
+
+        min = timings[0]
+        max = timings[0]
+        for d in timings:
             if d < min:
                 min = d
             elif d > max:
                 max = d
+                
+        site_names = config.CUSTOM_NAMES
+        site_symbols = config.CUSTOM_SYMBOLS
 
-        for count, site in enumerate(results):
-            label = site + '  ' + results[site]['sessions'] + ' on ' + results[site]['day'] + ' at ' + results[site]['hour'] + ':' + results[site]['minute']        
-            axis.scatter(time_value[count], sessions[count], c=[random.random(), random.random(), random.random()], label=label, edgecolors='none')
-            
+        #looks like the only way to get annotations to work will be to work out surrounding text box and then move it to somwhere with no overlaps
+        #or just amke rotations random?
+        annotations = []
+        for count, site in enumerate(peak_results):
+            label = site_names[site] + '  ' + peak_results[site]['sessions'] + ' on ' + peak_results[site]['day'] + ' at ' + peak_results[site]['hour'] + ':' + peak_results[site]['minute']  
+            colour = [random.random(), random.random(), random.random()] 
+            axis.scatter(time_value[site], sessions[site], c=colour, label=label, edgecolors='none')
+            #symbols axis.scatter(time_value[count], sessions[count], marker=site_symbols[site], label=label)      
+            annotations.append(axis.text(time_value[site], sessions[site], site_names[site], ha='left', rotation_mode='anchor', rotation=45, fontsize=8))
+            #random angle random.randint(0,45)
+            #trasnlucent coloured bbox bbox=dict(boxstyle='round,pad=0.2', fc=colour, alpha=0.3),
             
         plot.xlim(min, max)
         axis.set_ylim(bottom=0)
@@ -510,14 +546,15 @@ class TrafficSourceBreakdown(Report):
         axis.get_yaxis().tick_left()
                     
         plot.tick_params(axis='both', which='both', bottom='on', top='off', labelbottom='on', left='on', right='off', labelleft='on')
-        plot.xticks(rotation='vertical')
+        plot.xticks(rotation='vertical', fontsize=8)
+        plot.yticks(fontsize=8)
         
-        plot.xlabel('Date/Time')
-        plot.ylabel('Cumulative Peak Number Visitors')
+        plot.xlabel('Date/Time', fontsize=8)
+        plot.ylabel('Concurrent Peak Number Visitors', fontsize=8)
         
-        box = axis.get_position()
+        #box = axis.get_position()
 
-        axis.set_position([box.x0, box.y0, box.width * 0.6, box.height * 0.6])
+        #axis.set_position([box.x0, box.y0, box.width * 0.6, box.height * 0.6])
 
         fontP = FontProperties()
         fontP.set_size('small')
@@ -576,6 +613,8 @@ class TrafficSourceBreakdown(Report):
         plot.close('all')
         figure, axis = plot.subplots(1,1,figsize=(12,9))
         
+        figure.set_size_inches(6,4)
+        
         last_num = len(new_dates)
         x_min = new_dates[last_num-1]
         x_max = new_dates[0]
@@ -612,9 +651,11 @@ class TrafficSourceBreakdown(Report):
         #figure.autofmt_xdate()
         #image_path = '%s/device1.png' % dest_path
         #plot.savefig(image_path)
-               
+        #box = axis.get_position() 
+        #axis.set_position([box.x0, box.y0, box.width * 0.3, box.height * 0.3])
+              
         imgdata = StringIO.StringIO()
-        plot.savefig(imgdata, format = 'png')
+        plot.savefig(imgdata, format = 'png', bbox_inches='tight')
         imgdata.seek(0)
 
         name = 'month_graph'
@@ -745,7 +786,7 @@ class TrafficSourceBreakdown(Report):
         num_referrals = 0
         if self.report_span == 'daily':
             num_articles = 1
-            num_referrals = 3
+            num_referrals = 5
         elif self.report_span == 'weekly':
             num_articles = 5
             num_referrals = 5

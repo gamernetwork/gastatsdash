@@ -52,7 +52,7 @@
         Overview
     </h2>
     <p>
-        {% if num_sites == 1 %} Peak Cumulative Sessions : {{peak.sessions|intcomma}} sessions on {{peak.day}} at {{peak.hour}}:{{peak.minute}} {% endif %}
+        {% if num_sites == 1 %} Peak Concurrent Sessions : {{peak.sessions|intcomma}} sessions on {{peak.day}} at {{peak.hour}}:{{peak.minute}} {% endif %}
     </p>
     <table>
         <thead>
@@ -89,7 +89,7 @@
         </tbody>
     </table>
     {% if num_sites > 1 %}
-        <h3>Peak Cumulative Graph </h3> 
+        <h3>Peak Concurrent Graph </h3> 
         <img alt="embedded image" src ="cid:{{img_name.peak}}" />    
     {% endif %}
     <h2> 
