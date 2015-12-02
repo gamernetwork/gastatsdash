@@ -23,8 +23,6 @@ from dateutils import subtract_one_month
 
 analytics = get_analytics()
 
-image_strings = {}
-
 class Emailer(object):
     """
     Responsible for sending HTMl emails to one or more recipients.

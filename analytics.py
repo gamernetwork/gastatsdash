@@ -286,8 +286,23 @@ class Analytics(object):
 			dimensions = 'ga:socialNetwork',
 			filters = 'ga:socialNetwork!=(not set)')
         formatted_results = self._format_results_flat(results, ['socialNetwork','visitors', 'pageviews'])
-        return formatted_results               
-        
+        return formatted_results 
+                      
+    def get_social_export_for_period(self, site_id, stats_range, 
+            extra_filters=""):
+        """
+        Get total pageviews and visitors for a period for a given site.
+        """
+        filters = ''
+        if extra_filters:
+            filters = '%s;' % extra_filters
+        results = self._execute_stats_query(site_id=site_id, stats_range=stats_range, 
+			metrics = 'ga:sessions, ga:pageviews', 
+			sort = '', 
+			dimensions = 'ga:socialNetwork',
+			filters = 'ga:socialNetwork==Facebook,ga:socialNetwork==Twitter')
+        formatted_results = self._format_results_flat(results, ['socialNetwork','sessions', 'pageviews'])
+        return formatted_results         
 
     def get_country_breakdown_for_period(self, site_id, stats_range, 
             countries, extra_filters=""):
