@@ -498,8 +498,6 @@ class TrafficSourceBreakdown(Report):
             time_value[site] = timing
             timings.append(timing)
            
-        print 'TIMES : ', time_value
-        print 'SESSIONS :', sessions
        
         plot.close('all')
         figure, axis = plot.subplots(1,1)
@@ -727,7 +725,7 @@ class TrafficSourceBreakdown(Report):
                
             print ' %d / %d sites complete ' % (count+1, num_sites)
             #if count ==4: break    
-        print peak       
+                
         #AGGREGATE AND SORT ALL DATA 
         unsorted_traffic = self.aggregate_data(results_traffic, ['source'], ['visitors', 'pageviews'])
         unsorted_devices = self.aggregate_data(results_device, ['deviceCategory'], ['visitors'])

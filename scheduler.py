@@ -101,7 +101,6 @@ def _run():
         needs_run = next_run_date <= today
         print "%s next run: %s.  Needs run: %s" % (identifier, next_run_date, needs_run)
         if needs_run:
-            print report_class
             report = create_report(report_class, config, next_run_date)
             data_available = report.data_available()
             print "%s next run: %s.  Data available: %s" % (identifier, next_run_date, data_available)
