@@ -206,6 +206,8 @@ class Analytics(object):
             formatted_results = self._format_results_flat(results, ['pageviews', 'visitors', 'pv_per_session', 'avg_time'])
         except KeyError:
             formatted_results = [{'visitors': 0, 'pageviews': 0, 'pv_per_session': 0, 'avg_time': 0}]
+            
+        print 'RESULTS : ', formatted_results
         return formatted_results
         
     def get_site_peak_for_period(self, site_id, stats_range, 
