@@ -46,7 +46,7 @@
         Between the period : {{start_date}} - {{end_date}} 
     </p>
     <p>
-        For {% if num_sites == 24 %} all sites in network {% else %}{% for name in site_names %} {{name|capfirst}} {% endfor %}{% endif %} 
+        For {% if num_sites == total_num_sites %} all sites in network {% else %}{% for name in site_names %} {{name|capfirst}} {% endfor %}{% endif %} 
     </p>
     <h2>
         Overview
@@ -66,7 +66,7 @@
         </thead>
         <tbody>
             <tr class="odd">
-                <th> Current Data </th>
+                <th> Current Data</th>
                 <td> {{totals.first_period.visitors|intcomma|cut:".0"}} </td>
                 <td> {{totals.first_period.pageviews|intcomma|cut:".0"}} </td>
                 <td> {{totals.first_period.pv_per_session|floatformat}} </td>
@@ -79,15 +79,70 @@
                 <td style="color: {% if totals.change.pv_per_session > 0 %}green{% else %}red{% endif %};"> {{totals.change.pv_per_session|as_percentage_of:totals.first_period.pv_per_session}} </td>
                 <td style="color: {% if totals.change.avg_time > 0 %}green{% else %}red{% endif %};"> {{totals.change.avg_time|as_percentage_of:totals.first_period.avg_time}} </td>
             </tr>  
-            <tr class="odd">
-                <th> Previous Data </th>
-                <td> {{totals.second_period.visitors|intcomma|cut:".0"}} </td>
-                <td> {{totals.second_period.pageviews|intcomma|cut:".0"}} </td>
-                <td> {{totals.second_period.pv_per_session|floatformat}} </td>
-                <td> {{totals.second_period.avg_time|floatformat}} minutes </td>
-            <tr>             
+            {% if num_sites == 1 %}
+                <tr class="odd">
+                    <th> Network Data </th>
+                    <td> {{network_totals.first_period.visitors|intcomma|cut:".0"}} </td>
+                    <td> {{network_totals.first_period.pageviews|intcomma|cut:".0"}} </td>
+                    <td> {{network_totals.first_period.pv_per_session|floatformat}} </td>
+                    <td> {{network_totals.first_period.avg_time|floatformat}} minutes </td>
+                <tr> 
+                <tr class="even">
+                    <th> {{report_span|capfirst}} Network Percentage Change </th>
+                    <td style="color: {% if network_totals.change.visitors > 0 %}green{% else %}red{% endif %};"> {{network_totals.change.visitors|as_percentage_of:network_totals.first_period.visitors}} </td>
+                    <td style="color: {% if network_totals.change.pageviews > 0 %}green{% else %}red{% endif %};"> {{network_totals.change.pageviews|as_percentage_of:network_totals.first_period.pageviews}}</td>
+                    <td style="color: {% if network_totals.change.pv_per_session > 0 %}green{% else %}red{% endif %};"> {{network_totals.change.pv_per_session|as_percentage_of:network_totals.first_period.pv_per_session}} </td>
+                    <td style="color: {% if network_totals.change.avg_time > 0 %}green{% else %}red{% endif %};"> {{network_totals.change.avg_time|as_percentage_of:network_totals.first_period.avg_time}} </td>
+                </tr>   
+            {% endif %}                         
         </tbody>
     </table>
+    <h2> 
+      Monthly Accumulation of Data
+    </h2>
+    <p>
+      Accumulation of the data so far this month. From the 1st to {{end_date}}.
+    </p>
+    <table>
+        <thead>
+            <tr>
+                <th></th>
+                <th> Total Visitors </th>
+                <th> Total Sessions </th>
+                <th> Average Page Views </th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr class="odd">
+                <th> Data</th>
+                <td> {{totals.monthly.visitors|intcomma|cut:".0"}} </td>
+                <td> {{totals.monthly.sessions|intcomma|cut:".0"}} </td>
+                <td> {{totals.monthly.pageviews|intcomma|cut:".0"}} </td>
+            </tr>
+            <tr class="even">
+                <th> YoY Percentage Change </th>
+                <td style="color: {% if totals.yoy_change.visitors > 0 %}green{% else %}red{% endif %};"> {{totals.yoy_change.visitors|as_percentage_of:totals.monthly.visitors}} </td>
+                <td style="color: {% if totals.yoy_change.sessions > 0 %}green{% else %}red{% endif %};"> {{totals.yoy_change.sessions|as_percentage_of:totals.monthly.sessions}}</td>
+                <td style="color: {% if totals.yoy_change.pageviews > 0 %}green{% else %}red{% endif %};"> {{totals.yoy_change.pageviews|as_percentage_of:totals.monthly.pageviews}} </td>
+
+            </tr>              
+            {% if num_sites == 1 %}
+                <tr class="odd">
+                    <th> Network Data </th>
+                    <td> {{network_totals.monthly.visitors|intcomma|cut:".0"}} </td>
+                    <td> {{network_totals.monthly.sessions|intcomma|cut:".0"}} </td>
+                    <td> {{network_totals.monthly.pageviews|intcomma|cut:".0"}} </td>
+                </tr>  
+                <tr class="even">
+                    <th> YoY Network Percentage Change </th>
+                    <td style="color: {% if network_totals.yoy_change.visitors > 0 %}green{% else %}red{% endif %};"> {{network_totals.yoy_change.visitors|as_percentage_of:network_totals.monthly.visitors}} </td>
+                    <td style="color: {% if network_totals.yoy_change.sessions > 0 %}green{% else %}red{% endif %};"> {{network_totals.yoy_change.sessions|as_percentage_of:network_totals.monthly.sessions}}</td>
+                    <td style="color: {% if network_totals.yoy_change.pageviews > 0 %}green{% else %}red{% endif %};"> {{network_totals.yoy_change.pageviews|as_percentage_of:network_totals.monthly.pageviews}} </td>   
+                </tr>                 
+              
+            {% endif %}                       
+        </tbody>
+    </table>    
     {% if num_sites > 1 %}
         <h3>Peak Concurrent Graph </h3> 
         <img alt="embedded image" src ="cid:{{img_name.peak}}" />    

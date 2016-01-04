@@ -241,7 +241,7 @@ class NetworkBreakdown(Report):
                     last_year_totals = analytics.get_site_totals_for_period(
                       site_ga_id, last_year_period)[0]
                 except IndexError:
-                    last_year_totals = {'visitors': 0, 'pageviews': 0, 'avg_time': '0', 'pv_per_session': '0'}
+                    last_year_totals = {'visitors': 0, 'pageviews': 0, 'avg_time': '0', 'pv_per_session': '0', 'sessions':0}
 
                 
             change_totals = self._get_change(first_period_totals, second_period_totals)
@@ -431,8 +431,9 @@ class TrafficSourceBreakdown(Report):
                         
         colors =['red', 'orangered','gold', 'limegreen', 'blue', 'indigo', 'violet']
         plot.close('all')
-        patches, text = plot.pie(filtered_percents, colors=colors,shadow=False)
+        figure, axis = plot.subplots(1,1)
         figure.set_size_inches(6,4)
+        patches, text = plot.pie(filtered_percents, colors=colors,shadow=False)
         plot.legend(patches, legend_labels, loc = 'best', prop={'size':12})
         plot.axis('equal')
         #image_path = '%s/%s.png' % (dest_path, result_type)
@@ -681,15 +682,35 @@ class TrafficSourceBreakdown(Report):
         
         image_strings = []
 
-        totals={'first_period':{'visitors':0, 'pageviews':0, 'pv_per_session':0.0, 'avg_time':0.0}, 'second_period':{'visitors':0, 'pageviews':0, 
-                    'pv_per_session':0.0, 'avg_time':0.0}}
+        totals={'first_period':{'visitors':0, 'pageviews':0, 'pv_per_session':0.0, 'avg_time':0.0, 'sessions':0}, 'second_period':{'visitors':0, 'pageviews':0, 
+                    'pv_per_session':0.0, 'avg_time':0.0, 'sessions':0}, 'monthly':{'visitors':0, 'pageviews':0, 
+                    'pv_per_session':0.0, 'avg_time':0.0, 'sessions':0}, 'second_monthly':{'visitors':0, 'pageviews':0, 
+                    'pv_per_session':0.0, 'avg_time':0.0, 'sessions':0}}
                     
+        network_totals={'first_period':{'visitors':0, 'pageviews':0, 'pv_per_session':0.0, 'avg_time':0.0, 'sessions':0}, 'second_period':{'visitors':0, 'pageviews': 0, 
+                    'pv_per_session':0.0, 'avg_time':0.0, 'sessions':0}, 'monthly':{'visitors':0, 'pageviews':0, 
+                    'pv_per_session':0.0, 'avg_time':0.0, 'sessions':0}, 'second_monthly':{'visitors':0, 'pageviews':0, 
+                    'pv_per_session':0.0, 'avg_time':0.0, 'sessions':0}}                    
+                    
+        total_num_sites = len(config.TABLES)            
         num_sites = len(self.sites)
         site_names=[]
         
         if num_sites > 1:
             peak = {}
+            
+        #if num_sites==1 and self.report_span == 'daily':
+        day = int(self.period.get_end()[8:10])
+        month = int(self.period.get_end()[5:7]) #get_end returns isoformat YYYY-MM-DD
+        year = int(self.period.get_end()[0:4])
+        first = datetime(year, month, 1).date()
+        today = datetime(year, month, day).date()
+        month_range = StatsRange("Monthly Aggregate", first, today)
+        prev_yr_first = datetime(year-1, month, 1).date()
+        prev_yr_today = datetime(year-1, month, day).date()   
+        last_yr_range = StatsRange("Last Year Monthly Aggregate", prev_yr_first, prev_yr_today)         
         
+        print 'MONTHLY AGGREGATE ', first, "  ", today
         #MAIN LOOP TO GET DATA 
         for count, site in enumerate(self.sites):
             site_ga_id = config.TABLES[site]
@@ -709,23 +730,85 @@ class TrafficSourceBreakdown(Report):
             
             first_totals = analytics.get_site_totals_for_period(site_ga_id, self.period)[0]
             second_totals = analytics.get_site_totals_for_period(site_ga_id, self.second_period)[0]
-            
+            monthly_totals = analytics.get_site_totals_for_period(site_ga_id, month_range)[0]
+            try:
+                second_monthly_totals = analytics.get_site_totals_for_period(site_ga_id, last_yr_range)[0]
+            except IndexError:
+                last_year_totals = {'visitors': 0, 'pageviews': 0, 'avg_time': '0', 'pv_per_session': '0', 'sessions':0}
+                    
             for key in totals['first_period'].keys():
                 totals['first_period'][key] += float(first_totals[key])
-            for key in totals['second_period'].keys():
+            for key in totals['second_period'].keys(): 
                 totals['second_period'][key] += float(second_totals[key])
+            for key in totals['monthly'].keys(): 
+                totals['monthly'][key] += float(monthly_totals[key])                
+            for key in totals['second_monthly'].keys(): 
+                totals['second_monthly'][key] += float(second_monthly_totals[key])                   
+                
             print '-- totals'
             if num_sites == 1:
                 peak = analytics.get_site_peak_for_period(site_ga_id, self.period)[0]
             else:
                 peak[site] = analytics.get_site_peak_for_period(site_ga_id, self.period)[0]
                 
-            if num_sites < 24:
+            if num_sites < total_num_sites:
                 site_names.append(site)
                
             print ' %d / %d sites complete ' % (count+1, num_sites)
             #if count ==4: break    
+            
+            
+        #NETWORK TOTALS, ONLY IF JUST ONE SITE
+        if num_sites == 1:
+            all_sites = config.TABLES.keys()
+            num_all = len(all_sites)
+            print 'calculating netowrk totals'
+            for count, site in enumerate(all_sites):
+                print 'Calculation for %s ...' % site
+                site_ga_id = config.TABLES[site]
+                first_totals = analytics.get_site_totals_for_period(site_ga_id, self.period)[0]
+                second_totals = analytics.get_site_totals_for_period(site_ga_id, self.second_period)[0]
+                monthly_totals = analytics.get_site_totals_for_period(site_ga_id, month_range)[0]
+                try:
+                    second_monthly_totals = analytics.get_site_totals_for_period(site_ga_id, last_yr_range)[0]
+                except IndexError:
+                    last_year_totals = {'visitors': 0, 'pageviews': 0, 'avg_time': '0', 'pv_per_session': '0', 'sessions':0}
                 
+                for key in network_totals['first_period'].keys():
+                    network_totals['first_period'][key] += float(first_totals[key])
+                for key in network_totals['second_period'].keys():
+                    network_totals['second_period'][key] += float(second_totals[key])
+                for key in network_totals['monthly'].keys(): 
+                    network_totals['monthly'][key] += float(monthly_totals[key])    
+                for key in network_totals['second_monthly'].keys(): 
+                    network_totals['second_monthly'][key] += float(second_monthly_totals[key])                                        
+
+                print ' %d / %d sites complete ' % (count+1, num_all)
+                
+            
+            network_totals['first_period']['pv_per_session'] = network_totals['first_period']['pv_per_session']/float(num_all)
+            network_totals['first_period']['avg_time'] = (network_totals['first_period']['avg_time']/float(num_all))/60.0
+            
+            network_totals['second_period']['pv_per_session'] = network_totals['second_period']['pv_per_session']/float(num_all)
+            network_totals['second_period']['avg_time'] = (network_totals['second_period']['avg_time']/float(num_all))/60.0 
+            
+            network_totals['monthly']['pv_per_session'] = network_totals['monthly']['pv_per_session']/float(num_all)
+            network_totals['monthly']['avg_time'] = (network_totals['monthly']['avg_time']/float(num_all))/60.0 
+
+            network_totals['second_monthly']['pv_per_session'] = network_totals['second_monthly']['pv_per_session']/float(num_all)
+            network_totals['second_monthly']['avg_time'] = (network_totals['second_monthly']['avg_time']/float(num_all))/60.0 
+                        
+            network_totals['change'] = {}
+            network_totals['yoy_change'] = {}
+            for key in network_totals['first_period']:
+                change = network_totals['first_period'][key] - network_totals['second_period'][key]
+                network_totals['change'][key] = change  
+                         
+            for key in network_totals['monthly']:
+                change = network_totals['monthly'][key] - network_totals['second_monthly'][key]
+                network_totals['yoy_change'][key] = change              
+            
+            
         #AGGREGATE AND SORT ALL DATA 
         unsorted_traffic = self.aggregate_data(results_traffic, ['source'], ['visitors', 'pageviews'])
         unsorted_devices = self.aggregate_data(results_device, ['deviceCategory'], ['visitors'])
@@ -755,18 +838,31 @@ class TrafficSourceBreakdown(Report):
             totals['second_period']['pv_per_session'] = totals['second_period']['pv_per_session']/float(num_sites)
             totals['second_period']['avg_time'] = (totals['second_period']['avg_time']/float(num_sites))/60.0
             
+            totals['monthly']['pv_per_session'] = totals['monthly']['pv_per_session']/float(num_sites)
+            totals['monthly']['avg_time'] = (totals['monthly']['avg_time']/float(num_sites))/60.0            
+            
+            totals['second_monthly']['pv_per_session'] = totals['second_monthly']['pv_per_session']/float(num_sites)
+            totals['second_monthly']['avg_time'] = (totals['second_monthly']['avg_time']/float(num_sites))/60.0             
+            
             peak = self.plot_scatter_graph(peak, self.period, self.destination_path)
             image_strings.append(peak)
             peak_img = peak['name']  
         else:
             totals['first_period']['avg_time'] = totals['first_period']['avg_time']/60.0
             totals['second_period']['avg_time'] = totals['second_period']['avg_time']/60.0
+            totals['monthly']['avg_time'] = totals['monthly']['avg_time']/60.0
+            totals['second_monthly']['avg_time'] = totals['second_monthly']['avg_time']/60.0
             peak_img = 0
         
         totals['change'] = {}
         for key in totals['first_period']:
             change = totals['first_period'][key] - totals['second_period'][key]
             totals['change'][key] = change
+            
+        totals['yoy_change'] = {}
+        for key in totals['monthly']:
+            change = totals['monthly'][key] - totals['second_monthly'][key]
+            totals['yoy_change'][key] = change            
         
         #total number visitors use social networks
         totals['first_period']['social_visitors'] = 0
@@ -938,9 +1034,11 @@ class TrafficSourceBreakdown(Report):
             'site_referrals': site_referrals,
             'top_articles' : complete_articles,
             'num_sites': num_sites,
+            'total_num_sites': total_num_sites,
             'peak': peak,
             'site_names': site_names,
-            'totals': totals      
+            'totals': totals, 
+            'network_totals': network_totals     
         })
         
         #IMAGE STRINGS = [{'name': -imgname-, 'string': -imgstring-}, ...]

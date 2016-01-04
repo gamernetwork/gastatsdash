@@ -30,7 +30,6 @@ while current != end_month:
     current = end_date
     
     
-
 #get data for each site for each month
 
 analytics = get_analytics()

@@ -200,15 +200,15 @@ class Analytics(object):
             filters = '%s;' % extra_filters
         results = self._execute_stats_query(site_id=site_id, 
         	stats_range=stats_range,
-            metrics='ga:pageviews,ga:visitors, ga:pageviewsPerSession, ga:avgSessionDuration',
+            metrics='ga:pageviews,ga:visitors, ga:pageviewsPerSession, ga:avgSessionDuration, ga:sessions',
             filters=filters)
         try:
-            formatted_results = self._format_results_flat(results, ['pageviews', 'visitors', 'pv_per_session', 'avg_time'])
+            formatted_results = self._format_results_flat(results, ['pageviews', 'visitors', 'pv_per_session', 'avg_time', 'sessions'])
         except KeyError:
-            formatted_results = [{'visitors': 0, 'pageviews': 0, 'pv_per_session': 0, 'avg_time': 0}]
+            formatted_results = [{'visitors': 0, 'pageviews': 0, 'pv_per_session': 0, 'avg_time': 0, 'sessions':0}]
             
-        print 'RESULTS : ', formatted_results
         return formatted_results
+   
         
     def get_site_peak_for_period(self, site_id, stats_range, 
             extra_filters=""):
@@ -288,6 +288,22 @@ class Analytics(object):
 			dimensions = 'ga:socialNetwork',
 			filters = 'ga:socialNetwork!=(not set)')
         formatted_results = self._format_results_flat(results, ['socialNetwork','visitors', 'pageviews'])
+        return formatted_results 
+        
+    def get_article_pageviews_for_period(self, site_id, stats_range, 
+            extra_filters=""):
+        """
+        Get total pageviews and visitors for a period for a given site.
+        """
+        filters = ''
+        if extra_filters:
+            filters = '%s' % extra_filters
+        results = self._execute_stats_query(site_id=site_id, stats_range=stats_range, 
+			metrics = 'ga:pageviews', 
+			sort = '', 
+			dimensions = 'ga:pagePath',
+			filters = filters )
+        formatted_results = self._format_results_flat(results, ['path', 'pageviews'])
         return formatted_results 
                       
     def get_social_export_for_period(self, site_id, stats_range, 

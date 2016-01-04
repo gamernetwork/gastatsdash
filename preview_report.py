@@ -54,12 +54,12 @@ elif report_type == "ArticleBreakdown":
     
 elif report_type == "TrafficSourceBreakdown":
     network_breakdown = reporting.TrafficSourceBreakdown(['foo@example.net'], 'Traffic Source Breakdown', all_sites, 
-        yesterday_stats_range, day_before_stats_range, 'daily', month_stats_range, args.destination, black_list)
+        yesterday_stats_range, day_before_stats_range, 'weekly', month_stats_range, args.destination, black_list)
 else:
 	print "unknown report type"	
 
 print "Generating Report..."
-generated_html = network_breakdown.generate_report() 
+generated_html = network_breakdown.generate_report()['html'] 
     
 with open(file_src, 'w') as file:
 	file.write(generated_html.encode("utf-8"))	
