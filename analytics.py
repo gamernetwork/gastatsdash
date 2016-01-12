@@ -382,12 +382,7 @@ class StatsRange(object):
 
     def get_end(self):
         return self._get_formatted_date(self.end_date)
-        
-    def get_unformatted_start(self):
-        return self.start_date
-
-    def get_unformatted_end(self):
-        return self.end_date       
+         
 
     def days_in_range(self):
         """

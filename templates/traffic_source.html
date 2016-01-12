@@ -63,46 +63,46 @@
         <tbody>
             <tr class="odd">
                 <th> Current Data</th>
-                <td> {{totals.first_period.visitors|intcomma|cut:".0"}} </td>
-                <td> {{totals.first_period.pageviews|intcomma|cut:".0"}} </td>
-                <td> {{totals.first_period.pv_per_session|floatformat}} </td>
-                <td> {{totals.first_period.avg_time|floatformat}} minutes </td>
+                <td> {{period_totals.first_period.visitors|intcomma|cut:".0"}} </td>
+                <td> {{period_totals.first_period.pageviews|intcomma|cut:".0"}} </td>
+                <td> {{period_totals.first_period.pv_per_session|floatformat}} </td>
+                <td> {{period_totals.first_period.avg_time|floatformat}} minutes </td>
             </tr>
             <tr class="even">
                 <th>{% if report_span == 'daily' %} WoW {% else %}{{report_span|capfirst}}{% endif %} Percentage Change </th>
-                <td style="color: {% if totals.change.visitors > 0 %}green{% else %}red{% endif %};"> {{totals.change.visitors|as_percentage_of:totals.first_period.visitors}} </td>
-                <td style="color: {% if totals.change.pageviews > 0 %}green{% else %}red{% endif %};"> {{totals.change.pageviews|as_percentage_of:totals.first_period.pageviews}}</td>
-                <td style="color: {% if totals.change.pv_per_session > 0 %}green{% else %}red{% endif %};"> {{totals.change.pv_per_session|as_percentage_of:totals.first_period.pv_per_session}} </td>
-                <td style="color: {% if totals.change.avg_time > 0 %}green{% else %}red{% endif %};"> {{totals.change.avg_time|as_percentage_of:totals.first_period.avg_time}} </td>
+                <td style="color: {% if period_totals.change.visitors > 0 %}green{% else %}red{% endif %};"> {{period_totals.change.visitors|as_percentage_of:period_totals.first_period.visitors}} </td>
+                <td style="color: {% if period_totals.change.pageviews > 0 %}green{% else %}red{% endif %};"> {{period_totals.change.pageviews|as_percentage_of:period_totals.first_period.pageviews}}</td>
+                <td style="color: {% if period_totals.change.pv_per_session > 0 %}green{% else %}red{% endif %};"> {{period_totals.change.pv_per_session|as_percentage_of:period_totals.first_period.pv_per_session}} </td>
+                <td style="color: {% if period_totals.change.avg_time > 0 %}green{% else %}red{% endif %};"> {{period_totals.change.avg_time|as_percentage_of:period_totals.first_period.avg_time}} </td>
             </tr>  
             <tr class="odd">
                 <th> YoY Percentage Change </th>
-                <td style="color: {% if totals.yoy_change.visitors > 0 %}green{% else %}red{% endif %};"> {{totals.yoy_change.visitors|as_percentage_of:totals.first_period.visitors}} </td>
-                <td style="color: {% if totals.yoy_change.pageviews > 0 %}green{% else %}red{% endif %};"> {{totals.yoy_change.pageviews|as_percentage_of:totals.first_period.pageviews}}</td>
-                <td style="color: {% if totals.yoy_change.pv_per_session > 0 %}green{% else %}red{% endif %};"> {{totals.yoy_change.pv_per_session|as_percentage_of:totals.first_period.pv_per_session}} </td>
-                <td style="color: {% if totals.yoy_change.avg_time > 0 %}green{% else %}red{% endif %};"> {{totals.yoy_change.avg_time|as_percentage_of:totals.first_period.avg_time}} </td>
+                <td style="color: {% if period_totals.yoy_change.visitors > 0 %}green{% else %}red{% endif %};"> {{period_totals.yoy_change.visitors|as_percentage_of:period_totals.first_period.visitors}} </td>
+                <td style="color: {% if period_totals.yoy_change.pageviews > 0 %}green{% else %}red{% endif %};"> {{period_totals.yoy_change.pageviews|as_percentage_of:period_totals.first_period.pageviews}}</td>
+                <td style="color: {% if period_totals.yoy_change.pv_per_session > 0 %}green{% else %}red{% endif %};"> {{period_totals.yoy_change.pv_per_session|as_percentage_of:period_totals.first_period.pv_per_session}} </td>
+                <td style="color: {% if period_totals.yoy_change.avg_time > 0 %}green{% else %}red{% endif %};"> {{period_totals.yoy_change.avg_time|as_percentage_of:period_totals.first_period.avg_time}} </td>
             </tr>              
             {% if num_sites == 1 %}
                 <tr class="even">
                     <th> Network Data </th>
-                    <td> {{network_totals.first_period.visitors|intcomma|cut:".0"}} </td>
-                    <td> {{network_totals.first_period.pageviews|intcomma|cut:".0"}} </td>
-                    <td> {{network_totals.first_period.pv_per_session|floatformat}} </td>
-                    <td> {{network_totals.first_period.avg_time|floatformat}} minutes </td>
+                    <td> {{network_period_totals.first_period.visitors|intcomma|cut:".0"}} </td>
+                    <td> {{network_period_totals.first_period.pageviews|intcomma|cut:".0"}} </td>
+                    <td> {{network_period_totals.first_period.pv_per_session|floatformat}} </td>
+                    <td> {{network_period_totals.first_period.avg_time|floatformat}} minutes </td>
                 <tr> 
                 <tr class="odd">
                     <th>{% if report_span == 'daily' %} WoW {% else %}{{report_span|capfirst}}{% endif %} Network Percentage Change </th>
-                    <td style="color: {% if network_totals.change.visitors > 0 %}green{% else %}red{% endif %};"> {{network_totals.change.visitors|as_percentage_of:network_totals.first_period.visitors}} </td>
-                    <td style="color: {% if network_totals.change.pageviews > 0 %}green{% else %}red{% endif %};"> {{network_totals.change.pageviews|as_percentage_of:network_totals.first_period.pageviews}}</td>
-                    <td style="color: {% if network_totals.change.pv_per_session > 0 %}green{% else %}red{% endif %};"> {{network_totals.change.pv_per_session|as_percentage_of:network_totals.first_period.pv_per_session}} </td>
-                    <td style="color: {% if network_totals.change.avg_time > 0 %}green{% else %}red{% endif %};"> {{network_totals.change.avg_time|as_percentage_of:network_totals.first_period.avg_time}} </td>
+                    <td style="color: {% if network_period_totals.change.visitors > 0 %}green{% else %}red{% endif %};"> {{network_period_totals.change.visitors|as_percentage_of:network_period_totals.first_period.visitors}} </td>
+                    <td style="color: {% if network_period_totals.change.pageviews > 0 %}green{% else %}red{% endif %};"> {{network_period_totals.change.pageviews|as_percentage_of:network_period_totals.first_period.pageviews}}</td>
+                    <td style="color: {% if network_period_totals.change.pv_per_session > 0 %}green{% else %}red{% endif %};"> {{network_period_totals.change.pv_per_session|as_percentage_of:network_period_totals.first_period.pv_per_session}} </td>
+                    <td style="color: {% if network_period_totals.change.avg_time > 0 %}green{% else %}red{% endif %};"> {{network_period_totals.change.avg_time|as_percentage_of:network_period_totals.first_period.avg_time}} </td>
                 </tr>   
                 <tr class="even">
                     <th> YoY Network Percentage Change </th>
-                    <td style="color: {% if network_totals.yoy_change.visitors > 0 %}green{% else %}red{% endif %};"> {{network_totals.yoy_change.visitors|as_percentage_of:network_totals.first_period.visitors}} </td>
-                    <td style="color: {% if network_totals.yoy_change.pageviews > 0 %}green{% else %}red{% endif %};"> {{network_totals.yoy_change.pageviews|as_percentage_of:network_totals.first_period.pageviews}}</td>
-                    <td style="color: {% if network_totals.yoy_change.pv_per_session > 0 %}green{% else %}red{% endif %};"> {{network_totals.yoy_change.pv_per_session|as_percentage_of:network_totals.first_period.pv_per_session}} </td>
-                    <td style="color: {% if network_totals.yoy_change.avg_time > 0 %}green{% else %}red{% endif %};"> {{network_totals.yoy_change.avg_time|as_percentage_of:network_totals.first_period.avg_time}} </td>
+                    <td style="color: {% if network_period_totals.yoy_change.visitors > 0 %}green{% else %}red{% endif %};"> {{network_period_totals.yoy_change.visitors|as_percentage_of:network_period_totals.first_period.visitors}} </td>
+                    <td style="color: {% if network_period_totals.yoy_change.pageviews > 0 %}green{% else %}red{% endif %};"> {{network_period_totals.yoy_change.pageviews|as_percentage_of:network_period_totals.first_period.pageviews}}</td>
+                    <td style="color: {% if network_period_totals.yoy_change.pv_per_session > 0 %}green{% else %}red{% endif %};"> {{network_period_totals.yoy_change.pv_per_session|as_percentage_of:network_period_totals.first_period.pv_per_session}} </td>
+                    <td style="color: {% if network_period_totals.yoy_change.avg_time > 0 %}green{% else %}red{% endif %};"> {{network_period_totals.yoy_change.avg_time|as_percentage_of:network_period_totals.first_period.avg_time}} </td>
                 </tr>                   
             {% endif %}                         
         </tbody>
@@ -125,29 +125,29 @@
         <tbody>
             <tr class="odd">
                 <th> Data</th>
-                <td> {{totals.monthly.visitors|intcomma|cut:".0"}} </td>
-                <td> {{totals.monthly.sessions|intcomma|cut:".0"}} </td>
-                <td> {{totals.monthly.pageviews|intcomma|cut:".0"}} </td>
+                <td> {{monthly_totals.first_period.visitors|intcomma|cut:".0"}} </td>
+                <td> {{monthly_totals.first_period.sessions|intcomma|cut:".0"}} </td>
+                <td> {{monthly_totals.first_period.pageviews|intcomma|cut:".0"}} </td>
             </tr>
             <tr class="even">
                 <th> YoY Percentage Change </th>
-                <td style="color: {% if totals.yoy_change_monthly.visitors > 0 %}green{% else %}red{% endif %};"> {{totals.yoy_change_monthly.visitors|as_percentage_of:totals.monthly.visitors}} </td>
-                <td style="color: {% if totals.yoy_change_monthly.sessions > 0 %}green{% else %}red{% endif %};"> {{totals.yoy_change_monthly.sessions|as_percentage_of:totals.monthly.sessions}}</td>
-                <td style="color: {% if totals.yoy_change_monthly.pageviews > 0 %}green{% else %}red{% endif %};"> {{totals.yoy_change_monthly.pageviews|as_percentage_of:totals.monthly.pageviews}} </td>
+                <td style="color: {% if monthly_totals.change.visitors > 0 %}green{% else %}red{% endif %};"> {{monthly_totals.change.visitors|as_percentage_of:monthly_totals.first_period.visitors}} </td>
+                <td style="color: {% if monthly_totals.change.sessions > 0 %}green{% else %}red{% endif %};"> {{monthly_totals.change.sessions|as_percentage_of:monthly_totals.first_period.sessions}}</td>
+                <td style="color: {% if monthly_totals.change.pageviews > 0 %}green{% else %}red{% endif %};"> {{monthly_totals.change.pageviews|as_percentage_of:monthly_totals.first_period.pageviews}} </td>
 
             </tr>              
             {% if num_sites == 1 %}
                 <tr class="odd">
                     <th> Network Data </th>
-                    <td> {{network_totals.monthly.visitors|intcomma|cut:".0"}} </td>
-                    <td> {{network_totals.monthly.sessions|intcomma|cut:".0"}} </td>
-                    <td> {{network_totals.monthly.pageviews|intcomma|cut:".0"}} </td>
+                    <td> {{network_monthly_totals.first_period.visitors|intcomma|cut:".0"}} </td>
+                    <td> {{network_monthly_totals.first_period.sessions|intcomma|cut:".0"}} </td>
+                    <td> {{network_monthly_totals.first_period.pageviews|intcomma|cut:".0"}} </td>
                 </tr>  
                 <tr class="even">
                     <th> YoY Network Percentage Change </th>
-                    <td style="color: {% if network_totals.yoy_change_monthly.visitors > 0 %}green{% else %}red{% endif %};"> {{network_totals.yoy_change_monthly.visitors|as_percentage_of:network_totals.monthly.visitors}} </td>
-                    <td style="color: {% if network_totals.yoy_change_monthly.sessions > 0 %}green{% else %}red{% endif %};"> {{network_totals.yoy_change_monthly.sessions|as_percentage_of:network_totals.monthly.sessions}}</td>
-                    <td style="color: {% if network_totals.yoy_change_monthly.pageviews > 0 %}green{% else %}red{% endif %};"> {{network_totals.yoy_change_monthly.pageviews|as_percentage_of:network_totals.monthly.pageviews}} </td>   
+                    <td style="color: {% if network_monthly_totals.change.visitors > 0 %}green{% else %}red{% endif %};"> {{network_monthly_totals.change.visitors|as_percentage_of:network_monthly_totals.first_period.visitors}} </td>
+                    <td style="color: {% if network_monthly_totals.change.sessions > 0 %}green{% else %}red{% endif %};"> {{network_monthly_totals.change.sessions|as_percentage_of:network_monthly_totals.first_period.sessions}}</td>
+                    <td style="color: {% if network_monthly_totals.change.pageviews > 0 %}green{% else %}red{% endif %};"> {{network_monthly_totals.change.pageviews|as_percentage_of:network_monthly_totals.first_period.pageviews}} </td>   
                 </tr>                 
               
             {% endif %}                       
@@ -180,8 +180,8 @@
                     <td class = 'src'> {{source.dimensions.source}} </td>
                     <td class = 'num'> {{source.metrics.visitors|intcomma}} </td>
                     <td class = 'num'> {{source.metrics.pageviews|intcomma}} </td>
-                    <td class = 'num'> {{source.metrics.visitors|as_percentage_of:totals.first_period.visitors}} </td>
-                    <td class = 'num'> {{source.metrics.pageviews|as_percentage_of:totals.first_period.pageviews}} </td>
+                    <td class = 'num'> {{source.metrics.visitors|as_percentage_of:period_totals.first_period.visitors}} </td>
+                    <td class = 'num'> {{source.metrics.pageviews|as_percentage_of:period_totals.first_period.pageviews}} </td>
                     <td class = 'num' style="color: {% if source.metrics.change_visitors > 0 %}green{% else %}red{% endif %};"> {{source.metrics.change_visitors|as_percentage_of:source.metrics.second_visitors}} </td>
                 </tr>
             {% endfor %}
@@ -235,7 +235,7 @@
                 <tr class="{% cycle 'odd' 'even' %}">
                     <td class = 'src'> {{source.dimensions.deviceCategory}} </td>
                     <td class = 'num'> {{source.metrics.visitors|intcomma}} </td>
-                    <td class = 'num'> {{source.metrics.visitors|as_percentage_of:totals.first_period.visitors}} </td>
+                    <td class = 'num'> {{source.metrics.visitors|as_percentage_of:period_totals.first_period.visitors}} </td>
                     <td class = 'num' style="color: {% if source.metrics.change_visitors > 0 %}green{% else %}red{% endif %};"> {{source.metrics.change_visitors|as_percentage_of:source.metrics.second_visitors}} </td>
                 </tr>
             {% endfor %}
@@ -251,10 +251,10 @@
         Shows the number of visitors being referred from social networks.
     </p>
     <p>
-        Total Visitors that come from social networks: <b>{{totals.first_period.social_visitors|intcomma}}</b>
+        Total Visitors that come from social networks: <b>{{period_totals.first_period.social_visitors|intcomma}}</b>
     </p>
     <p>
-        Percentage of total visitors that come from social networks: <b>{{totals.first_period.social_visitors|as_percentage_of:totals.first_period.visitors}}</b>
+        Percentage of total visitors that come from social networks: <b>{{period_totals.first_period.social_visitors|as_percentage_of:period_totals.first_period.visitors}}</b>
     </p>
     <table>
         <thead>
@@ -271,7 +271,7 @@
                 <tr class="{% cycle 'odd' 'even' %}">
                     <td class = 'src'> {{source.dimensions.socialNetwork}} </td>
                     <td class = 'num'> {{source.metrics.visitors|intcomma}} </td>
-                    <td class = 'num'> {{source.metrics.visitors|as_percentage_of:totals.first_period.social_visitors}} </td>
+                    <td class = 'num'> {{source.metrics.visitors|as_percentage_of:period_totals.first_period.social_visitors}} </td>
                     <!--<td class = 'num'> {{source.metrics.pageviews|intcomma}} </td>-->
                 {% for k, v in social_articles.items %}
                     {% if source.dimensions.socialNetwork == k %}

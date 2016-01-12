@@ -21,8 +21,8 @@ else:
 file_src = args.destination + "/" + file_name
 
 all_sites = config.TABLES.keys()
-today = date.today() - timedelta(days=1)
-day_before = date.today() - timedelta(days=2)
+today = date.today() - timedelta(days=2)
+day_before = date.today() - timedelta(days=3)
 week_before = date.today() - timedelta(days = 9)
 last_week = week_before  - timedelta(days = 7)
 yesterday_stats_range = StatsRange("Yesterday", today, today)
