@@ -156,7 +156,7 @@ class Analytics(object):
         and extra_filters (optional).
         """
         
-        black_list = ["/forum", "/messages/updates", "/mods", "/accounts", "/page"]                
+        black_list = ["/forum", "/messages/updates", "/mods", "/accounts", "/page", "/page/2", "/page/3"]                
         filter_list= 'ga:pagePathLevel1!=/'
         for i in black_list:
         	filter_list += ';ga:pagePath!=%s' %i
@@ -221,11 +221,13 @@ class Analytics(object):
         results = self._execute_stats_query(site_id=site_id, 
         	stats_range=stats_range,
             metrics='ga:sessions',
-            dimensions ='ga:day, ga:hour, ga:minute',
-            sort = '-ga:sessions',
-            filters=filters,
-            max_results=1)
-        formatted_results = self._format_results_flat(results, ['day', 'hour', 'minute', 'sessions'])
+            #dimensions ='ga:day, ga:hour, ga:minute',
+            dimensions ='ga:day, ga:hour',
+            #sort = '-ga:sessions',
+            sort = 'ga:hour',
+            filters=filters)
+            #max_results=1)
+        formatted_results = self._format_results_flat(results, ['day', 'hour', 'sessions'])#put back in minute 
         return formatted_results       	
         
     def get_site_traffic_for_period(self, site_id, stats_range, 
@@ -380,6 +382,12 @@ class StatsRange(object):
 
     def get_end(self):
         return self._get_formatted_date(self.end_date)
+        
+    def get_unformatted_start(self):
+        return self.start_date
+
+    def get_unformatted_end(self):
+        return self.end_date       
 
     def days_in_range(self):
         """

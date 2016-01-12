@@ -21,6 +21,22 @@ from analytics import get_analytics, StatsRange
 from renderer import render_template
 from dateutils import subtract_one_month
 
+from django import template 
+from django.template.defaultfilters import stringfilter
+
+register = template.Library()
+
+@register.filter(is_safe=True)
+@stringfilter
+def get_report_change(value):
+  	if value == 'daily':
+  		  return 'WoW'
+  	elif value == 'weekly':
+  		  return 'Weekly'
+  	elif value == 'monthly':
+  		  return 'Monthly'   
+          		  
+
 analytics = get_analytics()
 
 class Emailer(object):
@@ -87,6 +103,7 @@ class Report(object):
         """
         Iterate through all sites and check that their data is available.
         """
+        
         for site in self.sites:
             site_ga_id = config.TABLES[site]
             site_data_available = analytics.data_available_for_site(site_ga_id, 
@@ -315,6 +332,28 @@ class TrafficSourceBreakdown(Report):
         self.report_span = report_span
         self.destination_path = destination_path
         self.black_list = black_list
+
+    def get_subject(self):
+        start = self.period.get_unformatted_start()
+        end = self.period.get_unformatted_end()
+        if self.report_span == 'daily':
+            subject = ' '.join([self.subject, end.strftime("%a %d %b %Y")])
+        elif self.report_span  == 'weekly' or 'monthly':
+            weekly_date = start.strftime("%a %d %b %Y") + ' - ' + end.strftime("%a %d %b %Y")
+            subject = ' '.join([self.subject, weekly_date])
+        return subject
+
+    def data_available(self):
+        """
+        Iterate through all sites and check that their data is available.
+        """        
+        for site in config.TABLES.keys():
+            site_ga_id = config.TABLES[site]
+            site_data_available = analytics.data_available_for_site(site_ga_id, 
+                self.period.get_end())
+            if site_data_available == False:
+                return False
+        return True
     
     def aggregate_data(self, results, tables, metrics):
         """
@@ -384,8 +423,6 @@ class TrafficSourceBreakdown(Report):
         """
         calculate change in metrics, add this to metrics dictionary
         """
-        #what if pass in a dictionary? 
-        #make this more generic for pageviews etc as well
         for item in top_results:
             for metric in metrics:
                 key = 'second_%s' % metric
@@ -436,8 +473,8 @@ class TrafficSourceBreakdown(Report):
         patches, text = plot.pie(filtered_percents, colors=colors,shadow=False)
         plot.legend(patches, legend_labels, loc = 'best', prop={'size':12})
         plot.axis('equal')
-        #image_path = '%s/%s.png' % (dest_path, result_type)
-        #plot.savefig(image_path)
+        image_path = '%s/%s.png' % (dest_path, result_type)
+        plot.savefig(image_path)
         #box = axis.get_position()
         #axis.set_position([box.x0, box.y0, box.width * 0.3, box.height * 0.3])
         
@@ -534,10 +571,10 @@ class TrafficSourceBreakdown(Report):
         if self.report_span == 'daily':
             axis.xaxis.set_major_locator(plotdates.HourLocator())
             axis.xaxis.set_minor_locator(plotdates.MinuteLocator())
-        elif self.report_span == 'weekly':
+        elif self.report_span == 'weekly' or 'monthly':
             axis.xaxis.set_major_locator(plotdates.DayLocator())
             axis.xaxis.set_minor_locator(plotdates.HourLocator())       
-        axis.xaxis.set_major_formatter(plotdates.DateFormatter('%d %H:%M'))
+        axis.xaxis.set_major_formatter(plotdates.DateFormatter('%a %H:%M'))
 
         axis.spines['top'].set_visible(False)
         axis.spines['bottom'].set_visible(False)
@@ -562,8 +599,8 @@ class TrafficSourceBreakdown(Report):
         fontP.set_size('small')
         lgd = plot.legend(loc='center left', bbox_to_anchor=(1,0.5), prop=fontP)
         
-        #image_path = '%s/peak1.png' % dest_path
-        #plot.savefig(image_path, bbox_extra_artists=(lgd,), bbox_inches='tight')
+        image_path = '%s/peak1.png' % dest_path
+        plot.savefig(image_path, bbox_extra_artists=(lgd,), bbox_inches='tight')
 
         imgdata = StringIO.StringIO()
         plot.savefig(imgdata, format = 'png', bbox_extra_artists=(lgd,), bbox_inches='tight')
@@ -639,7 +676,7 @@ class TrafficSourceBreakdown(Report):
                         
         #axis.xaxis.set_minor_locator(plotdates.DayLocator())
         axis.xaxis.set_major_locator(plotdates.MonthLocator())
-        axis.xaxis.set_major_formatter(plotdates.DateFormatter('%Y-%m'))
+        axis.xaxis.set_major_formatter(plotdates.DateFormatter("%b '%y"))
         
         line_1, = axis.plot_date(new_dates, desktop_results, '-', linewidth=2.0, solid_joinstyle='bevel', marker='|', markeredgewidth=1.0)
         line_2, = axis.plot_date(new_dates, mobile_results, '-', linewidth=2.0, solid_joinstyle='bevel', marker='|', markeredgewidth=1.0)
@@ -649,10 +686,10 @@ class TrafficSourceBreakdown(Report):
         plot.ylabel('Percentage of Visitors')
         axis.legend((line_1, line_2, line_3), ('desktop', 'mobile', 'tablet')) 
         
-        axis.fmt_xdata = plotdates.DateFormatter('%Y-%m')
+        axis.fmt_xdata = plotdates.DateFormatter("%b '%y")
         #figure.autofmt_xdate()
-        #image_path = '%s/device1.png' % dest_path
-        #plot.savefig(image_path)
+        image_path = '%s/device1.png' % dest_path
+        plot.savefig(image_path)
         #box = axis.get_position() 
         #axis.set_position([box.x0, box.y0, box.width * 0.3, box.height * 0.3])
               
@@ -663,6 +700,88 @@ class TrafficSourceBreakdown(Report):
         name = 'month_graph'
         
         return {'name' : name, 'string' : imgdata.buf}
+        
+    def get_overview_totals(self, sites, period, second_period, last_yr_period, month_range, last_yr_month):
+        #input sites and period
+        #return totals dictionary
+        print 'get overview totals'
+        if sites == 'all_sites':
+            print 'for all sites'
+            sites = config.TABLES.keys()
+            num_sites = len(sites)
+        else:
+            print 'for ', sites
+            num_sites = len(sites)
+
+
+        totals={'first_period':{'visitors':0, 'pageviews':0, 'pv_per_session':0.0, 'avg_time':0.0, 'sessions':0}, 'second_period':{'visitors':0, 'pageviews':0, 
+                    'pv_per_session':0.0, 'avg_time':0.0, 'sessions':0},'last_yr_data':{'visitors':0, 'pageviews':0, 
+                    'pv_per_session':0.0, 'avg_time':0.0, 'sessions':0}, 'monthly':{'visitors':0, 'pageviews':0, 
+                    'pv_per_session':0.0, 'avg_time':0.0, 'sessions':0}, 'second_monthly':{'visitors':0, 'pageviews':0, 
+                    'pv_per_session':0.0, 'avg_time':0.0, 'sessions':0}}
+                    
+            
+        for count, site in enumerate(sites):
+            print 'Calculation for %s ...' % site
+            site_ga_id = config.TABLES[site]
+            #causes index error if the other network sites dont have data available yet!
+            first_totals = analytics.get_site_totals_for_period(site_ga_id, period)[0]
+            second_totals = analytics.get_site_totals_for_period(site_ga_id, second_period)[0]
+            monthly_totals = analytics.get_site_totals_for_period(site_ga_id, month_range)[0]
+            try:
+                second_monthly_totals = analytics.get_site_totals_for_period(site_ga_id, last_yr_month)[0]
+            except IndexError:
+                second_monthly_totals = {'visitors': 0, 'pageviews': 0, 'avg_time': '0', 'pv_per_session': '0', 'sessions':0}
+            try:
+                last_yr_totals = analytics.get_site_totals_for_period(site_ga_id, last_yr_period)[0]
+            except IndexError:
+                last_yr_totals = {'visitors': 0, 'pageviews': 0, 'avg_time': '0', 'pv_per_session': '0', 'sessions':0}
+            
+            for key in totals['first_period'].keys():
+                totals['first_period'][key] += float(first_totals[key])
+            for key in totals['second_period'].keys():
+                totals['second_period'][key] += float(second_totals[key])
+            for key in totals['last_yr_data'].keys():
+                totals['last_yr_data'][key] += float(last_yr_totals[key])                                
+            for key in totals['monthly'].keys(): 
+                totals['monthly'][key] += float(monthly_totals[key])    
+            for key in totals['second_monthly'].keys(): 
+                totals['second_monthly'][key] += float(second_monthly_totals[key])     
+                                             
+            print ' %d / %d sites complete ' % (count+1, num_sites)        
+            
+        totals['first_period']['pv_per_session'] = totals['first_period']['pv_per_session']/float(num_sites)
+        totals['first_period']['avg_time'] = (totals['first_period']['avg_time']/float(num_sites))/60.0
+        
+        totals['second_period']['pv_per_session'] = totals['second_period']['pv_per_session']/float(num_sites)
+        totals['second_period']['avg_time'] = (totals['second_period']['avg_time']/float(num_sites))/60.0
+        
+        totals['last_yr_data']['pv_per_session'] = totals['last_yr_data']['pv_per_session']/float(num_sites)
+        totals['last_yr_data']['avg_time'] = (totals['last_yr_data']['avg_time']/float(num_sites))/60.0        
+        
+        totals['monthly']['pv_per_session'] = totals['monthly']['pv_per_session']/float(num_sites)
+        totals['monthly']['avg_time'] = (totals['monthly']['avg_time']/float(num_sites))/60.0            
+        
+        totals['second_monthly']['pv_per_session'] = totals['second_monthly']['pv_per_session']/float(num_sites)
+        totals['second_monthly']['avg_time'] = (totals['second_monthly']['avg_time']/float(num_sites))/60.0     
+
+
+        totals['change'] = {}
+        for key in totals['first_period']:
+            change = totals['first_period'][key] - totals['second_period'][key]
+            totals['change'][key] = change
+            
+        totals['yoy_change'] = {}
+        for key in totals['first_period']:
+            change = totals['first_period'][key] - totals['last_yr_data'][key]
+            totals['yoy_change'][key] = change 
+                          
+        totals['yoy_change_monthly'] = {}
+        for key in totals['monthly']:
+            change = totals['monthly'][key] - totals['second_monthly'][key]
+            totals['yoy_change_monthly'][key] = change    
+                       
+        return totals
                      
     def generate_report(self):
         """
@@ -680,38 +799,28 @@ class TrafficSourceBreakdown(Report):
         second_results_social = []
         third_results_device = []
         
-        image_strings = []
-
-        totals={'first_period':{'visitors':0, 'pageviews':0, 'pv_per_session':0.0, 'avg_time':0.0, 'sessions':0}, 'second_period':{'visitors':0, 'pageviews':0, 
-                    'pv_per_session':0.0, 'avg_time':0.0, 'sessions':0}, 'monthly':{'visitors':0, 'pageviews':0, 
-                    'pv_per_session':0.0, 'avg_time':0.0, 'sessions':0}, 'second_monthly':{'visitors':0, 'pageviews':0, 
-                    'pv_per_session':0.0, 'avg_time':0.0, 'sessions':0}}
-                    
-        network_totals={'first_period':{'visitors':0, 'pageviews':0, 'pv_per_session':0.0, 'avg_time':0.0, 'sessions':0}, 'second_period':{'visitors':0, 'pageviews': 0, 
-                    'pv_per_session':0.0, 'avg_time':0.0, 'sessions':0}, 'monthly':{'visitors':0, 'pageviews':0, 
-                    'pv_per_session':0.0, 'avg_time':0.0, 'sessions':0}, 'second_monthly':{'visitors':0, 'pageviews':0, 
-                    'pv_per_session':0.0, 'avg_time':0.0, 'sessions':0}}                    
-                    
+        image_strings = []              
+               
         total_num_sites = len(config.TABLES)            
         num_sites = len(self.sites)
         site_names=[]
-        
-        if num_sites > 1:
-            peak = {}
             
-        #if num_sites==1 and self.report_span == 'daily':
-        day = int(self.period.get_end()[8:10])
-        month = int(self.period.get_end()[5:7]) #get_end returns isoformat YYYY-MM-DD
-        year = int(self.period.get_end()[0:4])
-        first = datetime(year, month, 1).date()
-        today = datetime(year, month, day).date()
+        #getting stat ranges for YoY change etc
+        today = self.period.get_unformatted_end()
+        first = datetime(today.year, today.month, 1).date()
         month_range = StatsRange("Monthly Aggregate", first, today)
-        prev_yr_first = datetime(year-1, month, 1).date()
-        prev_yr_today = datetime(year-1, month, day).date()   
-        last_yr_range = StatsRange("Last Year Monthly Aggregate", prev_yr_first, prev_yr_today)         
+        prev_yr_first = first - timedelta(days=365)
+        prev_yr_today = today - timedelta(days=365)
+        last_yr_range = StatsRange("Last Year Monthly Aggregate", prev_yr_first, prev_yr_today)    
+        if self.report_span == 'daily':
+            last_yr_period = StatsRange("Last Year Period", prev_yr_today, prev_yr_today) 
+        elif self.report_span == 'weekly' or 'monthly':
+            start_date = self.period.get_unformatted_start()
+            prev_yr_start_date = start_date - timedelta(days=365)
+            last_yr_period = StatsRange("Last Year Period", prev_yr_start_date, prev_yr_today)     
         
-        print 'MONTHLY AGGREGATE ', first, "  ", today
-        #MAIN LOOP TO GET DATA 
+       
+        #LOOP TO GET TRAFFIC/DEVICE/SOCIAL DATA
         for count, site in enumerate(self.sites):
             site_ga_id = config.TABLES[site]
             print 'Calculation for %s ...' % site
@@ -721,13 +830,52 @@ class TrafficSourceBreakdown(Report):
             results_device += analytics.get_site_devices_for_period(site_ga_id, self.period)
             second_results_device += analytics.get_site_devices_for_period(site_ga_id, self.second_period)
             print '-- devices (day)'
-            #results_browser += analytics.get_site_browsers_for_period(site_ga_id, self.period)
-            #second_results_browser += analytics.get_site_browsers_for_period(site_ga_id, self.second_period)
-            #print '-- broswer'
             results_social += analytics.get_site_socials_for_period(site_ga_id, self.period)
             second_results_social += analytics.get_site_socials_for_period(site_ga_id, self.second_period)
             print '-- social networks'
+
+        #AGGREGATE AND SORT ALL DATA 
+        unsorted_traffic = self.aggregate_data(results_traffic, ['source'], ['visitors', 'pageviews'])
+        unsorted_devices = self.aggregate_data(results_device, ['deviceCategory'], ['visitors'])
+        #unsorted_browsers = self.aggregate_data(results_browser, ['browser'], ['visitors'])
+        unsorted_socials = self.aggregate_data(results_social, ['socialNetwork'],['visitors', 'pageviews'])
+        
+        second_traffic = self.aggregate_data(second_results_traffic, ['source'], ['visitors', 'pageviews'])
+        second_devices = self.aggregate_data(second_results_device, ['deviceCategory'], ['visitors'])
+        #second_browsers = self.aggregate_data(second_results_browser, ['browser'], ['visitors'])
+        second_socials = self.aggregate_data(second_results_social, ['socialNetwork'],['visitors', 'pageviews'])                
+        
+        sorted_traffic = self.sort_data(unsorted_traffic, 'visitors', 11)
+        sorted_devices = self.sort_data(unsorted_devices, 'visitors', 5)
+        #sorted_browsers = self.sort_data(unsorted_browsers, 'visitors', 11)
+        sorted_socials = self.sort_data(unsorted_socials, 'visitors', 6)
+        
+        top_traffic_results = self.add_change(sorted_traffic, second_traffic, ['visitors', 'pageviews'])
+        top_device_results = self.add_change(sorted_devices, second_devices, ['visitors'])
+        #top_browser_results = self.add_change(sorted_browsers, second_browsers)
+        top_social_results = self.add_change(sorted_socials, second_socials, ['visitors'])
+        
+        #should i combine so only go through get_totals once - separate out the main site data during the loop?
+        totals = self.get_overview_totals(self.sites, self.period, self.second_period, last_yr_period, month_range, last_yr_range)  
+        if num_sites < total_num_sites:
+            network_totals = self.get_overview_totals('all_sites', self.period, self.second_period, last_yr_period, month_range, last_yr_range)          
+          
+        #CALCULATE TOTALS
+            """
             
+        
+        totals={'first_period':{'visitors':0, 'pageviews':0, 'pv_per_session':0.0, 'avg_time':0.0, 'sessions':0}, 'second_period':{'visitors':0, 'pageviews':0, 
+                    'pv_per_session':0.0, 'avg_time':0.0, 'sessions':0}, 'monthly':{'visitors':0, 'pageviews':0, 
+                    'pv_per_session':0.0, 'avg_time':0.0, 'sessions':0}, 'second_monthly':{'visitors':0, 'pageviews':0, 
+                    'pv_per_session':0.0, 'avg_time':0.0, 'sessions':0}}
+                    
+        network_totals={'first_period':{'visitors':0, 'pageviews':0, 'pv_per_session':0.0, 'avg_time':0.0, 'sessions':0}, 'second_period':{'visitors':0, 'pageviews': 0, 
+                    'pv_per_session':0.0, 'avg_time':0.0, 'sessions':0}, 'monthly':{'visitors':0, 'pageviews':0, 
+                    'pv_per_session':0.0, 'avg_time':0.0, 'sessions':0}, 'second_monthly':{'visitors':0, 'pageviews':0, 
+                    'pv_per_session':0.0, 'avg_time':0.0, 'sessions':0}}      
+                    
+                    
+        for site in sites llaal            
             first_totals = analytics.get_site_totals_for_period(site_ga_id, self.period)[0]
             second_totals = analytics.get_site_totals_for_period(site_ga_id, self.second_period)[0]
             monthly_totals = analytics.get_site_totals_for_period(site_ga_id, month_range)[0]
@@ -750,13 +898,15 @@ class TrafficSourceBreakdown(Report):
                 peak = analytics.get_site_peak_for_period(site_ga_id, self.period)[0]
             else:
                 peak[site] = analytics.get_site_peak_for_period(site_ga_id, self.period)[0]
+                #peak[site] = analytics.get_site_peak_for_period(site_ga_id, self.period)
+                
                 
             if num_sites < total_num_sites:
                 site_names.append(site)
                
             print ' %d / %d sites complete ' % (count+1, num_sites)
             #if count ==4: break    
-            
+
             
         #NETWORK TOTALS, ONLY IF JUST ONE SITE
         if num_sites == 1:
@@ -766,6 +916,7 @@ class TrafficSourceBreakdown(Report):
             for count, site in enumerate(all_sites):
                 print 'Calculation for %s ...' % site
                 site_ga_id = config.TABLES[site]
+                #causes index error if the other network sites dont have data available yet!
                 first_totals = analytics.get_site_totals_for_period(site_ga_id, self.period)[0]
                 second_totals = analytics.get_site_totals_for_period(site_ga_id, self.second_period)[0]
                 monthly_totals = analytics.get_site_totals_for_period(site_ga_id, month_range)[0]
@@ -808,28 +959,9 @@ class TrafficSourceBreakdown(Report):
                 change = network_totals['monthly'][key] - network_totals['second_monthly'][key]
                 network_totals['yoy_change'][key] = change              
             
-            
-        #AGGREGATE AND SORT ALL DATA 
-        unsorted_traffic = self.aggregate_data(results_traffic, ['source'], ['visitors', 'pageviews'])
-        unsorted_devices = self.aggregate_data(results_device, ['deviceCategory'], ['visitors'])
-        #unsorted_browsers = self.aggregate_data(results_browser, ['browser'], ['visitors'])
-        unsorted_socials = self.aggregate_data(results_social, ['socialNetwork'],['visitors', 'pageviews'])
+        """    
         
-        second_traffic = self.aggregate_data(second_results_traffic, ['source'], ['visitors', 'pageviews'])
-        second_devices = self.aggregate_data(second_results_device, ['deviceCategory'], ['visitors'])
-        #second_browsers = self.aggregate_data(second_results_browser, ['browser'], ['visitors'])
-        second_socials = self.aggregate_data(second_results_social, ['socialNetwork'],['visitors', 'pageviews'])                
-        
-        sorted_traffic = self.sort_data(unsorted_traffic, 'visitors', 11)
-        sorted_devices = self.sort_data(unsorted_devices, 'visitors', 5)
-        #sorted_browsers = self.sort_data(unsorted_browsers, 'visitors', 11)
-        sorted_socials = self.sort_data(unsorted_socials, 'visitors', 6)
-        
-        top_traffic_results = self.add_change(sorted_traffic, second_traffic, ['visitors', 'pageviews'])
-        top_device_results = self.add_change(sorted_devices, second_devices, ['visitors'])
-        #top_browser_results = self.add_change(sorted_browsers, second_browsers)
-        top_social_results = self.add_change(sorted_socials, second_socials, ['visitors'])
-        
+        """
         #OVERVIEW
         if num_sites > 1 :
             totals['first_period']['pv_per_session'] = totals['first_period']['pv_per_session']/float(num_sites)
@@ -864,13 +996,14 @@ class TrafficSourceBreakdown(Report):
             change = totals['monthly'][key] - totals['second_monthly'][key]
             totals['yoy_change'][key] = change            
         
+        """
+        
         #total number visitors use social networks
         totals['first_period']['social_visitors'] = 0
         for social in unsorted_socials:
             visitors = social['metrics']['visitors']
             totals['first_period']['social_visitors'] += visitors   
 
-        
         #ARTICLES 
         top_sites = self.sort_data(unsorted_traffic, 'visitors', 25)
         site_referrals = OrderedDict()   
@@ -884,7 +1017,7 @@ class TrafficSourceBreakdown(Report):
         if self.report_span == 'daily':
             num_articles = 1
             num_referrals = 5
-        elif self.report_span == 'weekly':
+        elif self.report_span == 'weekly' or 'monthly':
             num_articles = 5
             num_referrals = 5
         #LOOP TO GET ARTICLES 
@@ -897,7 +1030,6 @@ class TrafficSourceBreakdown(Report):
                 source_medium = item['dimensions']['source']
                 source = source_medium.split(' / ')[0]
                 print 'SOURCE SITE : ', source 
-                #black_list = ['google', '(direct)', 'eurogamer', 'facebook', 'Twitter', 'bing', '^t.co', 'reddit.com', 'yahoo']
                 black_ex = '|'
                 black_string = black_ex.join(self.black_list)
                 regex = re.compile(black_string)
@@ -982,7 +1114,7 @@ class TrafficSourceBreakdown(Report):
         complete_articles = self.add_change(sorted, second_aggregate, ['pageviews'])
         
         #MONTHLY DEVICES
-        
+        """"
         devices ={}  
         total_dict = {}           
         for count, date in enumerate(self.period_list):
@@ -1006,27 +1138,38 @@ class TrafficSourceBreakdown(Report):
             sorted_devices = self.sort_data(unsorted_devices, 'visitors', 26)
             devices_list.append(sorted_devices)
         
-    
+        """
         #DRAW GRAPHS    
         #self.draw_graph(top_traffic_results, totals['first_period']['visitors'], 'traffic1', self.destination_path)
-        if self.report_span == 'weekly':
+        if self.report_span == 'weekly' or 'monthly':
             social= self.draw_graph(top_social_results, totals['first_period']['social_visitors'], 'social1', self.destination_path)
             social_img = social['name']
             image_strings.append(social)
         else:
             social_img = 0       
-        device = self.plot_line_graph(devices, self.period_list, total_dict, self.destination_path)
-        device_img = device['name']
-        image_strings.append(device)
-                  
+        #device = self.plot_line_graph(devices, self.period_list, total_dict, self.destination_path)
+        #device_img = device['name']
+        #image_strings.append(device)
+        
+        @register.filter(is_safe=True)
+        @stringfilter
+        def get_report_change(value):
+          	if value == 'daily':
+          		  return 'WoW'
+          	elif value == 'weekly':
+          		  return 'Weekly'
+          	elif value == 'monthly':
+          		  return 'Monthly'    
+       
           
         #RENDER TEMPLATE                                         
         report_html = render_template(self.template, {
-            'start_date': self.period.get_start(),
-            'end_date': self.period.get_end(),
+            'start_date': self.period.get_unformatted_start().strftime("%d/%m/%y"),
+            'end_date': self.period.get_unformatted_end().strftime("%d/%m/%y"),
             'report_span': self.report_span,
+            'subject': self.get_subject(),
             #'img_url': config.ASSETS_URL,
-            'img_name' : {'social' : social_img, 'device': device_img, 'peak':peak_img},
+            'img_name' : {'social' : social_img},
             'traffic_list' : top_traffic_results,
             'devices_list' : top_device_results, 
             'social_list' : top_social_results,
@@ -1035,8 +1178,7 @@ class TrafficSourceBreakdown(Report):
             'top_articles' : complete_articles,
             'num_sites': num_sites,
             'total_num_sites': total_num_sites,
-            'peak': peak,
-            'site_names': site_names,
+            #'peak': peak,
             'totals': totals, 
             'network_totals': network_totals     
         })
@@ -1062,6 +1204,9 @@ def create_report(report_class, config, run_date):
         # Handle other second period types here
         if config['second_period'] == 'immediate_before':
             kwargs['second_period'] = StatsRange.get_previous_period(period, frequency)
+        if config['second_period'] == 'week_before':
+            kwargs['second_period'] = StatsRange.get_previous_period(period, 'WEEKLY')            
+            
             
     month_list =[]
     end_date = period.start_date

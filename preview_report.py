@@ -21,12 +21,13 @@ else:
 file_src = args.destination + "/" + file_name
 
 all_sites = config.TABLES.keys()
-today = date.today() - timedelta(days=2)
-day_before = date.today() - timedelta(days=3)
+today = date.today() - timedelta(days=1)
+day_before = date.today() - timedelta(days=2)
 week_before = date.today() - timedelta(days = 9)
 last_week = week_before  - timedelta(days = 7)
 yesterday_stats_range = StatsRange("Yesterday", today, today)
 day_before_stats_range = StatsRange("Day Before", day_before, day_before)
+week_before_stats_range = StatsRange("Week Before", week_before, week_before)
 this_week_stats_range = StatsRange("This Week", week_before, today)
 last_week_stats_range = StatsRange("Week Before", last_week, week_before)
 
@@ -53,8 +54,8 @@ elif report_type == "ArticleBreakdown":
         yesterday_stats_range, day_before_stats_range, "Daily Summary")
     
 elif report_type == "TrafficSourceBreakdown":
-    network_breakdown = reporting.TrafficSourceBreakdown(['foo@example.net'], 'Traffic Source Breakdown', all_sites, 
-        yesterday_stats_range, day_before_stats_range, 'weekly', month_stats_range, args.destination, black_list)
+    network_breakdown = reporting.TrafficSourceBreakdown(['foo@example.net'], 'Gamer Network daily statsdash for', ['eurogamer.net'], 
+        yesterday_stats_range, week_before_stats_range, 'daily', month_stats_range, args.destination, black_list)
 else:
 	print "unknown report type"	
 
