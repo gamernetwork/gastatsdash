@@ -162,9 +162,10 @@ class Analytics(object):
         """
         
         black_list = ["/forum", "/messages/updates", "/mods", "/accounts", "/search.php", "/recommended-games", "/login.php", "/login.php?action=password", "/members/register", "/cookies.php", "/members/loginext/steam"]                
-        filter_list= 'ga:pagePathLevel1!=/;ga:pagePath!~/page/*;ga:pagePath!~^/\?.*;ga:pagePath!~^/forum/.*'
+        filter_list= 'ga:pagePathLevel1!=/;ga:pagePath!~/page/*;ga:pagePath!~^/\?.*'
         for i in black_list:
-        	filter_list += ';ga:pagePath!=%s' %i
+          filter = '^' + i + '.*'
+          filter_list += ';ga:pagePath!~%s' %filter
         	        	
         if extra_filters:
             filter_list += ';%s' % extra_filters
