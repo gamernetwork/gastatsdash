@@ -31,6 +31,15 @@ week_before_stats_range = StatsRange("Week Before", week_before, week_before)
 this_week_stats_range = StatsRange("This Week", week_before, today)
 last_week_stats_range = StatsRange("Week Before", last_week, week_before)
 
+first_dec = date(2015, 12, 01)
+last_dec = date(2015, 12, 31)
+first_nov = date(2015, 11, 01)
+last_nov = date(2015, 11, 30)
+
+dec_stats_range = StatsRange("December", first_dec, last_dec)
+nov_stats_range = StatsRange("November", first_nov, last_nov)
+
+
 previous_months = 3
 end_date = today
 month_stats_range = []
@@ -39,7 +48,7 @@ for i in range(0, previous_months):
     month_stats_range.append(StatsRange("month_%d" % i, start_date, end_date))
     end_date = start_date
 
-black_list = ['google', '(direct)', 'eurogamer', 'facebook', 'Twitter', 'bing', '^t.co', 'reddit.com', 'yahoo']
+black_list = ['google', '(direct)', 'eurogamer', 'facebook', 'Twitter', 'bing', '^t.co', 'reddit.com', 'yahoo', 'feedburner']
    
 if report_type == "NetworkArticleBreakdown":
     network_breakdown = reporting.NetworkArticleBreakdown(['foo@example.net'], 'Network Article Breakdown', all_sites, 
@@ -54,8 +63,8 @@ elif report_type == "ArticleBreakdown":
         yesterday_stats_range, day_before_stats_range, "Daily Summary")
     
 elif report_type == "TrafficSourceBreakdown":
-    network_breakdown = reporting.TrafficSourceBreakdown(['foo@example.net'], 'Gamer Network daily statsdash for', ['eurogamer.net'], 
-        yesterday_stats_range, week_before_stats_range, 'daily', month_stats_range, args.destination, black_list)
+    network_breakdown = reporting.TrafficSourceBreakdown(['foo@example.net'], 'Gamer Network monthly statsdash for', all_sites, 
+        dec_stats_range, nov_stats_range, 'monthly', black_list)
 else:
 	print "unknown report type"	
 

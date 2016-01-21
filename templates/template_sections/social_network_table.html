@@ -1,0 +1,84 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html>
+	<head>
+    	<meta charset="UTF-8">
+	</head>
+<body>
+	<style>
+	body, p{
+		font-family: sans-serif;
+		text-align: left;
+		font-weight: normal;
+	}
+	thead th{
+    	border-bottom: 1px solid #d0d9e0;
+	}
+	td, th {
+		padding: 0.3em 1em 0.3em 0.5em;
+		vertical-align: top;
+	}
+	th.src {
+    	font-weight: lighter;
+	}
+	td.num {
+    	text-align: right;
+	}
+	
+	tr.odd {
+    	background-color: #f0f2f4;
+	}	
+	
+	tr.even {
+    	
+	}
+    span  {
+        display: list-item;
+        list-style-type: none;
+	}	
+	img {
+    	margin: 0.2em;
+	}
+
+	</style>
+    <table>
+        <thead>
+            <tr class = 'column_header'>
+                <th> Social Network </th>
+                <th> Visitors </th>
+                <th> Percentage of Total Social Visitors </th>
+                <th> {{ report_span|get_report_change }} Change </th>
+                <th> YoY Change </th>
+                <th> Page Views</th>
+                <th> Top Linked Article </th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for source in social_list %}
+                <tr class="{% cycle 'odd' 'even' %}">
+                    <td class = 'src'> {{source.dimensions.socialNetwork}} </td>
+                    <td class = 'num'> {{source.metrics.visitors|intcomma}} </td>
+                    <td class = 'num'> {{source.metrics.visitors|as_percentage_of:period_totals.first_period.social_visitors}} </td>
+                    <td class = 'num' style="color: {% if source.metrics.change_visitors > 0 %}green{% else %}red{% endif %};"> {{source.metrics.change_visitors|as_percentage_of:source.metrics.visitors}} </td>     
+                    <td class = 'num' style="color: {% if source.yoy_change.visitors > 0 %}green{% else %}red{% endif %};"> {{source.yoy_change.visitors|as_percentage_of:source.metrics.visitors}} </td>                       
+                                   
+                {% for k, v in social_articles.items %}
+                    {% if source.dimensions.socialNetwork == k %}
+                        <td class = 'num'> 
+                        {% for article in v %}
+                            <span>{{article.metrics.pageviews|intcomma}}</span>
+                        {% endfor %}
+                        </td>
+                        <td class = 'src'>
+                        {% for article in v %}
+                            <span> <a href="http://{{article.dimensions.host}}{{article.dimensions.path}}">{{article.dimensions.title}}</a> </span>
+                        {% endfor %}
+                        </td> 
+                    {% endif %}
+                {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+        
+    </table>
+</body>

@@ -85,12 +85,17 @@ class Analytics(object):
         OrderedDict has keys based on the grouping_key.
         """
         formatted_results = OrderedDict()
-        for row in results['rows']:
+        try:
+            results_rows = results['rows']       
+        except KeyError:
+            return formatted_results
+        for row in results_rows:
             key_value_pairs = zip(keys, row)
             formatted_row = dict(key_value_pairs)
             formatted_row = self._cast_formatted_row(formatted_row)
             formatted_results[formatted_row[grouping_key]] = formatted_row
         return formatted_results
+
      
 
     def data_available_for_site(self, site_id, stats_date):
@@ -156,8 +161,8 @@ class Analytics(object):
         and extra_filters (optional).
         """
         
-        black_list = ["/forum", "/messages/updates", "/mods", "/accounts", "/page", "/page/2", "/page/3"]                
-        filter_list= 'ga:pagePathLevel1!=/'
+        black_list = ["/forum", "/messages/updates", "/mods", "/accounts", "/search.php", "/recommended-games", "/login.php", "/login.php?action=password", "/members/register", "/cookies.php", "/members/loginext/steam"]                
+        filter_list= 'ga:pagePathLevel1!=/;ga:pagePath!~/page/*;ga:pagePath!~^/\?.*;ga:pagePath!~^/forum/.*'
         for i in black_list:
         	filter_list += ';ga:pagePath!=%s' %i
         	        	
@@ -350,9 +355,13 @@ class Analytics(object):
             sort='-ga:pageviews',
             filters=row_filters)
         formatted_row_results = self._format_results_flat(row_results, ['pageviews', 'visitors'])
-        formatted_row_results[0]['country'] = 'ROW'
-        formatted_results['ROW'] = formatted_row_results[0]
-        return formatted_results
+        try:
+            formatted_row_results[0]['country'] = 'ROW'
+            formatted_results['ROW'] = formatted_row_results[0]
+            return formatted_results
+        except IndexError:
+            formatted_results['ROW'] = {}
+            return formatted_results           
         
 """def get_source_for_period(self, site_id, stats_range, extra_filters=""):
 		print "in source for period!"

@@ -12,6 +12,7 @@ import django.template
 import django.conf
 
 import django
+from django.template.defaultfilters import stringfilter
 
 cwd=os.path.dirname(os.path.realpath(__file__))
 django.conf.settings.configure( TEMPLATE_DIRS=(os.path.join(cwd, "templates"),), INSTALLED_APPS=['django.contrib.humanize'] )
@@ -77,6 +78,16 @@ def pages_per_visitor(part, whole):
         return "%0.1f" % (float(part) / whole)
     except (ValueError, ZeroDivisionError):
         return "%%Err%%"
+        
+@register.filter(is_safe=True)
+@stringfilter
+def get_report_change(value):
+  	if value == 'daily':
+  		  return 'WoW'
+  	elif value == 'weekly':
+  		  return 'Weekly'
+  	elif value == 'monthly':
+  		  return 'MoM'            
 
 django.template.builtins.append(register)
 

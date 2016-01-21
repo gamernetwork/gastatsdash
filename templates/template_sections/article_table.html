@@ -1,0 +1,76 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset='utf-8'> 
+	</head>
+<body>
+	<style>
+	body, p, td, th {
+		font-family: sans-serif;
+		text-align: left;
+	}
+	td, th {
+		padding: 0.3em 1em 0.3em 0.5em;
+		vertical-align: top;
+	}
+	tr.odd td, tr.odd th {
+		background-color: #f0f2f4;
+	}
+	thead th {
+		border-bottom: 1px solid #d0d9e0;
+		vertical-align: middle;
+	}
+    thead th.article-title {
+        width: 700px;
+    }
+	tr.site td, tr.site th {
+		border-top: 1px solid #d0d9e0;
+	}
+	tr.site td, tr.site th {
+		font-weight: bold;
+		padding-top: 1em;
+	}
+	tr.total td, tr.total th {
+		border-top: 1px solid #d0d9e0;
+	}
+	tr.total td, tr.total th {
+		padding-bottom: 1em;
+	}
+	td.num {
+		text-align: right;
+	}
+	.dup {
+		color: blue;
+	}
+	</style>
+  <h2>
+    Article Breakdown
+  </h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Site</th>
+                <th class="article-title">Article Title</th>
+                <th>PV</th>
+                {% if report_span == 'daily' %}
+                  <th>DoD Change<th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for article in top_articles %}
+            <tr class="{% cycle 'odd' 'even' %}">
+                <td class="src">{{article.dimensions.host|cut:"www."|cut:".com"|capfirst}}</td>
+                <td class="src"><a href="http://{{article.dimensions.host}}{{article.dimensions.path}}">{{article.dimensions.title}}</a></td>
+                <td class="num">{{article.metrics.pageviews|intcomma}}</td>
+                {% if report_span == 'daily' %}
+                  <td class="num">{% if article.metrics.change_pageviews == 0 %}--{% else %}<span style="color: {% if article.metrics.change_pageviews > 0 %}green{% else %}red{% endif %};">{{article.metrics.change_pageviews|as_percentage_of:article.metrics.second_pageviews}}</span>{% endif %}</td>
+                {% endif %}
+            </tr>
+            {% endfor %}          
+          
+        </tbody>
+    </table>
+</body>
+</html>
