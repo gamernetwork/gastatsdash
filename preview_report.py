@@ -63,7 +63,7 @@ elif report_type == "ArticleBreakdown":
         yesterday_stats_range, day_before_stats_range, "Daily Summary")
     
 elif report_type == "TrafficSourceBreakdown":
-    network_breakdown = reporting.TrafficSourceBreakdown(['foo@example.net'], 'Eurogamer.net daily statsdash for', ['eurogamer.net'], 
+    network_breakdown = reporting.TrafficSourceBreakdown(['foo@example.net'], 'Usgamer.net daily statsdash for', ['usgamer.net'], 
         yesterday_stats_range, week_before_stats_range, 'daily', black_list)
 else:
 	print "unknown report type"	

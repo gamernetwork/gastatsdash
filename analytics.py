@@ -161,7 +161,7 @@ class Analytics(object):
         and extra_filters (optional).
         """
         
-        black_list = ["/forum", "/messages/updates", "/mods", "/accounts", "/search.php", "/recommended-games", "/login.php", "/members/register", "/cookies.php", "/members/loginext/steam", "/downloads"]                
+        black_list = ["/forum", "/messages/updates", "/mods", "/accounts", "/search.php", "/recommended-games", "/login.php", "/members/register", "/cookies.php", "/members/loginext", "/downloads", "/network"]                
         filter_list= 'ga:pagePathLevel1!=/;ga:pagePath!~/page/*;ga:pagePath!~^/\?.*'
         for i in black_list:
           filter = '^' + i + '.*'
