@@ -450,7 +450,9 @@ class TrafficSourceBreakdown(Report):
         month_range = StatsRange("Monthly Aggregate", first, today)
         prev_yr_first = first - timedelta(days=365)
         prev_yr_today = today - timedelta(days=365)
-        last_yr_range = StatsRange("Last Year Monthly Aggregate", prev_yr_first, prev_yr_today)     
+        last_yr_range = StatsRange("Last Year Monthly Aggregate", prev_yr_first, prev_yr_today) 
+        yesterday = self.period.start_date - timedelta(days=1)
+        yesterday_period = StatsRange("yesterday", yesterday, yesterday)    
         
         
         #get data for totals of the site and network if not network report
@@ -481,7 +483,7 @@ class TrafficSourceBreakdown(Report):
           
         top_traffic_results = get_data.add_change(sorted_traffic, second_traffic, ['visitors', 'pageviews'])
         top_device_results = get_data.add_change(sorted_devices, second_devices, ['visitors'])
-        top_social_results = get_data.add_change(sorted_socials, second_socials, ['visitors'])    
+        top_social_results = get_data.add_change(sorted_socials, second_socials, ['visitors', 'pageviews'])    
         
         #last_yr_social_results = get_data.add_change(sorted_socials, last_year_socials, ['visitors'])  
                 
@@ -500,13 +502,13 @@ class TrafficSourceBreakdown(Report):
             
         top_sites = get_data.sort_data(traffic, 'visitors', 25)
             
-        social_articles = get_data.get_social_referral_articles(self.sites, self.period, self.second_period, top_social_results, num_articles)
-        site_referrals = get_data.get_site_referral_articles(self.sites, self.period, self.second_period, top_sites, self.black_list, num_articles, num_referrals)
+        social_articles = get_data.get_social_referral_articles(self.sites, self.period, yesterday_period, top_social_results, num_articles)
+        site_referrals = get_data.get_site_referral_articles(self.sites, self.period, yesterday_period, top_sites, self.black_list, num_articles, num_referrals)
         
         if self.report_span == 'daily':
-            top_articles = get_data.get_top_articles(self.sites, self.period, self.second_period, 10)
+            top_articles = get_data.get_top_articles(self.sites, self.period, yesterday_period, 10)
         else:
-            top_articles = get_data.get_top_articles(self.sites, self.period, self.second_period, 15)            
+            top_articles = get_data.get_top_articles(self.sites, self.period, yesterday_period, 15)            
         
         country_metrics = 0
         network_data = 0
@@ -542,8 +544,7 @@ class TrafficSourceBreakdown(Report):
             device_img = get_data.plot_line_graph(results, month_list)
             image_strings.append(device_img)
             device_img_name = device_img['name']
-        
-                
+
           
         #RENDER TEMPLATE                                         
         report_html = render_template(self.template, {

@@ -48,8 +48,8 @@
 		<thead>
 			<tr>
 				<th rowspan="2">Country</th>
+				<th colspan="3">Visitors</th>				
 				<th colspan="3">Pages</th>
-				<th colspan="3">Visitors</th>
 				<th rowspan="2">P/V</th>
 
 			</tr>
@@ -68,12 +68,14 @@
 			{% for country in countries %}
 				<tr class="{% cycle 'odd' 'even' %}">
 					<th>{{ country.dimensions.name }}</th>
-					<td class="num">{{ country.metrics.pageviews }}</td>
-					<td class="num" style="color: {% if country.metrics.change_pageviews > 0 %}green{% else %}red{% endif %};">{{ country.metrics.change_pageviews|as_percentage_of:country.metrics.pageviews  }}</td>
-					<td class="num" style="color: {% if country.yoy_metrics.pageviews_change > 0 %}green{% else %}red{% endif %};">{{ country.yoy_metrics.pageviews_change|as_percentage_of:country.metrics.pageviews }}</td>
-					<td class="num">{{ country.metrics.visitors }}</td>
+					<td class="num">{{ country.metrics.visitors|intcomma }}</td>
 					<td class="num" style="color: {% if country.metrics.change_visitors > 0 %}green{% else %}red{% endif %};">{{ country.metrics.change_visitors|as_percentage_of:country.metrics.visitors }}</td>
 					<td class="num" style="color: {% if country.yoy_metrics.visitors_change > 0 %}green{% else %}red{% endif %};">{{ country.yoy_metrics.visitors_change|as_percentage_of:country.metrics.visitors }}</td>
+										
+					<td class="num">{{ country.metrics.pageviews|intcomma }}</td>
+					<td class="num" style="color: {% if country.metrics.change_pageviews > 0 %}green{% else %}red{% endif %};">{{ country.metrics.change_pageviews|as_percentage_of:country.metrics.pageviews  }}</td>
+					<td class="num" style="color: {% if country.yoy_metrics.pageviews_change > 0 %}green{% else %}red{% endif %};">{{ country.yoy_metrics.pageviews_change|as_percentage_of:country.metrics.pageviews }}</td>
+					
 					<td class="num">{{ country.metrics.pageviews|pages_per_visitor:country.metrics.visitors }}</td>
 
 				</tr>

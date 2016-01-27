@@ -43,20 +43,21 @@
 	</style>
 
     <h2> 
-        Where your traffic came from
+        Where our traffic came from
     </h2>
     <p> 
-        Shows the number of visitors referred from a specific source and the type of referral (medium). 
+        Shows the number of visitors referred from a specific source and the type of referral (medium). Note that Facebook is split into desktop and mobile. 
     </p> 
     <table>
         <thead>
             <tr class = 'column_header'>
                 <th> Source / Medium </th>
                 <th> Visitors </th>
-                <th> Page Views </th>
-                <th> Percentage of Total Visitors </th>
-                <th> Percentage of Total Pageviews </th>
                 <th> {{ report_span|get_report_change }} Visitors Change </th>
+                <th> Percentage of Total Visitors </th>
+                <th> Page Views </th>
+                <th> {{ report_span|get_report_change }} Pageviews Change </th>
+                <th> Percentage of Total Pageviews </th>
             </tr>
         </thead>
         <tbody>
@@ -64,10 +65,11 @@
                 <tr class="{% cycle 'odd' 'even' %}">
                     <td class = 'src'> {{source.dimensions.source}} </td>
                     <td class = 'num'> {{source.metrics.visitors|intcomma}} </td>
-                    <td class = 'num'> {{source.metrics.pageviews|intcomma}} </td>
-                    <td class = 'num'> {{source.metrics.visitors|as_percentage_of:period_totals.first_period.visitors}} </td>
-                    <td class = 'num'> {{source.metrics.pageviews|as_percentage_of:period_totals.first_period.pageviews}} </td>
                     <td class = 'num' style="color: {% if source.metrics.change_visitors > 0 %}green{% else %}red{% endif %};"> {{source.metrics.change_visitors|as_percentage_of:source.metrics.visitors}} </td>
+                    <td class = 'num'> {{source.metrics.visitors|as_percentage_of:period_totals.first_period.visitors}} </td>
+                    <td class = 'num'> {{source.metrics.pageviews|intcomma}} </td>
+                    <td class = 'num' style="color: {% if source.metrics.change_pageviews > 0 %}green{% else %}red{% endif %};"> {{source.metrics.change_pageviews|as_percentage_of:source.metrics.pageviews}} </td>
+                    <td class = 'num'> {{source.metrics.pageviews|as_percentage_of:period_totals.first_period.pageviews}} </td>
                 </tr>
             {% endfor %}
         </tbody>
@@ -75,10 +77,10 @@
     </table>
     
     <h3>
-        Top Site Referrals
+        Top Referring Sites
     </h3>
     <p>
-        Top sites with the top articles they've linked to
+        Top sites (that aren't social networks) and the articles they've linked to.
     </p>
     <table>
         <thead>

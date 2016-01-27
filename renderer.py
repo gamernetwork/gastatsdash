@@ -35,8 +35,6 @@ def pages_per_visitor(part, whole):
 def get_report_change(value):
   	if value == 'daily':
   		  return 'WoW'
-  	elif value == 'weekly':
-  		  return 'Weekly'
   	elif value == 'monthly':
   		  return 'MoM'    
 

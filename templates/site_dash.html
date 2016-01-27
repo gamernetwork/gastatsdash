@@ -43,9 +43,8 @@
 	</style>
     <h1>{{subject}}</h1>
     
-    <!-- need to add confidentiality notice -->
-    <!-- add info about WoW change -->
-    {% if report_span == 'daily' %}<p>Note: 'WoW' is the percentage change from this day last week and 'DoD' is the percentage change from yesterday. </p> {% endif %}
+
+    <p>This data is confidential and for employees of {% if num_sites == 1 %}your site{% else %}Gamer Network{% endif %} only. Do not transmit outside the company. </p>
 
     {% include "template_sections/overview_monthly_table.html" %}
 
@@ -73,8 +72,8 @@
             <tr class = 'column_header'>
                 <th> Device Category </th>
                 <th> Visitors </th>
-                <th> Percentage of Visitors </th>
                 <th> YoY Change </th>
+                <th> Percentage of Visitors </th>
             </tr>
         </thead>
         <tbody>
@@ -82,8 +81,8 @@
                 <tr class="{% cycle 'odd' 'even' %}">
                     <td class = 'src'> {{source.dimensions.deviceCategory}} </td>
                     <td class = 'num'> {{source.metrics.visitors|intcomma}} </td>
-                    <td class = 'num'> {{source.metrics.visitors|as_percentage_of:period_totals.first_period.visitors}} </td>
                     <td class = 'num' style="color: {% if source.metrics.change_visitors > 0 %}green{% else %}red{% endif %};"> {{source.metrics.change_visitors|as_percentage_of:source.metrics.visitors}} </td>
+                    <td class = 'num'> {{source.metrics.visitors|as_percentage_of:period_totals.first_period.visitors}} </td>
                 </tr>
             {% endfor %}
         </tbody>
@@ -99,7 +98,7 @@
         Social Networks 
     </h2> 
     <p> 
-        Shows the number of visitors being referred from social networks.
+        The number of visitors to {% if num_sites == 1 %}your site{% else %}our sites{% endif %} who came via a social network.
     </p>
     <p>
         Total Visitors that come from social networks: <b>{{period_totals.first_period.social_visitors|intcomma}}</b>

@@ -136,19 +136,25 @@ class DataAggregator():
 
         country_data = {}
         for data in site_data:
-            print 'data', data
             for country, metrics in data['country_metrics'].items():
-                print 'country', country
-                print 'metrics', metrics
                 try:
                     prev_pageviews = data['prev_metrics'][country]['pageviews']
                     prev_visitors = data['prev_metrics'][country]['visitors']     
                 except KeyError:
                     prev_pageviews = 0
                     prev_visitors = 0
+                    
                 try:
-                    country_data[country]['metrics']['pageviews'] += metrics['pageviews']
-                    country_data[country]['metrics']['visitors'] += metrics['visitors']
+                    pageviews = metrics['pageviews']
+                    visitors = metrics['visitors']     
+                except KeyError:
+                    pageviews = 0
+                    visitors = 0 
+                    metrics = {'pageviews':0, 'visitors':0, 'country':country}                   
+                    
+                try:
+                    country_data[country]['metrics']['pageviews'] += pageviews
+                    country_data[country]['metrics']['visitors'] += visitors
                     country_data[country]['yoy_metrics']['pageviews'] += prev_pageviews
                     country_data[country]['yoy_metrics']['visitors'] += prev_visitors                  
                     
@@ -158,8 +164,8 @@ class DataAggregator():
                             'name': country,
                         },
                         'metrics': {
-                            'pageviews': metrics['pageviews'],
-                            'visitors': metrics['visitors'],
+                            'pageviews': pageviews,
+                            'visitors': visitors,
                         },
                         'yoy_metrics': {
                             'pageviews': prev_pageviews,
@@ -168,7 +174,7 @@ class DataAggregator():
                     }
         country_metrics = country_data.values()
         country_metrics = sorted(country_metrics, 
-            key=lambda k: k['metrics']['pageviews'], reverse=True)
+            key=lambda k: k['metrics']['visitors'], reverse=True)
         cumulative_pageviews = 0
         cumulative_visitors = 0
         for country_stats in country_metrics:
@@ -217,8 +223,6 @@ class DataAggregator():
         second_top_articles = []
         num_sites = len(sites)
         
-        yesterday = period.start_date - timedelta(days=1)
-        yesterday_period = StatsRange("yesterday", yesterday, yesterday)
         
         #LOOP TO GET ARTICLES 
         for n, site in enumerate(sites):
@@ -234,7 +238,7 @@ class DataAggregator():
                 articles_data[item]['path'] = new_path       
                 separated_data.append(articles_data[item])
 
-            second_articles_data = analytics.get_article_breakdown(site_ga_id, yesterday_period)
+            second_articles_data = analytics.get_article_breakdown(site_ga_id, second_period)
             second_separated_data = []
             for item in second_articles_data:
                 path = second_articles_data[item]['path']  
@@ -333,8 +337,16 @@ class DataAggregator():
         for count, site in enumerate(sites):
             print "calculating for %s..." % site
             site_ga_id = config.TABLES[site]
-            first_period_totals = analytics.get_site_totals_for_period(site_ga_id, period)[0]
-            second_period_totals = analytics.get_site_totals_for_period(site_ga_id, second_period)[0]
+            try:
+                first_period_totals = analytics.get_site_totals_for_period(site_ga_id, period)[0]
+            except IndexError:
+                first_period_totals = {'visitors': 0, 'pageviews': 0, 'avg_time': '0', 'pv_per_session': '0', 'sessions':0}
+                
+            try:
+                second_period_totals = analytics.get_site_totals_for_period(site_ga_id, second_period)[0]
+            except IndexError:
+                second_period_totals = {'visitors': 0, 'pageviews': 0, 'avg_time': '0', 'pv_per_session': '0', 'sessions':0}
+                
             if yoy_change== True:
                 try:
                     last_year_totals = analytics.get_site_totals_for_period(site_ga_id, last_year_period)[0]
@@ -379,7 +391,7 @@ class DataAggregator():
             totals['last_yr_data']['avg_time'] = (totals['last_yr_data']['avg_time']/float(num_sites))/60.0  
             totals['yoy_change'] = self._get_change(totals['first_period'], totals['last_yr_data'])
                 
-        site_data = sorted(site_data, key=lambda k: k['totals']['pageviews'],
+        site_data = sorted(site_data, key=lambda k: k['totals']['visitors'],
             reverse=True)
         
             
@@ -519,7 +531,10 @@ class DataAggregator():
                 site_ga_id = config.TABLES[site]
                 value += analytics.get_site_devices_for_period(site_ga_id, date)
                 devices[key] = value
-                totals_list = analytics.get_site_totals_for_period(site_ga_id, date)[0]
+                try:
+                    totals_list = analytics.get_site_totals_for_period(site_ga_id, date)[0]
+                except IndexError:
+                    totals_list = {'visitors':0, 'pageviews':0, 'pv_per_session':0.0, 'avg_time':0.0, 'sessions':0}
                 visitors += totals_list['visitors']
                 total_dict[key] = visitors
         
@@ -569,12 +584,23 @@ class DataAggregator():
                     mobile_total += device['visitors']
                 elif device['deviceCategory'] == 'tablet':
                     tablet_total += device['visitors']
-                                
-            desktop_percent = (desktop_total / float(total_results[month])) * 100
+            
+            try:                     
+                desktop_percent = (desktop_total / float(total_results[month])) * 100
+            except ZeroDivisionError:
+                desktop_percent = 0
             desktop_results.append(desktop_percent)
-            mobile_percent = (mobile_total / float(total_results[month])) * 100
+            
+            try: 
+                mobile_percent = (mobile_total / float(total_results[month])) * 100
+            except ZeroDivisionError:
+                mobile_percent = 0
             mobile_results.append(mobile_percent)
-            tablet_percent = (tablet_total / float(total_results[month])) * 100
+            
+            try:
+                tablet_percent = (tablet_total / float(total_results[month])) * 100
+            except ZeroDivisionError:
+                tablet_percent = 0
             tablet_results.append(tablet_percent)
                                                    
                                         

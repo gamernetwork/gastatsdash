@@ -45,7 +45,7 @@
 	}
 	</style>
   <h2>
-    Article Breakdown
+    Most Popular Articles
   </h2>
     <table>
         <thead>
@@ -65,7 +65,7 @@
                 <td class="src"><a href="http://{{article.dimensions.host}}{{article.dimensions.path}}">{{article.dimensions.title}}</a></td>
                 <td class="num">{{article.metrics.pageviews|intcomma}}</td>
                 {% if report_span == 'daily' %}
-                  <td class="num">{% if article.metrics.change_pageviews == 0 %}--{% else %}<span style="color: {% if article.metrics.change_pageviews > 0 %}green{% else %}red{% endif %};">{{article.metrics.change_pageviews|as_percentage_of:article.metrics.second_pageviews}}</span>{% endif %}</td>
+                  <td class="num">{% if article.metrics.change_pageviews == 0 %}New{% else %}<span style="color: {% if article.metrics.change_pageviews > 0 %}green{% else %}red{% endif %};">{{article.metrics.change_pageviews|as_percentage_of:article.metrics.second_pageviews}}</span>{% endif %}</td>
                 {% endif %}
             </tr>
             {% endfor %}          

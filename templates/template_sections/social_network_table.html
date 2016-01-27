@@ -46,11 +46,14 @@
             <tr class = 'column_header'>
                 <th> Social Network </th>
                 <th> Visitors </th>
+                <th> Visitors {{ report_span|get_report_change }} Change </th>
+                <th> Visitors YoY Change </th>
                 <th> Percentage of Total Social Visitors </th>
-                <th> {{ report_span|get_report_change }} Change </th>
-                <th> YoY Change </th>
+                
                 <th> Page Views</th>
-                <th> Top Linked Article </th>
+                <th> PV {{ report_span|get_report_change }} Change </th>
+                <th> PV YoY Change </th>
+                <th> Top linked article from this social network</th>
             </tr>
         </thead>
         <tbody>
@@ -58,17 +61,21 @@
                 <tr class="{% cycle 'odd' 'even' %}">
                     <td class = 'src'> {{source.dimensions.socialNetwork}} </td>
                     <td class = 'num'> {{source.metrics.visitors|intcomma}} </td>
-                    <td class = 'num'> {{source.metrics.visitors|as_percentage_of:period_totals.first_period.social_visitors}} </td>
                     <td class = 'num' style="color: {% if source.metrics.change_visitors > 0 %}green{% else %}red{% endif %};"> {{source.metrics.change_visitors|as_percentage_of:source.metrics.visitors}} </td>     
-                    <td class = 'num' style="color: {% if source.yoy_change.visitors > 0 %}green{% else %}red{% endif %};"> {{source.yoy_change.visitors|as_percentage_of:source.metrics.visitors}} </td>                       
+                    <td class = 'num' style="color: {% if source.yoy_change.visitors > 0 %}green{% else %}red{% endif %};"> {{source.yoy_change.visitors|as_percentage_of:source.metrics.visitors}} </td>  
+                    <td class = 'num'> {{source.metrics.visitors|as_percentage_of:period_totals.first_period.social_visitors}} </td> 
+                    
+                    <td class = 'num'> {{source.metrics.pageviews|intcomma}} </td> 
+                    <td class = 'num' style="color: {% if source.metrics.change_pageviews > 0 %}green{% else %}red{% endif %};"> {{source.metrics.change_pageviews|as_percentage_of:source.metrics.pageviews}} </td>     
+                    <td class = 'num' style="color: {% if source.yoy_change.pageviews > 0 %}green{% else %}red{% endif %};"> {{source.yoy_change.pageviews|as_percentage_of:source.metrics.pageviews}} </td>                 
                                    
                 {% for k, v in social_articles.items %}
                     {% if source.dimensions.socialNetwork == k %}
-                        <td class = 'num'> 
+                        <!--<td class = 'num'> 
                         {% for article in v %}
                             <span>{{article.metrics.pageviews|intcomma}}</span>
                         {% endfor %}
-                        </td>
+                        </td>-->
                         <td class = 'src'>
                         {% for article in v %}
                             <span> <a href="http://{{article.dimensions.host}}{{article.dimensions.path}}">{{article.dimensions.title}}</a> </span>

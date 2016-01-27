@@ -361,7 +361,7 @@ class Analytics(object):
             formatted_results['ROW'] = formatted_row_results[0]
             return formatted_results
         except IndexError:
-            formatted_results['ROW'] = {}
+            formatted_results['ROW'] = {'pageviews':0, 'visitors':0}
             return formatted_results           
         
 """def get_source_for_period(self, site_id, stats_range, extra_filters=""):
