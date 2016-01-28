@@ -25,7 +25,7 @@ reports = [
         "report": TrafficSourceBreakdown,
         'recipients': recipients,
         'subject': #subject as string ,
-        'sites': #site key for config to loop up ga_id,
+        'sites': #site key for config to look up ga_id,
         'second_period': 'week_before',
         'kwargs': {
             'report_span': 'daily',
@@ -39,7 +39,7 @@ reports = [
         "report": TrafficSourceBreakdown,
         'recipients': all_recipients,
         'subject': #subject as string,
-        'sites': #site key for config to loop up ga_id,
+        'sites': #site key for config to look up ga_id,
         'second_period': 'immediate_before',
         'kwargs': {
             'report_span': 'monthly',
