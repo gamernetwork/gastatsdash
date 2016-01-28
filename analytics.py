@@ -415,6 +415,9 @@ class StatsRange(object):
         if frequency == 'DAILY':
             previous_date = current_period.start_date - timedelta(days=1)
             return cls.get_one_day_period(previous_date)
+        if frequency == 'WOW_DAILY':
+            previous_date = current_period.start_date - timedelta(days=7)
+            return cls.get_one_day_period(previous_date)
         if frequency == 'WEEKLY':
             previous_date = current_period.end_date - timedelta(days=7)
             return cls.get_one_week_period(previous_date)

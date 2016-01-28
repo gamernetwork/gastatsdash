@@ -593,7 +593,7 @@ def create_report(report_class, config, run_date):
         if config['second_period'] == 'immediate_before':
             kwargs['second_period'] = StatsRange.get_previous_period(period, frequency)
         if config['second_period'] == 'week_before':
-            kwargs['second_period'] = StatsRange.get_previous_period(period, 'WEEKLY')            
+            kwargs['second_period'] = StatsRange.get_previous_period(period, 'WOW_DAILY')           
             
     """      
     month_list =[]
