@@ -1,5 +1,6 @@
 import reporting
 import argparse
+import report_schedule
 
 from datetime import date, timedelta
 from dateutils import subtract_one_month
@@ -49,7 +50,7 @@ for i in range(0, previous_months):
     month_stats_range.append(StatsRange("month_%d" % i, start_date, end_date))
     end_date = start_date
 
-black_list = ['google', '(direct)', 'eurogamer', 'facebook', 'Twitter', 'bing', '^t.co', 'reddit.com', 'yahoo', 'feedburner', 'newsletter']
+black_list = report_schedule.black_list
    
 if report_type == "NetworkArticleBreakdown":
     network_breakdown = reporting.NetworkArticleBreakdown(['foo@example.net'], 'Network Article Breakdown', all_sites, 

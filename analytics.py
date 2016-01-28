@@ -267,20 +267,6 @@ class Analytics(object):
 			filters = '')
         formatted_results = self._format_results_flat(results, ['deviceCategory', 'visitors'])
         return formatted_results 
-          
-    """
-    def get_site_browsers_for_period(self, site_id, stats_range, 
-            extra_filters=""):
-        filters = ''
-        if extra_filters:
-            filters = '%s;' % extra_filters
-        results = self._execute_stats_query(site_id=site_id, stats_range=stats_range, 
-			metrics = 'ga:users', 
-			sort = '-ga:users', 
-			dimensions = 'ga:browser',
-			filters = '')
-        formatted_results = self._format_results_flat(results, ['browser', 'visitors'])
-        return formatted_results """
                   
     def get_site_socials_for_period(self, site_id, stats_range, 
             extra_filters=""):
@@ -363,19 +349,7 @@ class Analytics(object):
         except IndexError:
             formatted_results['ROW'] = {'pageviews':0, 'visitors':0}
             return formatted_results           
-        
-"""def get_source_for_period(self, site_id, stats_range, extra_filters=""):
-		print "in source for period!"
-		results = self._execute_stats_query(site_id=site_id, stats_range=stats_range, 
-			metrics = 'ga:pageviews, ga:users', 
-			sort = '-ga:pageviews,-ga:users', 
-			dimensions = 'ga:sourceMedium',
-			filters = '',
-			max_results= '25')
-		return results
-		#formatted_results = self._format_results_flat(self, results, ['source/medium','pageviews', 'visitors'])
-		#return formatted_results"""
-	
+
 
 class StatsRange(object):
    

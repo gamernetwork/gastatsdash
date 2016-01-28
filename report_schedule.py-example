@@ -16,76 +16,37 @@ day_before_stats_range = StatsRange("Day Before", day_before, day_before)
 # TODO: turn this in to a true configuration file which describes the configuration
 #   for instantiating Report objects per scheduler.py run rather than 
 #   instantiating them directly
+
+
+
 reports = [
-    # E3 topic article breakdowns
+  # full combined reports from Traffic Source Breakdown 
     {
-        "report": 
-            ArticleBreakdown(
-                recipients = recipients,
-                site = "eurogamer.net", 
-                period = yesterday_stats_range,
-                second_period = day_before_stats_range,
-                extra_filters="ga:dimension2=@e3",
-                topic = "E3",
-                article_limit=10,
-            ),
+        "report": TrafficSourceBreakdown,
+        'recipients': recipients,
+        'subject': #subject as string ,
+        'sites': #site key for config to loop up ga_id,
+        'second_period': 'week_before',
+        'kwargs': {
+            'report_span': 'daily',
+            'black_list': #sites to not include in site referrals (e.g. (direct) or google),
+        },
         "frequency": "DAILY",
-        "identifier": "EG-breakdown-e3",
+        "identifier": "network-daily-report"  
     },
+    
     {
-        "report": 
-            ArticleBreakdown(
-                recipients = recipients,
-                site = "usgamer.net", 
-                period = yesterday_stats_range,
-                second_period = day_before_stats_range,
-                extra_filters="ga:dimension2=@e3",
-                topic = "E3",
-                article_limit=10,
-            ),
-        "frequency": "DAILY",
-        "identifier": "USG-breakdown-e3",
-    },
-    {
-        "report": 
-            ArticleBreakdown(
-                recipients = recipients,
-                site = "gamesindustry.biz", 
-                period = yesterday_stats_range,
-                second_period = day_before_stats_range,
-                extra_filters="ga:dimension2=@e3",
-                topic = "E3",
-                article_limit=10,
-            ),
-        "frequency": "DAILY",
-        "identifier": "GI-breakdown-e3",
-    },
-    {
-        "report": 
-            ArticleBreakdown(
-                recipients = recipients,
-                site = "vg247.com", 
-                period = yesterday_stats_range,
-                second_period = day_before_stats_range,
-                extra_filters="ga:dimension2=@e3",
-                topic = "E3",
-                article_limit=10,
-            ),
-        "frequency": "DAILY",
-        "identifier": "VG-breakdown-e3",
-    },
-    {
-        "report": 
-            NetworkArticleBreakdown(
-                recipients = recipients,
-                site = "eurogamer.net,vg247.com,gamesindustry.biz,usgamer.net", 
-                period = yesterday_stats_range,
-                second_period = day_before_stats_range,
-                extra_filters="ga:dimension2=@e3",
-                topic = "E3",
-                article_limit=25,
-            ),
-        "frequency": "DAILY",
-        "identifier": "NETWORK-breakdown-e3",
-    },
+        "report": TrafficSourceBreakdown,
+        'recipients': all_recipients,
+        'subject': #subject as string,
+        'sites': #site key for config to loop up ga_id,
+        'second_period': 'immediate_before',
+        'kwargs': {
+            'report_span': 'monthly',
+            'black_list': #sites to not include in site referrals (e.g. (direct) or google),
+        },
+        "frequency": "MONTHLY",
+        "frequency_options": {"day": 1},
+        "identifier": "network-monthly-report"  
+    }
 ]
