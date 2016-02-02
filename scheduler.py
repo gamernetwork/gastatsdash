@@ -9,6 +9,8 @@ from report_schedule import reports
 from reporting import create_report
 from dateutils import find_last_weekday, add_one_month, find_next_weekday
 
+import logging, logging.config, logging.handlers
+
 
 class RunLogger(object):
     """
@@ -92,6 +94,10 @@ def _run():
     are scheduled to run now.
     """
     run_logger = RunLogger()
+    
+    logging.config.dictConfig(LOGGING)
+    logger = logging.getLogger('report')
+
     for config in reports:
         identifier = config['identifier']
         frequency = config['frequency']

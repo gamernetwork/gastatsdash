@@ -23,6 +23,8 @@ from dateutils import subtract_one_month
 
 from data_aggregator import DataAggregator
 
+import logging
+
 analytics = get_analytics()
 
 get_data = DataAggregator()
@@ -225,7 +227,6 @@ class NetworkBreakdown(Report):
         }
         return results
 
-
 class TrafficSourceBreakdown(Report):
     template='site_dash.html'
     
@@ -267,6 +268,9 @@ class TrafficSourceBreakdown(Report):
         template to html
         """
 
+        logger = logging.getLogger('report')
+        logger.info('%s', self.get_subject())
+        
         image_strings = []              
                
         total_num_sites = len(config.TABLES)            
@@ -407,7 +411,103 @@ class TrafficSourceBreakdown(Report):
         }
         
         return results
+
+
+class SocialReport(Report):
+    template='social_dash.html'
+  
+    def __init__(self, recipients, subject, sites, period, second_period, report_span):
+        super(SocialReport, self).__init__(recipients, subject, sites, period)
+        self.second_period = second_period
+        self.report_span = report_span
+
+    def get_subject(self):
+        start = self.period.start_date
+        end = self.period.end_date
+        if self.report_span == 'monthly':
+            subject = ' '.join([self.subject, start.strftime('%B')])
+        elif self.report_span == 'daily':
+            subject = ' '.join([self.subject, end.strftime("%a %d %b %Y")])
+        return subject
         
+    def data_available(self):
+        """
+        Iterate through all sites and check that their data is available.
+        """        
+        for site in config.TABLES.keys():
+            site_ga_id = config.TABLES[site]
+            site_data_available = analytics.data_available_for_site(site_ga_id, 
+                self.period.get_end())
+            if site_data_available == False:
+                return False
+        return True
+        
+    def generate_report(self):
+
+        logger = logging.getLogger('report')
+        logger.info('%s', self.get_subject())        
+        #some kind of historical data chart 
+        
+        #get site and network totals 
+        period_data = get_data.get_site_totals(self.sites, self.period, self.second_period, True)
+        period_totals = period_data['totals'] 
+        network_data = get_data.get_site_totals(config.TABLES.keys(), self.period, self.second_period, True)
+        network_totals = network_data['totals'] 
+        
+        #get social data 
+        results = get_data.get_traffic_device_social_data(self.sites, self.period, self.second_period, data=['social'])
+        socials = results['social']['first_period']
+        second_socials = results['social']['second_period']
+        last_year_socials = results['social']['last_year_period']
+        
+        #sorted_socials = get_data.sort_data(socials, 'visitors', 6)   
+               
+        socials = get_data.add_change(socials, second_socials, ['visitors', 'pageviews']) 
+        
+        #for social network in socials list: append and remove if facebook/twitter/reddit/youtube, then sort and find alternate top 3. get change for these 
+        #top articles for each netowrk 
+        top_social_results = []
+        alternate_social_results =[]
+        for soc in socials:
+            network = soc['dimensions']['socialNetwork']
+            if network in ['Facebook', 'Twitter', 'reddit', 'YouTube']:
+                top_social_results.append(soc)
+            else:
+                alternate_social_results.append(soc)
+            
+            
+        alternate_social_results = get_data.sort_data(alternate_social_results, 'visitors', 3)
+        
+        top_social_results.extend(alternate_social_results)
+        top_social_results = get_data.sort_data(top_social_results, 'visitors', 10)
+        
+
+        
+        social_articles = get_data.get_social_referral_articles(self.sites, self.period, self.second_period, top_social_results, 10)
+        
+        bottom_social_articles = get_data.get_social_referral_articles(self.sites, self.period, self.second_period, top_social_results, 5, sort='ascending')
+
+        image_strings = 0
+        
+
+        report_html = render_template(self.template, {  
+            'start_date': self.period.start_date.strftime("%d/%m/%y"),
+            'end_date': self.period.end_date.strftime("%d/%m/%y"),
+            'report_span': self.report_span,
+            'subject': self.get_subject(),   
+            'top_socials': top_social_results,
+            'site_totals': period_totals,
+            'network_totals': network_totals,
+            'social_articles': social_articles, 
+            'bottom_social_articles': bottom_social_articles,       
+        })
+        
+        results = {
+            'html': report_html,
+            'images':image_strings
+        }
+        
+        return results                    
 
 def create_report(report_class, config, run_date):
     """

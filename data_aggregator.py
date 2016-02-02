@@ -14,6 +14,10 @@ import StringIO
 import cStringIO
 import urllib, base64
 
+import logging
+
+logger = logging.getLogger('report')
+
 analytics = get_analytics()
 
 class DataAggregator():
@@ -122,10 +126,14 @@ class DataAggregator():
         
         for count, site in enumerate(sites):
             site_ga_id = config.TABLES[site]
-            print "getting country data for %s.. %d / %d" % (site, count+1, num_sites)
+            #print "getting country data for %s.. %d / %d" % (site, count+1, num_sites)
+            logger.debug("getting data for %s...", site)    
             
+            logger.debug("country data for period %s - %s", period.start_date, period.end_date)  
             country_data = analytics.get_country_breakdown_for_period(site_ga_id, period, countries)
+            logger.debug("country data for period %s - %s", last_year_period.start_date, last_year_period.end_date)   
             prev_country_data = analytics.get_country_breakdown_for_period(site_ga_id, last_year_period, countries)
+ 
             data = {
                 'name' : site,
                 'country_metrics' : country_data,
@@ -189,24 +197,6 @@ class DataAggregator():
 
         return country_metrics
 
-    #NETWORK ARTICLE BREAKDOWN        
-    """def get_article_breakdown(self, sites, period, second_period, article_limit):
-        all_network_data = []
-        num_sites = len(sites)
-        
-        for count, site in enumerate(sites):        
-            site_ga_id = config.TABLES[site]
-            print "getting article breakdown for %s.. %d / %d" % (site, count+1, num_sites)
-            data = analytics.get_article_breakdown_two_periods(site_ga_id, period, second_period, min_pageviews=250)
-            all_network_data.extend(data.values())
-
-            
-        sorted_data = sorted(all_network_data, key=lambda article: article['pageviews'], reverse=True)
-        top_network_data = list(sorted_data)[:article_limit]
-        formatted = []
-        for article in top_network_data:
-            formatted.append((article['path'], article))      
-        return formatted"""
 
     def remove_query_string(self, path):
         exp = '^([^\?]+)\?.*'
@@ -227,9 +217,12 @@ class DataAggregator():
         #LOOP TO GET ARTICLES 
         for n, site in enumerate(sites):
             site_ga_id = config.TABLES[site]
-            print 'articles for %s.. %d / %d ' % (site, n+1, num_sites)      
+            #print 'articles for %s.. %d / %d ' % (site, n+1, num_sites)  
+            logger.debug("getting data for %s...", site)    
             #TOP TEN ARTICLES 
+            logger.debug("article data for period %s - %s", period.start_date, period.end_date)
             articles_data = analytics.get_article_breakdown(site_ga_id, period)
+
             #print 'articles', articles_data
             separated_data = []
             for item in articles_data:
@@ -238,7 +231,9 @@ class DataAggregator():
                 articles_data[item]['path'] = new_path       
                 separated_data.append(articles_data[item])
 
+            logger.debug("article data for period %s - %s", second_period.start_date, second_period.end_date)
             second_articles_data = analytics.get_article_breakdown(site_ga_id, second_period)
+
             second_separated_data = []
             for item in second_articles_data:
                 path = second_articles_data[item]['path']  
@@ -257,7 +252,7 @@ class DataAggregator():
         return complete_articles        
 
    
-    def get_traffic_device_social_data(self, sites, period, second_period):
+    def get_traffic_device_social_data(self, sites, period, second_period, data=['traffic', 'social', 'device']):
         results_traffic = []
         results_device = []
         results_social = []
@@ -276,45 +271,62 @@ class DataAggregator():
         #LOOP TO GET TRAFFIC/DEVICE/SOCIAL DATA
         for count, site in enumerate(sites):
             site_ga_id = config.TABLES[site]
-            print 'Calculation for %s ... %d / %d' % (site, count+1, num_sites)
-            results_traffic += analytics.get_site_traffic_for_period(site_ga_id, period)
-            second_results_traffic += analytics.get_site_traffic_for_period(site_ga_id, second_period)
-            print '-- traffic'
-            results_device += analytics.get_site_devices_for_period(site_ga_id, period)
-            second_results_device += analytics.get_site_devices_for_period(site_ga_id, last_year_period)
-            print '-- devices'
-            results_social += analytics.get_site_socials_for_period(site_ga_id, period)
-            second_results_social += analytics.get_site_socials_for_period(site_ga_id, second_period)
-            last_yr_results_social += analytics.get_site_socials_for_period(site_ga_id, last_year_period)
-            print '-- social networks'
+            #print 'Calculation for %s ... %d / %d' % (site, count+1, num_sites)
+            logger.debug("getting data for %s...", site)  
+            
+            if 'traffic' in data:
+                logger.debug("traffic data for period %s - %s", period.start_date, period.end_date) 
+                results_traffic += analytics.get_site_traffic_for_period(site_ga_id, period)
+                logger.debug("traffic data for period %s - %s", second_period.start_date, second_period.end_date) 
+                second_results_traffic += analytics.get_site_traffic_for_period(site_ga_id, second_period)
+             
+            if 'device' in data:
+                logger.debug("devices data for period %s - %s", period.start_date, period.end_date)
+                results_device += analytics.get_site_devices_for_period(site_ga_id, period)
+                logger.debug("devices data for period %s - %s", last_year_period.start_date, last_year_period.end_date)  
+                second_results_device += analytics.get_site_devices_for_period(site_ga_id, last_year_period)
+            
+            if 'social' in data:
+                logger.debug("social data for period %s - %s", period.start_date, period.end_date)
+                results_social += analytics.get_site_socials_for_period(site_ga_id, period)
+                logger.debug("social data for period %s - %s", second_period.start_date, second_period.end_date)
+                second_results_social += analytics.get_site_socials_for_period(site_ga_id, second_period)
+                logger.debug("social data for period %s - %s", last_year_period.start_date, last_year_period.end_date) 
+                last_yr_results_social += analytics.get_site_socials_for_period(site_ga_id, last_year_period)
+
 
         #AGGREGATE AND SORT ALL DATA 
-        first_traffic = self.aggregate_data(results_traffic, ['source'], ['visitors', 'pageviews'])
-        first_devices = self.aggregate_data(results_device, ['deviceCategory'], ['visitors'])
-        first_socials = self.aggregate_data(results_social, ['socialNetwork'],['visitors', 'pageviews'])
         
-        second_traffic = self.aggregate_data(second_results_traffic, ['source'], ['visitors', 'pageviews'])
-        second_devices = self.aggregate_data(second_results_device, ['deviceCategory'], ['visitors'])
-        second_socials = self.aggregate_data(second_results_social, ['socialNetwork'],['visitors', 'pageviews'])     
-        last_year_socials = self.aggregate_data(last_yr_results_social, ['socialNetwork'],['visitors', 'pageviews'])            
+        if 'traffic' in data:
+            first_traffic = self.aggregate_data(results_traffic, ['source'], ['visitors', 'pageviews'])
+            second_traffic = self.aggregate_data(second_results_traffic, ['source'], ['visitors', 'pageviews'])
+            results['traffic'] = {}
+            results['traffic']['first_period'] = first_traffic
+            results['traffic']['second_period'] = second_traffic
         
-        for item in first_socials:
-            for data in last_year_socials:
-                if item['dimensions']['socialNetwork'] == data['dimensions']['socialNetwork']:
-                    yoy_change = self._get_change(item['metrics'], data['metrics'])
-                    item['yoy_change'] = yoy_change
+        if 'device' in data:
+            first_devices = self.aggregate_data(results_device, ['deviceCategory'], ['visitors'])
+            second_devices = self.aggregate_data(second_results_device, ['deviceCategory'], ['visitors'])
+            results['devices'] = {}
+            results['devices']['first_period'] = first_devices
+            results['devices']['second_period'] = second_devices           
+          
+        if 'social' in data:
+            first_socials = self.aggregate_data(results_social, ['socialNetwork'],['visitors', 'pageviews'])        
+            second_socials = self.aggregate_data(second_results_social, ['socialNetwork'],['visitors', 'pageviews'])     
+            last_year_socials = self.aggregate_data(last_yr_results_social, ['socialNetwork'],['visitors', 'pageviews'])            
         
-        results['traffic'] = {}
-        results['devices'] = {}
-        results['social'] = {}
+            for item in first_socials:
+                for data in last_year_socials:
+                    if item['dimensions']['socialNetwork'] == data['dimensions']['socialNetwork']:
+                        yoy_change = self._get_change(item['metrics'], data['metrics'])
+                        item['yoy_change'] = yoy_change
         
-        results['traffic']['first_period'] = first_traffic
-        results['traffic']['second_period'] = second_traffic
-        results['devices']['first_period'] = first_devices
-        results['devices']['second_period'] = second_devices       
-        results['social']['first_period'] = first_socials
-        results['social']['second_period'] = second_socials
-        results['social']['last_year_period'] = last_year_socials
+            results['social'] = {}
+         
+            results['social']['first_period'] = first_socials
+            results['social']['second_period'] = second_socials
+            results['social']['last_year_period'] = last_year_socials
         
                 
         return results       
@@ -335,23 +347,30 @@ class DataAggregator():
             totals['last_yr_data'] = {'visitors':0, 'pageviews':0, 'pv_per_session':0.0, 'avg_time':0.0, 'sessions':0}          
 
         for count, site in enumerate(sites):
-            print "calculating for %s..." % site
+            #print "calculating for %s..." % site
+            logger.debug("getting data for %s...", site)  
             site_ga_id = config.TABLES[site]
             try:
                 first_period_totals = analytics.get_site_totals_for_period(site_ga_id, period)[0]
+                logger.debug("data for period %s - %s", period.start_date, period.end_date) 
             except IndexError:
                 first_period_totals = {'visitors': 0, 'pageviews': 0, 'avg_time': '0', 'pv_per_session': '0', 'sessions':0}
+                logger.info("no data available for period %s - %s", period.start_date, period.end_date)
                 
             try:
                 second_period_totals = analytics.get_site_totals_for_period(site_ga_id, second_period)[0]
+                logger.debug("data for period %s - %s", second_period.start_date, second_period.end_date) 
             except IndexError:
                 second_period_totals = {'visitors': 0, 'pageviews': 0, 'avg_time': '0', 'pv_per_session': '0', 'sessions':0}
+                logger.info("no data available for period %s - %s", second_period.start_date, second_period.end_date)
                 
             if yoy_change== True:
                 try:
                     last_year_totals = analytics.get_site_totals_for_period(site_ga_id, last_year_period)[0]
+                    logger.debug("data for period %s - %s", last_year_period.start_date, last_year_period.end_date)
                 except IndexError:
                     last_year_totals = {'visitors': 0, 'pageviews': 0, 'avg_time': '0', 'pv_per_session': '0', 'sessions':0}
+                    logger.info("no data available for period %s - %s", last_year_period.start_date, last_year_period.end_date)
                     
             for key in totals['first_period'].keys():
                 totals['first_period'][key] += float(first_period_totals[key])
@@ -376,7 +395,8 @@ class DataAggregator():
                 
             site_data.append(data)
             
-            print ' %d / %d sites complete ' % (count+1, num_sites)  
+            #print ' %d / %d sites complete ' % (count+1, num_sites) 
+             
         
         totals['first_period']['pv_per_session'] = totals['first_period']['pv_per_session']/float(num_sites)
         totals['first_period']['avg_time'] = (totals['first_period']['avg_time']/float(num_sites))/60.0
@@ -409,7 +429,8 @@ class DataAggregator():
         #LOOP TO GET ARTICLES 
         for n, site in enumerate(sites):
             site_ga_id = config.TABLES[site]
-            print 'articles for %s.. %d / %d ' % (site, n+1, num_sites) 
+            #print 'articles for %s.. %d / %d ' % (site, n+1, num_sites) 
+            logger.debug("getting data for %s...", site)
             #TOP SITE REFERRAL ARTICLES
             count = 0
             for item in top_sites:
@@ -425,8 +446,12 @@ class DataAggregator():
                 elif count == num_referrals:
                     break;
                 else:  
+                
+                    logger.debug("%s data for period %s - %s", source, period.start_date, period.end_date)
                     data = analytics.get_article_breakdown(site_ga_id, period, extra_filters='ga:source==%s' % source)
+                    logger.debug("%s data for period %s - %s", source, second_period.start_date, second_period.end_date)
                     second_data = analytics.get_article_breakdown(site_ga_id, second_period, extra_filters='ga:source==%s' % source)
+                    
                     data = list(data.items())[:6]
                     second_data = list(second_data.items())[:6]
                     separated_data = []
@@ -450,7 +475,7 @@ class DataAggregator():
                         second_site_referrals[source] +=  second_separated_data
                     except KeyError:
                         second_site_referrals[source] = second_separated_data 
-                    print 'from %s.. %d / %d ' % (source, count+1, num_referrals) 
+                    #print 'from %s.. %d / %d ' % (source, count+1, num_referrals) 
                     count += 1  
                     
         #AGGREGATE AND SORT ARTICLES            
@@ -464,7 +489,7 @@ class DataAggregator():
         return site_referrals
         
         
-    def get_social_referral_articles(self, sites, period, second_period, social_networks, num_articles): 
+    def get_social_referral_articles(self, sites, period, second_period, social_networks, num_articles, sort='descending'): 
         social_articles = OrderedDict()
         second_social_articles = OrderedDict()    
         num_sites = len(sites)    
@@ -473,15 +498,27 @@ class DataAggregator():
         #LOOP TO GET ARTICLES 
         for n, site in enumerate(sites):      
             site_ga_id = config.TABLES[site]
-            print 'articles for %s.. %d / %d ' % (site, n+1, num_sites) 
+            #print 'articles for %s.. %d / %d ' % (site, n+1, num_sites) 
+            logger.debug("getting data for %s...", site)  
       
              #TOP SOCIAL ARTICLES                                            
             for m, item in enumerate(social_networks):
                 social_network = item['dimensions']['socialNetwork'] 
-                data = analytics.get_article_breakdown(site_ga_id, period, extra_filters='ga:socialNetwork==%s' % social_network)
-                second_data = analytics.get_article_breakdown(site_ga_id, second_period, extra_filters='ga:socialNetwork==%s' % social_network)
-                data = list(data.items())[:6]
-                second_data = list(second_data.items())[:6]
+                
+                if sort=='descending':
+                    logger.debug("%s data for period %s - %s", social_network, period.start_date, period.end_date)
+                    data = analytics.get_article_breakdown(site_ga_id, period, extra_filters='ga:socialNetwork==%s' % social_network)
+                    logger.debug("%s data for period %s - %s", social_network, second_period.start_date, second_period.end_date)
+                    second_data = analytics.get_article_breakdown(site_ga_id, second_period, extra_filters='ga:socialNetwork==%s' % social_network)
+                elif sort=='ascending':
+                    logger.debug("%s data for period %s - %s", social_network, period.start_date, period.end_date)
+                    data = analytics.get_article_breakdown(site_ga_id, period, extra_filters='ga:socialNetwork==%s' % social_network, min_pageviews=0, sort='ga:pageviews')
+                    logger.debug("%s data for period %s - %s", social_network, second_period.start_date, second_period.end_date)
+                    second_data = analytics.get_article_breakdown(site_ga_id, second_period, extra_filters='ga:socialNetwork==%s' % social_network, min_pageviews=0, sort='ga:pageviews')       
+                    
+                            
+                data = list(data.items())[:num_articles+1]
+                second_data = list(second_data.items())[:num_articles+1]
                 separated_data = []
                 for article in data:
                     path = article[1]['path']  
@@ -503,7 +540,7 @@ class DataAggregator():
                 except KeyError:
                     second_social_articles[social_network] = second_separated_data   
                     
-                print 'from %s.. %d / %d ' % (social_network, m+1, num_socials)   
+                #print 'from %s.. %d / %d ' % (social_network, m+1, num_socials)   
                     
                     
         #AGGREGATE AND SORT ARTICLES              
@@ -521,12 +558,12 @@ class DataAggregator():
         total_dict = {}           
         for count, date in enumerate(period_list):
             month = date.start_date.strftime('%b')
-            print "for %s.." % month
+            #print "for %s.." % month
             value = []
             visitors =0
             totals_list = []
             for count_site, site in enumerate(sites):
-                print "for %s.." % site
+                #print "for %s.." % site
                 key = '%s' % month
                 site_ga_id = config.TABLES[site]
                 value += analytics.get_site_devices_for_period(site_ga_id, date)
@@ -573,7 +610,7 @@ class DataAggregator():
         device_results = results['devices']
         total_results = results['totals']
         for month in months: 
-            print month
+            #print month
             desktop_total = 0
             mobile_total = 0
             tablet_total = 0  

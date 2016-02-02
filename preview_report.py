@@ -7,6 +7,8 @@ from dateutils import subtract_one_month
 import config
 from analytics import get_analytics, StatsRange
 
+import logging, logging.config, logging.handlers
+
 parser = argparse.ArgumentParser()
 parser.add_argument("reporttype", help="the type of report you wish to generate")
 parser.add_argument("-d", "--destination", help="destination for return file", default =".")
@@ -40,8 +42,6 @@ last_nov = date(2015, 11, 30)
 dec_stats_range = StatsRange("December", first_dec, last_dec)
 nov_stats_range = StatsRange("November", first_nov, last_nov)
 
-print today
-
 previous_months = 3
 end_date = today
 month_stats_range = []
@@ -51,6 +51,9 @@ for i in range(0, previous_months):
     end_date = start_date
 
 black_list = report_schedule.black_list
+
+logging.config.dictConfig(config.LOGGING)
+logger = logging.getLogger('report')
    
 if report_type == "NetworkArticleBreakdown":
     network_breakdown = reporting.NetworkArticleBreakdown(['foo@example.net'], 'Network Article Breakdown', all_sites, 
@@ -65,12 +68,17 @@ elif report_type == "ArticleBreakdown":
         yesterday_stats_range, day_before_stats_range, "Daily Summary")
     
 elif report_type == "TrafficSourceBreakdown":
-    network_breakdown = reporting.TrafficSourceBreakdown(['foo@example.net'], 'Gamer Network daily statsdash for', all_sites, 
+    network_breakdown = reporting.TrafficSourceBreakdown(['foo@example.net'], 'Metabomb: Overwatch daily statsdash for', ['metabomb: Overwatch'], 
         yesterday_stats_range, week_before_stats_range, 'daily', black_list)
+        
+elif report_type == "SocialReport":
+    network_breakdown = reporting.SocialReport(['foo@example.net'], 'Eurogamer.net monthly social report for', ['eurogamer.net'], 
+        dec_stats_range, nov_stats_range, 'monthly')
+        
 else:
 	print "unknown report type"	
 
-print "Generating Report..."
+
 generated_html = network_breakdown.generate_report()['html'] 
     
 with open(file_src, 'w') as file:

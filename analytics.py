@@ -10,6 +10,9 @@ from apiclient.discovery import build
 import config
 from dateutils import subtract_one_month
 
+import logging
+logger = logging.getLogger('report')
+
 def get_analytics():
     with open(config.KEY_FILE) as f:
         private_key = f.read()
@@ -32,6 +35,7 @@ class Analytics(object):
         try:
             result_rows =  results['rows']
         except KeyError:
+            logger.info("no data available")
             result_rows = []
         article_data = OrderedDict()
         for row in result_rows:
@@ -70,6 +74,7 @@ class Analytics(object):
         try:
             results_rows = results['rows']
         except KeyError:
+            logger.info("no data available")
             return formatted_results
         for row in results_rows:
             key_value_pairs = zip(keys, row)
@@ -88,6 +93,7 @@ class Analytics(object):
         try:
             results_rows = results['rows']       
         except KeyError:
+            logger.info("no data available")
             return formatted_results
         for row in results_rows:
             key_value_pairs = zip(keys, row)
@@ -139,23 +145,26 @@ class Analytics(object):
             except errors.HttpError, e:
                 error = json.loads(e.content)
                 if i == 5:
-                    print 'Error, request has failed 5 times'
+                    #print 'Error, request has failed 5 times'
+                    logger.warning("Error, request has failed 5 times")
                     raise
                 if error['error'].get('code') == 500:
-                    print '500 Error #%d, trying again ...' % i
+                    #print '500 Error #%d, trying again ...' % i
+                    logger.warning("500 Error, #%d, trying again...", i)
                 else:
                     raise
             except Exception, e:
-                print 'We got an unknown error from GA'
-                print 'Type:'
-                print type(e)
-                print e
-                
+                #print 'We got an unknown error from GA'
+                #print 'Type:'
+                #print type(e)
+                #print e
+                logger.warning("Unknown error from GA")
+                logger.warning("Type: ", type(e), e)
 
         return None   
 
     def get_article_breakdown(self, site_id, stats_range, 
-            extra_filters="", min_pageviews=1):
+            extra_filters="", min_pageviews=1, sort='-ga:pageviews'):
         """
         Get pageview breakdown grouped by articles for a particular stats daterange
         and extra_filters (optional).
@@ -173,7 +182,7 @@ class Analytics(object):
         results = self._execute_stats_query(site_id=site_id, 
             stats_range=stats_range,
             metrics='ga:pageviews',
-            sort='-ga:pageviews',
+            sort=sort,
             dimensions='ga:pageTitle,ga:pagePath,ga:hostname',
             filters = filter_list )
         article_data = self._format_article_breakdown_results(results)
@@ -211,6 +220,7 @@ class Analytics(object):
         try:
             formatted_results = self._format_results_flat(results, ['pageviews', 'visitors', 'pv_per_session', 'avg_time', 'sessions'])
         except KeyError:
+            logger.info("no data for period %s - %s", stats_range.start_date, stats_range.end_date)
             formatted_results = [{'visitors': 0, 'pageviews': 0, 'pv_per_session': 0, 'avg_time': 0, 'sessions':0}]
             
         return formatted_results
@@ -347,6 +357,7 @@ class Analytics(object):
             formatted_results['ROW'] = formatted_row_results[0]
             return formatted_results
         except IndexError:
+            logger.info("no ROW data for period %s - %s", stats_range.start_date, stats_range.end_date)
             formatted_results['ROW'] = {'pageviews':0, 'visitors':0}
             return formatted_results           
 
