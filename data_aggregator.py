@@ -572,8 +572,10 @@ class DataAggregator():
                 key = '%s' % day
                 site_ga_id = config.TABLES[site]
                 try:
+                    logger.debug("data for period %s - %s for %s", date.start_date, date.end_date, site)
                     totals_list = analytics.get_site_totals_for_period(site_ga_id, date)[0]
                 except IndexError:
+                    logger.info("no data available for period %s - %s for %s", date.start_date, date.end_date, site)
                     totals_list = {'visitors':0, 'pageviews':0, 'pv_per_session':0.0, 'avg_time':0.0, 'sessions':0}
                     
                 total_dict[day] = totals_list
@@ -582,8 +584,10 @@ class DataAggregator():
                 key = '%s' % day
                 site_ga_id = config.TABLES[site]
                 try:
+                    logger.debug("data for period %s - %s for %s", date.start_date, date.end_date, site)
                     network_list = analytics.get_site_totals_for_period(site_ga_id, date)[0]
                 except IndexError:
+                    logger.info("no data available for period %s - %s for %s", date.start_date, date.end_date, site)
                     network_list = {'visitors':0, 'pageviews':0, 'pv_per_session':0.0, 'avg_time':0.0, 'sessions':0}
                     
                 network_total[day]['visitors'] += network_list['visitors'] 
