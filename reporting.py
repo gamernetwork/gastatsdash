@@ -374,7 +374,7 @@ class TrafficSourceBreakdown(Report):
                 end_date = start_date      
                 
             results = get_data.get_monthly_device_data(self.sites, month_list)
-            device_img = get_data.plot_line_graph(results, month_list)
+            device_img = get_data.plot_device_line_graph(results, month_list)
             image_strings.append(device_img)
             device_img_name = device_img['name']
 
@@ -478,14 +478,58 @@ class SocialReport(Report):
             
         alternate_social_results = get_data.sort_data(alternate_social_results, 'visitors', 3)
         
+        top_4_socials = top_social_results
+        
+        bottom_social_articles = get_data.get_social_referral_articles(self.sites, self.period, self.second_period, top_4_socials, 5, sort='ascending')
+        
         top_social_results.extend(alternate_social_results)
         top_social_results = get_data.sort_data(top_social_results, 'visitors', 10)
-        
 
-        
         social_articles = get_data.get_social_referral_articles(self.sites, self.period, self.second_period, top_social_results, 10)
         
-        bottom_social_articles = get_data.get_social_referral_articles(self.sites, self.period, self.second_period, top_social_results, 5, sort='ascending')
+
+        start = self.period.start_date
+        start_range = StatsRange("first", start, start)
+        end = self.period.end_date
+        day = start 
+        
+        period_list = [start_range]
+        while day != end:
+            day = day + timedelta(days=1)
+            day_range = StatsRange("day", day, day)
+            period_list.append(day_range)
+                 
+
+        total_dict = get_data.get_totals_over_period(period_list, self.sites)['site']
+        network_total = get_data.get_totals_over_period(period_list, self.sites)['network']
+
+        visitors = []
+        pageviews = []
+        sort_dates = []
+        network_visitors = []
+        network_pageviews = []
+        for date in period_list:
+            sort_dates.append(date.start_date)
+            visitors.append(total_dict[date.start_date]['visitors'])
+            network_visitors.append(network_total[date.start_date]['visitors'])
+            pageviews.append(total_dict[date.start_date]['pageviews'])
+            network_pageviews.append(network_total[date.start_date]['pageviews'])
+                        
+        #add more interesting looking things ya know, be able to all axis ticks, label axes, etc etc
+        visitor_data = {'site visitors':visitors, 'network visitors':network_visitors}
+        pageview_data = {'site pageviews':pageviews, 'network pageviews':network_pageviews}
+        all_data = {'site visitors':visitors, 'network visitors':network_visitors, 'site pageviews':pageviews, 'network pageviews':network_pageviews}
+        site_data = {'site visitors':visitors,'site pageviews':pageviews}
+        network_data = {'network visitors':network_visitors, 'network pageviews':network_pageviews}
+        
+        
+        #get returns of image string and add to image strings, then add into report!?
+        get_data.plot_line_graph('visitors_test', sort_dates, visitor_data)
+        get_data.plot_line_graph('pageviews_test', sort_dates, pageview_data)
+        get_data.plot_line_graph('combined_test', sort_dates, all_data)
+        get_data.plot_line_graph('site_test', sort_dates, site_data)
+        get_data.plot_line_graph('network_test', sort_dates, network_data)
+
 
         image_strings = 0
         

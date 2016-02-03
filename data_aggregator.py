@@ -73,7 +73,7 @@ class DataAggregator():
         return aggregated_results                   
 
      
-    def sort_data(self, unsorted_list, metric, limit = 26):
+    def sort_data(self, unsorted_list, metric, limit = 26, reverse=True):
         """
         sorts the data of a list containing separated 'dimension' and 'metric' dictionaries
         in: the list, 'metric' : the metric label to sort by, limit: the amount of results to return
@@ -82,7 +82,7 @@ class DataAggregator():
         def sortDev(item):
             return item['metrics'][metric]                
                     
-        sorted_list = sorted(unsorted_list, key = sortDev, reverse = True)
+        sorted_list = sorted(unsorted_list, key = sortDev, reverse = reverse)
         top_results = sorted_list[:limit]      
         return top_results  
 
@@ -512,13 +512,15 @@ class DataAggregator():
                     second_data = analytics.get_article_breakdown(site_ga_id, second_period, extra_filters='ga:socialNetwork==%s' % social_network)
                 elif sort=='ascending':
                     logger.debug("%s data for period %s - %s", social_network, period.start_date, period.end_date)
-                    data = analytics.get_article_breakdown(site_ga_id, period, extra_filters='ga:socialNetwork==%s' % social_network, min_pageviews=0, sort='ga:pageviews')
+                    data = analytics.get_article_breakdown(site_ga_id, period, extra_filters='ga:pagePath=~^/articles/2015-12.*;ga:socialNetwork==%s' % social_network, min_pageviews=0, sort='ga:pageviews')
                     logger.debug("%s data for period %s - %s", social_network, second_period.start_date, second_period.end_date)
-                    second_data = analytics.get_article_breakdown(site_ga_id, second_period, extra_filters='ga:socialNetwork==%s' % social_network, min_pageviews=0, sort='ga:pageviews')       
+                    second_data = analytics.get_article_breakdown(site_ga_id, second_period, extra_filters='ga:pagePath=~^/articles/2015-12.*;ga:socialNetwork==%s' % social_network, min_pageviews=0, sort='ga:pageviews')       
+
                     
                             
-                data = list(data.items())[:num_articles+1]
-                second_data = list(second_data.items())[:num_articles+1]
+                data = list(data.items())#[:num_articles+1]
+                second_data = list(second_data.items())#[:num_articles+1]
+                
                 separated_data = []
                 for article in data:
                     path = article[1]['path']  
@@ -546,12 +548,50 @@ class DataAggregator():
         #AGGREGATE AND SORT ARTICLES              
         for social in social_articles:
             un_sorted = self.aggregate_data(social_articles[social], ['title', 'host', 'path'], ['pageviews'])
-            sorted = self.sort_data(un_sorted, 'pageviews', num_articles)
+            if sort=='descending':
+                sorted = self.sort_data(un_sorted, 'pageviews', num_articles)
+            elif sort=='ascending':
+                sorted = self.sort_data(un_sorted, 'pageviews', num_articles, reverse= False)
             second_aggregate = self.aggregate_data(second_social_articles[social], ['title', 'host', 'path'], ['pageviews'])
             complete = self.add_change(sorted, second_aggregate, ['pageviews'])
             social_articles[social] = complete                
             
         return social_articles   
+        
+    def get_totals_over_period(self, period_list, sites):
+        total_dict = {} 
+        network_total = {}          
+        for count, date in enumerate(period_list):
+            day = date.start_date
+            #print "for %s.." % month
+            network_total[day] = {'visitors':0, 'pageviews':0}
+            totals_list = []
+            network_list = []
+            for count_site, site in enumerate(sites):
+                #print "for %s.." % site
+                key = '%s' % day
+                site_ga_id = config.TABLES[site]
+                try:
+                    totals_list = analytics.get_site_totals_for_period(site_ga_id, date)[0]
+                except IndexError:
+                    totals_list = {'visitors':0, 'pageviews':0, 'pv_per_session':0.0, 'avg_time':0.0, 'sessions':0}
+                    
+                total_dict[day] = totals_list
+            for count_site, site in enumerate(config.TABLES.keys()):
+                #print "for %s.." % site
+                key = '%s' % day
+                site_ga_id = config.TABLES[site]
+                try:
+                    network_list = analytics.get_site_totals_for_period(site_ga_id, date)[0]
+                except IndexError:
+                    network_list = {'visitors':0, 'pageviews':0, 'pv_per_session':0.0, 'avg_time':0.0, 'sessions':0}
+                    
+                network_total[day]['visitors'] += network_list['visitors'] 
+                network_total[day]['pageviews'] += network_list['pageviews']  
+        
+        totals = {'site':total_dict, 'network':network_total}
+        return totals      
+    
 
     def get_monthly_device_data(self, sites, period_list):
         devices ={}  
@@ -588,9 +628,9 @@ class DataAggregator():
         #print devices
         return results
 
+        
 
-
-    def plot_line_graph(self, results, periods):
+    def plot_device_line_graph(self, results, periods):
         """
         line graph of percentages over a list of periods, saved to destination of file
         """
@@ -701,6 +741,40 @@ class DataAggregator():
 
         name = 'device_graph'
         
-        return {'name' : name, 'string' : imgdata.buf}           
-                      
+        return {'name' : name, 'string' : imgdata.buf}    
+        
+        
+        
+    def plot_line_graph(self, name, dates, data):       
+        """
+        name - string for name of final image
+        dates - list of ordered datetime objects/ or list of x values 
+        data - dictionary where key = label of the line and value = list of values to plot {label: [values]}, can have multiple lines. 
+        """
+        plot.close('all')
+        
+        figure, axis = plot.subplots(1,1,figsize=(12,9))        
+        figure.set_size_inches(6,4)      
+        
+        for count, label in enumerate(data):
+            values = data[label]
+            plot.plot(dates, values, label=label)
+            
+        plot.xticks(rotation='vertical', fontsize=8)
+        plot.yticks(fontsize=8)
+        plot.xlabel('Dates', fontsize=8)
+        #plot.ylabel('Visitors', fontsize=8)
+        axis.xaxis.set_major_formatter(plotdates.DateFormatter("%b %d"))        
+        
+        fontP = FontProperties()
+        fontP.set_size('small')
+        plot.legend(loc='upper left', prop=fontP, bbox_to_anchor=(1.0,1.0))
+        
+        plot.savefig('/var/www/dev/faye/statsdash_reports/%s.png' % name, bbox_inches='tight')                    
+                    
+        imgdata = StringIO.StringIO()
+        plot.savefig(imgdata, format = 'png', bbox_inches='tight')
+        imgdata.seek(0)
+        
+        return {'name' : name, 'string' : imgdata.buf}                       
                     

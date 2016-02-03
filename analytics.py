@@ -120,7 +120,7 @@ class Analytics(object):
             return False
         return data_available
 
-    def _execute_stats_query(self, site_id, stats_range, metrics, sort=None, dimensions=None, filters=None, max_results=None):
+    def _execute_stats_query(self, site_id, stats_range, metrics, sort=None, dimensions=None, filters=None, max_results=None, sampling_level=None):
         """
         """
         kwargs = {
@@ -137,6 +137,8 @@ class Analytics(object):
             kwargs['filters'] = filters
         if max_results:
             kwargs['max_results'] = max_results   
+        if sampling_level:
+            kwargs['samplingLevel'] = sampling_level               
         query = self.ga.get(**kwargs)	
         
         for i in range(1,6):
@@ -184,7 +186,8 @@ class Analytics(object):
             metrics='ga:pageviews',
             sort=sort,
             dimensions='ga:pageTitle,ga:pagePath,ga:hostname',
-            filters = filter_list )
+            filters = filter_list,
+            sampling_level='HIGHER_PRECISION' )
         article_data = self._format_article_breakdown_results(results)
         return article_data
 

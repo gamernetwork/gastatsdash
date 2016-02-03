@@ -104,21 +104,17 @@
     	</tr>
   	</thead>
   	<tbody>
-    	{% for network in top_socials %}
+      {% for network, articles in social_articles.items %}
     	<tr>
-      	<td rowspan="11">{{network.dimensions.socialNetwork}}</td>
-        	{% for k, v in social_articles.items %}
-            {% if network.dimensions.socialNetwork == k %}
-              <td class = "src">
-                {% for article in v %}
-                <tr class="{% cycle 'odd' 'even' %}">
-                  <td class = 'src'><a href="http://{{article.dimensions.host}}{{article.dimensions.path}}">{{article.dimensions.title}}</a></td>
-                  <td class = 'num'>{{article.metrics.pageviews|intcomma}}</td>
-                </tr> 
-                {% endfor %}
-              </td>
-            {% endif %}
-          {% endfor %}         	
+      	<td rowspan="{{articles|length|add:'1'}}">{{network}}</td>
+        <td class = "src">
+          {% for article in articles %}
+          <tr class="{% cycle 'odd' 'even' %}">
+            <td class = 'src'><a href="http://{{article.dimensions.host}}{{article.dimensions.path}}">{{article.dimensions.title}}</a></td>
+            <td class = 'num'>{{article.metrics.pageviews|intcomma}}</td>
+          </tr> 
+          {% endfor %}
+        </td>    	
       <tr>
       {% endfor %}
   	</tbody>  	
@@ -135,21 +131,17 @@
     	</tr>
   	</thead>
   	<tbody>
-    	{% for network in top_socials %}
+      {% for network, articles in bottom_social_articles.items %}
     	<tr>
-      	<td rowspan="6">{{network.dimensions.socialNetwork}}</td>
-        	{% for k, v in bottom_social_articles.items %}
-            {% if network.dimensions.socialNetwork == k %}
-              <td class = "src">
-                {% for article in v %}
-                <tr class="{% cycle 'odd' 'even' %}">
-                  <td class = 'src'><a href="http://{{article.dimensions.host}}{{article.dimensions.path}}">{{article.dimensions.title}}</a></td>
-                  <td class = 'num'>{{article.metrics.pageviews|intcomma}}</td>
-                </tr> 
-                {% endfor %}
-              </td>
-            {% endif %}
-          {% endfor %}        	
+      	<td rowspan="{{articles|length|add:'1'}}">{{network}}</td>
+        <td class = "src">
+          {% for article in articles %}
+          <tr class="{% cycle 'odd' 'even' %}">
+            <td class = 'src'><a href="http://{{article.dimensions.host}}{{article.dimensions.path}}">{{article.dimensions.title}}</a></td>
+            <td class = 'num'>{% if article.metrics.pageviews < 30 %}< 30{% elif article.metrics.pageviews < 100 %}< 100{% else %}{{article.metrics.pageviews|intcomma}}{% endif %}</td>
+          </tr> 
+          {% endfor %}
+        </td>    	
       <tr>
       {% endfor %}
   	</tbody>  	
