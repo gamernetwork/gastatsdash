@@ -68,7 +68,7 @@ elif report_type == "ArticleBreakdown":
         yesterday_stats_range, day_before_stats_range, "Daily Summary")
     
 elif report_type == "TrafficSourceBreakdown":
-    network_breakdown = reporting.TrafficSourceBreakdown(['foo@example.net'], 'Metabomb: Overwatch daily statsdash for', ['metabomb: Overwatch'], 
+    network_breakdown = reporting.TrafficSourceBreakdown(['foo@example.net'], 'Gamer Network daily statsdash for', all_sites, 
         yesterday_stats_range, week_before_stats_range, 'daily', black_list)
         
 elif report_type == "SocialReport":
