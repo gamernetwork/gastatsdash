@@ -95,7 +95,7 @@ def _run():
     """
     run_logger = RunLogger()
     
-    logging.config.dictConfig(LOGGING)
+    logging.config.dictConfig(config.LOGGING)
     logger = logging.getLogger('report')
 
     for config in reports:
