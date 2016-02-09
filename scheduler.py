@@ -5,6 +5,7 @@ from sqlite3 import OperationalError
 from datetime import date, datetime, timedelta
 
 import config
+from config import LOGGING
 from report_schedule import reports
 from reporting import create_report
 from dateutils import find_last_weekday, add_one_month, find_next_weekday
@@ -95,7 +96,7 @@ def _run():
     """
     run_logger = RunLogger()
     
-    logging.config.dictConfig(config.LOGGING)
+    logging.config.dictConfig(LOGGING)
     logger = logging.getLogger('report')
 
     for config in reports:
