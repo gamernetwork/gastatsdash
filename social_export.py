@@ -16,7 +16,7 @@ from analytics import get_analytics, StatsRange
 #sort out months
 #Jan-13 to Nov-15
 start_month = date(2013, 01, 01)
-end_month = date(2015, 12, 01)
+end_month = date(2016, 02, 01)
 current = start_month
 month_stats_range = []
 months = []

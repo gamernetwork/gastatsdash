@@ -258,6 +258,7 @@ class TrafficSourceBreakdown(Report):
             site_data_available = analytics.data_available_for_site(site_ga_id, 
                 self.period.get_end())
             if site_data_available == False:
+                print "Data for %s is missing" % site
                 return False
         return True
                      
