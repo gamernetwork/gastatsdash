@@ -67,7 +67,6 @@ class RunLogger(object):
         Returns a Date object
         """
         last_run = self.get_last_run(identifier)
-        last_run = datetime(2016, 2, 20)
         if last_run.year == 1:
             now = datetime.now() - timedelta(days=1)
             if frequency == 'DAILY':
@@ -83,7 +82,7 @@ class RunLogger(object):
                 return next_run
         now = datetime.now() - timedelta(days=1)
         if frequency == 'DAILY':
-        #if last run was over 2 days ago, set to today 
+        #if last run was over 2 days ago, set to yesterday 
             if (now - last_run).days >= 2:
               next_run = now  
             else:
