@@ -5,49 +5,8 @@
 		<meta charset='utf-8'> 
 	</head>
 <body>
-	<style>
-	body, p, td, th {
-		font-family: sans-serif;
-		text-align: left;
-	}
-	td, th {
-		padding: 0.3em 1em 0.3em 0.5em;
-		vertical-align: top;
-	}
-	tr.odd td, tr.odd th {
-		background-color: #f0f2f4;
-	}
-	thead th {
-		border-bottom: 1px solid #d0d9e0;
-		vertical-align: middle;
-	}
-    thead th.article-title {
-        width: 700px;
-    }
-	tr.site td, tr.site th {
-		border-top: 1px solid #d0d9e0;
-	}
-	tr.site td, tr.site th {
-		font-weight: bold;
-		padding-top: 1em;
-	}
-	tr.total td, tr.total th {
-		border-top: 1px solid #d0d9e0;
-	}
-	tr.total td, tr.total th {
-		padding-bottom: 1em;
-	}
-	td.num {
-		text-align: right;
-	}
-	.dup {
-		color: blue;
-	}
-	</style>
-  <h2>
-    Most Popular Articles
-  </h2>
-    <table>
+  <h2>Most Popular Articles</h2>
+    <table border="0" cellspacing="0">
         <thead>
             <tr>
                 <th>Site</th>
@@ -61,7 +20,7 @@
         <tbody>
             {% for article in top_articles %}
             <tr class="{% cycle 'odd' 'even' %}">
-                <td class="src">{{article.dimensions.host|cut:"www."|cut:".com"|capfirst}}</td>
+                <th>{{article.dimensions.host|cut:"www."|cut:".com"|capfirst}}</th>
                 <td class="src"><a href="http://{{article.dimensions.host}}{{article.dimensions.path}}">{{article.dimensions.title}}</a></td>
                 <td class="num">{{article.metrics.pageviews|intcomma}}</td>
                 {% if report_span == 'daily' %}

@@ -38,7 +38,13 @@ def get_report_change(value):
   	elif value == 'monthly':
   		  return 'MoM'    
 
+@register.filter
+def subtract(first, second):
+    return (int(first) - int(second))
 
+@register.filter
+def look_up(dictionary, key):
+    return dictionary[key]
 
 django.template.builtins.append(register)
 

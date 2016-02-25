@@ -425,6 +425,7 @@ class DataAggregator():
         site_referrals = OrderedDict()   
         second_site_referrals = OrderedDict()  
         num_sites = len(sites)      
+        source_pvs = {}
             
         #LOOP TO GET ARTICLES 
         for n, site in enumerate(sites):
@@ -452,6 +453,14 @@ class DataAggregator():
                     logger.debug("%s data for period %s - %s", source, second_period.start_date, second_period.end_date)
                     second_data = analytics.get_article_breakdown(site_ga_id, second_period, extra_filters='ga:source==%s' % source)
                     
+                    #aggregate mobile and desktop neogaf - need to make this more general to combine all mobile and desktop sources?
+                    if source == "m.neogaf.com":
+                      source = "neogaf.com"
+                      count -= 1
+                      
+                    source_pvs[source] = item['metrics']['pageviews']
+                    
+                      
                     data = list(data.items())[:6]
                     second_data = list(second_data.items())[:6]
                     separated_data = []
@@ -483,10 +492,13 @@ class DataAggregator():
             un_sorted = self.aggregate_data(site_referrals[source], ['title', 'host', 'path'], ['pageviews'])
             sorted = self.sort_data(un_sorted, 'pageviews', num_articles)   
             second_aggregate = self.aggregate_data(second_site_referrals[source], ['title', 'host', 'path'], ['pageviews']) 
-            complete = self.add_change(sorted, second_aggregate, ['pageviews'])          
+            complete = self.add_change(sorted, second_aggregate, ['pageviews'])       
             site_referrals[source] = complete 
             
-        return site_referrals
+        total = {}
+        total['site_referrals'] = site_referrals
+        total['site_pvs'] = source_pvs
+        return total
         
         
     def get_social_referral_articles(self, sites, period, second_period, social_networks, num_articles, sort='descending'): 

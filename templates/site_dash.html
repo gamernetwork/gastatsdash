@@ -39,54 +39,35 @@
 	img {
     	margin: 0.2em;
 	}
-
 	</style>
     <h1>{{subject}}</h1>
-    
-
     <p>This data is confidential and for employees of {% if num_sites == 1 %}your site{% else %}Gamer Network{% endif %} only. Do not transmit outside the company. </p>
-
-    {% include "template_sections/overview_monthly_table.html" %}
-
-    {% if num_sites == total_num_sites %}
-          
-      {% include "template_sections/site_summary_table.html" with sites=network_data totals=metric_totals %}
-    
-      {% include "template_sections/country_summary_table.html" with countries=country_data totals=metric_totals %}
-      
-    {% endif %}
-		
+    {% include "template_sections/overview_monthly_table.html" %}   
+    {% include "template_sections/country_summary_table.html" with countries=country_data totals=metric_totals %}
+    {% if num_sites == total_num_sites %} {% include "template_sections/site_summary_table.html" with sites=network_data totals=metric_totals %} {% endif %}		
     {% include "template_sections/article_table.html" with data=top_articles %}
-
-    {% include "template_sections/traffic_summary_table.html" %}
-      
-    
-    <h2> 
-        Devices 
-    </h2>
-    <p>
-        Shows the number of visitors using each device.
-    </p>
-    <table>
+    {% include "template_sections/traffic_summary_table.html" %}   
+    <h2>Devices</h2>
+    <p>Shows the number of visitors using each device.</p>
+    <table border="0" cellspacing="0">
         <thead>
             <tr class = 'column_header'>
                 <th> Device Category </th>
                 <th> Visitors </th>
-                <th> YoY Change </th>
+                {% if report_span == 'monthly' %}<th> YoY Change </th>{% endif %}
                 <th> Percentage of Visitors </th>
             </tr>
         </thead>
         <tbody>
             {% for source in devices_list %}
                 <tr class="{% cycle 'odd' 'even' %}">
-                    <td class = 'src'> {{source.dimensions.deviceCategory}} </td>
+                    <th> {{source.dimensions.deviceCategory|capfirst}} </th>
                     <td class = 'num'> {{source.metrics.visitors|intcomma}} </td>
-                    <td class = 'num' style="color: {% if source.metrics.change_visitors > 0 %}green{% else %}red{% endif %};"> {{source.metrics.change_visitors|as_percentage_of:source.metrics.visitors}} </td>
+                    {% if report_span == 'monthly' %}<td class = 'num' style="color: {% if source.metrics.change_visitors > 0 %}green{% else %}red{% endif %};"> {{source.metrics.change_visitors|as_percentage_of:source.metrics.visitors}} </td>{% endif %}
                     <td class = 'num'> {{source.metrics.visitors|as_percentage_of:period_totals.first_period.visitors}} </td>
                 </tr>
             {% endfor %}
-        </tbody>
-       
+        </tbody>    
     </table>
     
     {% if report_span == 'monthly' %}
@@ -94,18 +75,9 @@
       <img alt="embedded image" src ="cid:{{img_name.device}}" />
     {% endif %}
     
-    <h2> 
-        Social Networks 
-    </h2> 
-    <p> 
-        The number of visitors to {% if num_sites == 1 %}your site{% else %}our sites{% endif %} who came via a social network.
-    </p>
-    <p>
-        Total Visitors that come from social networks: <b>{{period_totals.first_period.social_visitors|intcomma}}</b>
-    </p>
-    <p>
-        Percentage of total visitors that come from social networks: <b>{{period_totals.first_period.social_visitors|as_percentage_of:period_totals.first_period.visitors}}</b>
-    </p>
+    <h2>Social Networks </h2> 
+    <p>The number of visitors to {% if num_sites == 1 %}your site{% else %}our sites{% endif %} who came via a social network.</p>
+    <p>Total Visitors that come from social networks: <b>{{period_totals.first_period.social_visitors|intcomma}}</b></p>
+    <p>Percentage of total visitors that come from social networks: <b>{{period_totals.first_period.social_visitors|as_percentage_of:period_totals.first_period.visitors}}</b></p>
     {% include "template_sections/social_network_table.html" with social_list=social_list %}
-
 </body>

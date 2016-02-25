@@ -9,6 +9,7 @@ import random
 import StringIO
 import cStringIO
 import urllib, base64
+from slimmer import html_slimmer
 
 from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
@@ -19,7 +20,7 @@ from collections import OrderedDict, defaultdict
 import config
 from analytics import get_analytics, StatsRange
 from renderer import render_template
-from dateutils import subtract_one_month
+from dateutils import subtract_one_month, add_one_month
 
 from data_aggregator import DataAggregator
 
@@ -48,6 +49,7 @@ class Emailer(object):
         Send an html email to a list of recipients.
         """
 
+        html= html_slimmer(html)
         msg = MIMEMultipart('alternative')
         msg.set_charset('utf8')
         msg['Subject'] = subject
@@ -256,6 +258,7 @@ class TrafficSourceBreakdown(Report):
         logger = logging.getLogger('report')
         for site in config.TABLES.keys():
             site_ga_id = config.TABLES[site]
+            print site 
             site_data_available = analytics.data_available_for_site(site_ga_id, 
                 self.period.get_end())
             if site_data_available == False:
@@ -282,24 +285,28 @@ class TrafficSourceBreakdown(Report):
         #getting stat ranges for monthly accum
         today = self.period.end_date
         first = datetime(today.year, today.month, 1).date()
-        month_range = StatsRange("Monthly Aggregate", first, today)
+        month_range = StatsRange("Month to date Aggregate", first, today)
         prev_yr_first = first - timedelta(days=365)
         prev_yr_today = today - timedelta(days=365)
-        last_yr_range = StatsRange("Last Year Monthly Aggregate", prev_yr_first, prev_yr_today) 
+        #last_yr_range = StatsRange("Last Year Monthly Aggregate", prev_yr_first, prev_yr_today) 
         yesterday = self.period.start_date - timedelta(days=1)
         yesterday_period = StatsRange("yesterday", yesterday, yesterday)    
         
+        prev_yr_end = add_one_month(prev_yr_first)
+        last_yr_range = StatsRange("Last Year Whole Monthly Aggregate", prev_yr_first, prev_yr_end) 
+        
+        num_days = (prev_yr_end - prev_yr_today).days
         
         #get data for totals of the site and network if not network report
         period_data = get_data.get_site_totals(self.sites, self.period, self.second_period, True)
         period_totals = period_data['totals'] 
-        monthly_totals = get_data.get_site_totals(self.sites, month_range, last_yr_range, False)['totals'] 
+        monthly_totals = get_data.get_site_totals(self.sites, month_range, last_yr_range, True)['totals'] 
         
         network_period_totals = 0
         network_monthly_totals = 0
         if num_sites < total_num_sites:
             network_period_totals = get_data.get_site_totals(config.TABLES.keys(), self.period, self.second_period, True)['totals'] 
-            network_monthly_totals = get_data.get_site_totals(config.TABLES.keys(), month_range, last_yr_range, False)['totals']
+            network_monthly_totals = get_data.get_site_totals(config.TABLES.keys(), month_range, last_yr_range, True)['totals']
           
         #get data for traffic/devices/socials 
         results = get_data.get_traffic_device_social_data(self.sites, self.period, self.second_period)
@@ -338,7 +345,11 @@ class TrafficSourceBreakdown(Report):
         top_sites = get_data.sort_data(traffic, 'visitors', 25)
             
         social_articles = get_data.get_social_referral_articles(self.sites, self.period, yesterday_period, top_social_results, num_articles)
-        site_referrals = get_data.get_site_referral_articles(self.sites, self.period, yesterday_period, top_sites, self.black_list, num_articles, num_referrals)
+        site_total = get_data.get_site_referral_articles(self.sites, self.period, yesterday_period, top_sites, self.black_list, num_articles, num_referrals)
+        
+        site_referrals = site_total['site_referrals']
+        site_total_pvs = site_total['site_pvs']
+
         
         if self.report_span == 'daily':
             top_articles = get_data.get_top_articles(self.sites, self.period, yesterday_period, 10)
@@ -362,6 +373,16 @@ class TrafficSourceBreakdown(Report):
             network_data = period_data['network_data']
             
             metric_totals = {'pageviews': period_data['totals']['first_period']['pageviews'], 'visitors': period_data['totals']['first_period']['visitors']}  
+        elif num_sites == 1:
+            country_first = get_data.get_country_metrics(self.sites, self.period)
+            country_second = get_data.get_country_metrics(self.sites, self.second_period)
+            
+            country_metrics = get_data.add_change(country_first, country_second, ['visitors', 'pageviews'])  
+            
+            country_metrics = get_data.sort_data(country_metrics, 'visitors',limit = 5)    
+            network_data = period_data['network_data']
+            
+            metric_totals = {'pageviews': period_data['totals']['first_period']['pageviews'], 'visitors': period_data['totals']['first_period']['visitors']}    
             
         device_img_name = 0     
         if self.report_span == 'monthly':
@@ -383,8 +404,8 @@ class TrafficSourceBreakdown(Report):
           
         #RENDER TEMPLATE                                         
         report_html = render_template(self.template, {
-            'start_date': self.period.start_date.strftime("%d/%m/%y"),
-            'end_date': self.period.end_date.strftime("%d/%m/%y"),
+            'start_date': self.period.start_date,
+            'end_date': self.period.end_date,
             'report_span': self.report_span,
             'subject': self.get_subject(),
             #'img_url': config.ASSETS_URL,
@@ -394,6 +415,7 @@ class TrafficSourceBreakdown(Report):
             'social_list' : top_social_results,
             'social_articles': social_articles,
             'site_referrals': site_referrals,
+            'site_total_pvs' : site_total_pvs,
             'top_articles' : top_articles,
             'num_sites': num_sites,
             'total_num_sites': total_num_sites,
@@ -404,7 +426,8 @@ class TrafficSourceBreakdown(Report):
             'network_monthly_totals': network_monthly_totals,
             'country_data': country_metrics,
             'network_data': network_data,
-            'metric_totals': metric_totals
+            'metric_totals': metric_totals,
+            'num_days': num_days
         })
         
         results = {

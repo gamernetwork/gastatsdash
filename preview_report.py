@@ -1,6 +1,7 @@
 import reporting
 import argparse
 import report_schedule
+from slimmer import html_slimmer
 
 from datetime import date, timedelta
 from dateutils import subtract_one_month
@@ -68,7 +69,7 @@ elif report_type == "ArticleBreakdown":
         yesterday_stats_range, day_before_stats_range, "Daily Summary")
     
 elif report_type == "TrafficSourceBreakdown":
-    network_breakdown = reporting.TrafficSourceBreakdown(['foo@example.net'], 'Gamer Network daily statsdash for',['usgamer.net'], 
+    network_breakdown = reporting.TrafficSourceBreakdown(['foo@example.net'], 'Gamer Network daily statsdash for', all_sites, 
         yesterday_stats_range, week_before_stats_range, 'daily', black_list)
         
 elif report_type == "SocialReport":
@@ -80,6 +81,7 @@ else:
 
 
 generated_html = network_breakdown.generate_report()['html'] 
+generated_html = html_slimmer(generated_html)
     
 with open(file_src, 'w') as file:
 	file.write(generated_html.encode("utf-8"))	

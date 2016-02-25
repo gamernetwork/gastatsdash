@@ -112,6 +112,7 @@ class Analytics(object):
             end_date=stats_date,
             metrics="ga:pageviews",
             dimensions="ga:dateHour",
+            include_empty_rows=True,
         )
         results = query.execute()
         try:
@@ -120,7 +121,7 @@ class Analytics(object):
             return False
         return data_available
 
-    def _execute_stats_query(self, site_id, stats_range, metrics, sort=None, dimensions=None, filters=None, max_results=None, sampling_level=None):
+    def _execute_stats_query(self, site_id, stats_range, metrics, sort=None, dimensions=None, filters=None, max_results=None, sampling_level=None, include_empty_rows=None):
         """
         """
         kwargs = {
@@ -128,6 +129,7 @@ class Analytics(object):
             'start_date': stats_range.get_start(),
             'end_date': stats_range.get_end(),
             'metrics': metrics,
+            'include_empty_rows': True,
         }
         if sort:
             kwargs['sort'] = sort
@@ -138,7 +140,9 @@ class Analytics(object):
         if max_results:
             kwargs['max_results'] = max_results   
         if sampling_level:
-            kwargs['samplingLevel'] = sampling_level               
+            kwargs['samplingLevel'] = sampling_level       
+        if include_empty_rows:
+            kwargs['include-empty-rows'] = include_empty_rows        
         query = self.ga.get(**kwargs)	
         
         for i in range(1,6):
