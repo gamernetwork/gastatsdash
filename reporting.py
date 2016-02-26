@@ -255,7 +255,6 @@ class TrafficSourceBreakdown(Report):
         logger = logging.getLogger('report')
         for site in config.TABLES.keys():
             site_ga_id = config.TABLES[site]
-            print site 
             site_data_available = analytics.data_available_for_site(site_ga_id, 
                 self.period.get_end())
             if site_data_available == False:
