@@ -9,7 +9,6 @@ import random
 import StringIO
 import cStringIO
 import urllib, base64
-from slimmer import html_slimmer
 
 from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
@@ -48,8 +47,6 @@ class Emailer(object):
         """
         Send an html email to a list of recipients.
         """
-
-        html= html_slimmer(html)
         msg = MIMEMultipart('alternative')
         msg.set_charset('utf8')
         msg['Subject'] = subject
