@@ -118,7 +118,10 @@ class Analytics(object):
         try:
             data_available = len(results['rows']) == 24
         except KeyError:
+            logger.info("site_id %s returned no rows for data_available check on %s" % (site_id, stats_date))
             return False
+        if not data_available:
+            logger.info("site_id %s data_available check on %s returned rows: %s" % (site_id, stats_date, results['rows']))
         return data_available
 
     def _execute_stats_query(self, site_id, stats_range, metrics, sort=None, dimensions=None, filters=None, max_results=None, sampling_level=None, include_empty_rows=None):

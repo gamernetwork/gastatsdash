@@ -297,6 +297,7 @@ class TrafficSourceBreakdown(Report):
         period_totals = period_data['totals'] 
         monthly_totals = get_data.get_site_totals(self.sites, month_range, last_yr_range, True)['totals'] 
         
+        
         network_period_totals = 0
         network_monthly_totals = 0
         if num_sites < total_num_sites:
@@ -326,10 +327,14 @@ class TrafficSourceBreakdown(Report):
                 
         #total number visitors use social networks
         period_totals['first_period']['social_visitors'] = 0
+        period_totals['first_period']['social_pvs'] = 0
         for social in socials:
             visitors = social['metrics']['visitors']
-            period_totals['first_period']['social_visitors'] += visitors   
+            pageviews = social['metrics']['pageviews']
+            period_totals['first_period']['social_visitors'] += visitors 
+            period_totals['first_period']['social_pvs'] += pageviews   
 
+        print "TOTALS", period_totals
         if self.report_span == 'daily':
             num_articles = 1
             num_referrals = 5
@@ -468,11 +473,21 @@ class SocialReport(Report):
         logger.info('%s', self.get_subject())        
         #some kind of historical data chart 
         
-        #get site and network totals 
-        period_data = get_data.get_site_totals(self.sites, self.period, self.second_period, True)
-        period_totals = period_data['totals'] 
-        network_data = get_data.get_site_totals(config.TABLES.keys(), self.period, self.second_period, True)
-        network_totals = network_data['totals'] 
+        total_num_sites = len(config.TABLES)            
+        num_sites = len(self.sites)        
+        
+        if num_sites == total_num_sites:
+          #network totals  
+          network_data = get_data.get_site_totals(self.sites, self.period, self.second_period, True)
+          network_totals = network_data['totals']     
+          period_data= 0
+          period_totals = 0 
+        else:   
+          #get site and network totals 
+          period_data = get_data.get_site_totals(self.sites, self.period, self.second_period, True)
+          period_totals = period_data['totals'] 
+          network_data = get_data.get_site_totals(config.TABLES.keys(), self.period, self.second_period, True)
+          network_totals = network_data['totals'] 
         
         #get social data 
         results = get_data.get_traffic_device_social_data(self.sites, self.period, self.second_period, data=['social'])
@@ -534,9 +549,15 @@ class SocialReport(Report):
             network_visitors.append(network_total[date.start_date]['visitors'])
             pageviews.append(total_dict[date.start_date]['pageviews'])
             network_pageviews.append(network_total[date.start_date]['pageviews'])
+
+
+
+
+        image_strings = []
+
                         
         #add more interesting looking things ya know, be able to all axis ticks, label axes, etc etc
-        visitor_data = {'site visitors':visitors, 'network visitors':network_visitors}
+        """visitor_data = {'site visitors':visitors, 'network visitors':network_visitors}
         pageview_data = {'site pageviews':pageviews, 'network pageviews':network_pageviews}
         all_data = {'site visitors':visitors, 'network visitors':network_visitors, 'site pageviews':pageviews, 'network pageviews':network_pageviews}
         site_data = {'site visitors':visitors,'site pageviews':pageviews}
@@ -544,14 +565,24 @@ class SocialReport(Report):
         
         
         #get returns of image string and add to image strings, then add into report!?
-        get_data.plot_line_graph('visitors_test', sort_dates, visitor_data)
-        get_data.plot_line_graph('pageviews_test', sort_dates, pageview_data)
-        get_data.plot_line_graph('combined_test', sort_dates, all_data)
-        get_data.plot_line_graph('site_test', sort_dates, site_data)
-        get_data.plot_line_graph('network_test', sort_dates, network_data)
+        #get_data.plot_line_graph('visitors_test', sort_dates, visitor_data)
+        #get_data.plot_line_graph('pageviews_test', sort_dates, pageview_data)
+        #combo_graph = get_data.plot_line_graph('combined_test', sort_dates, all_data)
+        #get_data.plot_line_graph('site_test', sort_dates, site_data)
+        #get_data.plot_line_graph('network_test', sort_dates, network_data)"""
+        
+        
+        if num_sites == total_num_sites:
+           network_data = {'network visitors':network_visitors, 'network pageviews':network_pageviews}
+           combo_graph = get_data.plot_line_graph('combined_test', sort_dates, network_data)
+        else:
+          all_data = {'site visitors':visitors, 'network visitors':network_visitors, 'site pageviews':pageviews, 'network pageviews':network_pageviews}
+          combo_graph = get_data.plot_line_graph('combined_test', sort_dates, all_data)
+        
 
+        image_strings.append(combo_graph)
+        graph_name = combo_graph['name']
 
-        image_strings = 0
         
 
         report_html = render_template(self.template, {  
@@ -563,7 +594,10 @@ class SocialReport(Report):
             'site_totals': period_totals,
             'network_totals': network_totals,
             'social_articles': social_articles, 
-            'bottom_social_articles': bottom_social_articles,       
+            'bottom_social_articles': bottom_social_articles, 
+            'graph': graph_name,
+            'num_sites': num_sites,
+            'total_num_sites': total_num_sites,                  
         })
         
         results = {

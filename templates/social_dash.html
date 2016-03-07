@@ -46,12 +46,12 @@
 
 	</style>
 	<h1>{{subject}}</h1>
-	<p>Site Total Visitors: <b>{{site_totals.first_period.visitors|intcomma|cut:".0"}}</b></p>
+	{% if num_sites < total_num_sites %}<p>Site Total Visitors: <b>{{site_totals.first_period.visitors|intcomma|cut:".0"}}</b></p>{% endif %}
 	<p>Network Total Visitors: <b>{{network_totals.first_period.visitors|intcomma|cut:".0"}}</b></p>
-	<p>Site Total PVs: <b>{{site_totals.first_period.pageviews|intcomma|cut:".0"}}</b></p>
+	{% if num_sites < total_num_sites %}<p>Site Total PVs: <b>{{site_totals.first_period.pageviews|intcomma|cut:".0"}}</b></p>{% endif %}
 	<p>Network Total PVs: <b>{{network_totals.first_period.pageviews|intcomma|cut:".0"}}</b></p>
 	<h2> Totals </h2>
-	<table>
+	<table border="0" cellspacing="0">
   	<thead>
     	<tr class = 'column_header'>
       	<th rowspan="2">Social Network</th>
@@ -59,15 +59,15 @@
       	<th colspan='5'>PageViews</th>
     	</tr>
     	<tr>
-      	<th>Total</th>
+      	<th>Social Network Totals</th>
       	<th>+/- MoM</th>
       	<th>+/- YoY</th>
-      	<th>% Site Total</th>
+      	{% if num_sites < total_num_sites %}<th>% Site Total</th>{% endif %}
       	<th>% Network Total</th>
       	<th>Total</th>
       	<th>+/- MoM</th>
       	<th>+/- YoY</th>
-      	<th>% Site Total</th>
+      	{% if num_sites < total_num_sites %}<th>% Site Total</th>{% endif %}
       	<th>% Network Total</th>      	
     	</tr>
   	</thead>
@@ -78,13 +78,13 @@
         	<td class = 'num' >{{network.metrics.visitors|intcomma}}</td>
         	<td class = 'num' style="color: {% if network.metrics.change_visitors > 0 %}green{% else %}red{% endif %};">{{network.metrics.change_visitors|as_percentage_of:network.metrics.visitors}}</td>
         	<td class = 'num' style="color: {% if network.yoy_change.visitors > 0 %}green{% else %}red{% endif %};">{{network.yoy_change.visitors|as_percentage_of:network.metrics.visitors}}</td>
-        	<td class = 'num' >{{network.metrics.visitors|as_percentage_of:site_totals.first_period.visitors}}</td>
+        	{% if num_sites < total_num_sites %}<td class = 'num' >{{network.metrics.visitors|as_percentage_of:site_totals.first_period.visitors}}</td>{% endif %}
         	<td class = 'num' >{{network.metrics.visitors|as_percentage_of:network_totals.first_period.visitors}}</td>
         	
         	<td class = 'num' >{{network.metrics.pageviews|intcomma}}</th>
         	<td class = 'num' style="color: {% if network.metrics.change_pageviews > 0 %}green{% else %}red{% endif %};">{{network.metrics.change_pageviews|as_percentage_of:network.metrics.pageviews}}</td>
         	<td class = 'num' style="color: {% if network.yoy_change.pageviews > 0 %}green{% else %}red{% endif %};">{{network.yoy_change.pageviews|as_percentage_of:network.metrics.pageviews}}</td>
-        	<td class = 'num' >{{network.metrics.pageviews|as_percentage_of:site_totals.first_period.pageviews}}</td>
+        	{% if num_sites < total_num_sites %}<td class = 'num' >{{network.metrics.pageviews|as_percentage_of:site_totals.first_period.pageviews}}</td>{% endif %}
         	<td class = 'num' >{{network.metrics.pageviews|as_percentage_of:network_totals.first_period.pageviews}}</td>        	        
                              	
       	</tr>
@@ -95,7 +95,7 @@
 	
 	<h2> Top 10 Articles </h2>
 	
-	<table>
+	<table border="0" cellspacing="0">
   	<thead>
     	<tr>
       	<th>Social Network</th>
@@ -122,7 +122,7 @@
 	
 	<h2> Bottom 5 Articles </h2>
 	
-	<table>
+	<table border="0" cellspacing="0">
   	<thead>
     	<tr>
       	<th>Social Network</th>
@@ -146,7 +146,7 @@
       {% endfor %}
   	</tbody>  	
 	</table>
-	
+	<img alt="embedded image" src ="cid:{{graph}}" />
 	
 </body>
 </html>

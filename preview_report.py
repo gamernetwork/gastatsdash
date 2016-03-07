@@ -35,13 +35,13 @@ week_before_stats_range = StatsRange("Week Before", week_before, week_before)
 this_week_stats_range = StatsRange("This Week", week_before, today)
 last_week_stats_range = StatsRange("Week Before", last_week, week_before)
 
-first_dec = date(2015, 12, 01)
-last_dec = date(2015, 12, 31)
-first_nov = date(2015, 11, 01)
-last_nov = date(2015, 11, 30)
+first_feb = date(2016, 02, 01)
+last_feb = date(2016, 02, 29)
+first_jan = date(2016, 01, 01)
+last_jan = date(2016, 01, 30)
 
-dec_stats_range = StatsRange("December", first_dec, last_dec)
-nov_stats_range = StatsRange("November", first_nov, last_nov)
+feb_stats_range = StatsRange("FEb", first_feb, last_feb)
+jan_stats_range = StatsRange("Jan", first_jan, last_jan)
 
 previous_months = 3
 end_date = today
@@ -70,11 +70,11 @@ elif report_type == "ArticleBreakdown":
     
 elif report_type == "TrafficSourceBreakdown":
     network_breakdown = reporting.TrafficSourceBreakdown(['foo@example.net'], 'Gamer Network daily statsdash for', all_sites, 
-        yesterday_stats_range, week_before_stats_range, 'daily', black_list)
+        feb_stats_range, jan_stats_range, 'daily', black_list)
         
 elif report_type == "SocialReport":
-    network_breakdown = reporting.SocialReport(['foo@example.net'], 'Eurogamer.net monthly social report for', ['eurogamer.net'], 
-        dec_stats_range, nov_stats_range, 'monthly')
+    network_breakdown = reporting.SocialReport(['foo@example.net'], 'Gamer Network monthly social report for', all_sites, 
+        feb_stats_range, jan_stats_range, 'monthly')
         
 else:
 	print "unknown report type"	

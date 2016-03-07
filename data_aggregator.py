@@ -786,7 +786,7 @@ class DataAggregator():
         fontP.set_size('small')
         plot.legend(loc='upper left', prop=fontP, bbox_to_anchor=(1.0,1.0))
         
-        #plot.savefig('/var/www/dev/faye/statsdash_reports/%s.png' % name, bbox_inches='tight')                    
+        plot.savefig('/var/www/dev/faye/statsdash_reports/%s.png' % name, bbox_inches='tight')                    
                     
         imgdata = StringIO.StringIO()
         plot.savefig(imgdata, format = 'png', bbox_inches='tight')
