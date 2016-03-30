@@ -18,6 +18,7 @@ class RunLogger(object):
     Persistence layer for recording the last run of a report and querying
     whether a report can be run now, given a reporting frequency.
     """
+    override_data = False
     
     def __init__(self):
         db_location = os.path.join(config.SCHEDULE_DB_LOCATION, "schedule.db")
@@ -61,14 +62,15 @@ class RunLogger(object):
         )
         self.conn.commit()
 
-    def get_next_run(self, identifier, frequency, frequency_options={}):
+    def get_next_run(self, last_run, frequency, frequency_options={}):
         """
         When should the report run next.
         Returns a Date object
         """
-        last_run = self.get_last_run(identifier)
+        today = date.today() - timedelta(days=1)
+        now = datetime(today.year, today.month, today.day)  #returns now as datetime with time as 00 00 
+        
         if last_run.year == 1:
-            now = datetime.now() - timedelta(days=1)
             if frequency == 'DAILY':
                 return now
             if frequency == 'WEEKLY':
@@ -80,17 +82,22 @@ class RunLogger(object):
                 if next_run < now:
                     next_run = add_one_month(next_run)
                 return next_run
-        now = datetime.now() - timedelta(days=1)
+       
         if frequency == 'DAILY':
-        #if last run was over 2 days ago, set to yesterday 
+            #if last run was over 2 days ago, set to yesterday 
+            next_run = last_run + timedelta(days=1)
             if (now - last_run).days >= 2:
-              next_run = now  
-            else:
-              next_run = last_run + timedelta(days=1)     
+              self.override_data = True
         if frequency == 'WEEKLY':
             next_run = last_run + timedelta(days=7)
         if frequency == 'MONTHLY':
+            day = frequency_options.get("day")
             next_run = add_one_month(last_run)
+            next_run = next_run.replace(day=day)
+            if next_run < now:
+                next_run = add_one_month(next_run)           
+            if (now - next_run).days >= 2:
+              self.override_data = True
         return next_run
 
 
@@ -109,13 +116,21 @@ def _run():
         frequency = config['frequency']
         frequency_options = config.get('frequency_options', {})
         report_class = config['report']
-        next_run_date = run_logger.get_next_run(identifier, frequency, frequency_options).date()
+        last_run = run_logger.get_last_run(identifier)
+        next_run_date = run_logger.get_next_run(last_run, frequency, frequency_options).date()
         today = date.today()
         needs_run = next_run_date <= today
         print "%s next run: %s.  Needs run: %s" % (identifier, next_run_date, needs_run)
         if needs_run:
             report = create_report(report_class, config, next_run_date)
-            data_available = report.data_available()
+            if run_logger.override_data == True:
+                data_available = report.data_available(override=True)
+                print "overriding data available", run_logger.override_data
+                logger.warning("overrriding data available and sending report anyway")
+            else:
+                data_available = report.data_available()
+
+            run_logger.override_data = False
             print "%s next run: %s.  Data available: %s" % (identifier, next_run_date, data_available)
             if data_available:
                 report.send_report()
@@ -127,6 +142,7 @@ def _run():
                     second=0,
                     microsecond=1
                 ) 
+                           
                 run_logger.record_run(identifier, run_datetime)
 
 def run_schedule():

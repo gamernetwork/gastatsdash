@@ -11,9 +11,6 @@ def add_one_month(t):
         datetime.date(2010, 2, 28)
     """
     
-    #
-    
-    
     one_day = datetime.timedelta(days=1)
     one_month_later = t + one_day
 
@@ -22,7 +19,7 @@ def add_one_month(t):
 
     target_month = one_month_later.month
     
-    while one_month_later.day < 32:  # advance to appropriate day, needs to always get to the end of the month 
+    while one_month_later.day < t.day:  # advance to appropriate day, needs to always get to the end of the month 
         one_month_later += one_day
         if one_month_later.month != target_month:  # gone too far
             one_month_later -= one_day

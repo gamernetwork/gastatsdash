@@ -228,6 +228,7 @@ class NetworkBreakdown(Report):
 
 class TrafficSourceBreakdown(Report):
     template='site_dash.html'
+    warning_sites = []
     
     #init
     def __init__(self, recipients, subject, sites, period, second_period, report_span, black_list):
@@ -248,17 +249,22 @@ class TrafficSourceBreakdown(Report):
             subject = ' '.join([self.subject, start.strftime('%B')])
         return subject
 
-    def data_available(self):
+    def data_available(self, override=False):
         """
         Iterate through all sites and check that their data is available.
         """        
+        #if override is true, store site that says false and return true anyway
+        
         logger = logging.getLogger('report')
         for site in config.TABLES.keys():
             site_ga_id = config.TABLES[site]
             site_data_available = analytics.data_available_for_site(site_ga_id, self.period.get_end())
             if site_data_available == False:
                 logger.info( "Data for %s is missing" % site)
-                return False
+                if override == True:
+                    self.warning_sites.append(site)
+                else:
+                    return False
         return True
                      
     def generate_report(self):
@@ -267,7 +273,7 @@ class TrafficSourceBreakdown(Report):
         gather data from analytics, call functions to aggregate/sort data and draw charts 
         template to html
         """
-
+        
         logger = logging.getLogger('report')
         logger.info('%s', self.get_subject())
         
@@ -334,7 +340,6 @@ class TrafficSourceBreakdown(Report):
             period_totals['first_period']['social_visitors'] += visitors 
             period_totals['first_period']['social_pvs'] += pageviews   
 
-        print "TOTALS", period_totals
         if self.report_span == 'daily':
             num_articles = 1
             num_referrals = 5
@@ -401,6 +406,8 @@ class TrafficSourceBreakdown(Report):
             image_strings.append(device_img)
             device_img_name = device_img['name']
 
+        
+        #
           
         #RENDER TEMPLATE                                         
         report_html = render_template(self.template, {
@@ -427,7 +434,9 @@ class TrafficSourceBreakdown(Report):
             'country_data': country_metrics,
             'network_data': network_data,
             'metric_totals': metric_totals,
-            'num_days': num_days
+            'num_days': num_days,
+            'warning': self.warning_sites,
+            'site_names' :self.sites
         })
         
         results = {
@@ -440,6 +449,7 @@ class TrafficSourceBreakdown(Report):
 
 class SocialReport(Report):
     template='social_dash.html'
+    warning_sites = []
   
     def __init__(self, recipients, subject, sites, period, second_period, report_span):
         super(SocialReport, self).__init__(recipients, subject, sites, period)
@@ -455,16 +465,20 @@ class SocialReport(Report):
             subject = ' '.join([self.subject, end.strftime("%a %d %b %Y")])
         return subject
         
-    def data_available(self):
+    def data_available(self, override=False):
         """
         Iterate through all sites and check that their data is available.
         """        
+        logger = logging.getLogger('report')
         for site in config.TABLES.keys():
             site_ga_id = config.TABLES[site]
-            site_data_available = analytics.data_available_for_site(site_ga_id, 
-                self.period.get_end())
+            site_data_available = analytics.data_available_for_site(site_ga_id, self.period.get_end())
             if site_data_available == False:
-                return False
+                logger.info( "Data for %s is missing" % site)
+                if override == True:
+                    self.warning_sites.append(site)
+                else:
+                    return False
         return True
         
     def generate_report(self):
@@ -597,7 +611,9 @@ class SocialReport(Report):
             'bottom_social_articles': bottom_social_articles, 
             'graph': graph_name,
             'num_sites': num_sites,
-            'total_num_sites': total_num_sites,                  
+            'total_num_sites': total_num_sites,  
+            'warning': self.warning_sites,
+            'site_names' :self.sites                            
         })
         
         results = {

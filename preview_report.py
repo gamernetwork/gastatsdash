@@ -43,6 +43,12 @@ last_jan = date(2016, 01, 30)
 feb_stats_range = StatsRange("FEb", first_feb, last_feb)
 jan_stats_range = StatsRange("Jan", first_jan, last_jan)
 
+sat = date(2016, 03, 12)
+sun = date(2016, 03, 13)
+sat_range = StatsRange("sat", sat, sat)
+sun_range = StatsRange("sun", sun, sun)
+
+
 previous_months = 3
 end_date = today
 month_stats_range = []
@@ -69,8 +75,8 @@ elif report_type == "ArticleBreakdown":
         yesterday_stats_range, day_before_stats_range, "Daily Summary")
     
 elif report_type == "TrafficSourceBreakdown":
-    network_breakdown = reporting.TrafficSourceBreakdown(['foo@example.net'], 'Gamer Network daily statsdash for', all_sites, 
-        feb_stats_range, jan_stats_range, 'daily', black_list)
+    network_breakdown = reporting.TrafficSourceBreakdown(['foo@example.net'], 'Eurogamer.net daily statsdash for', ['eurogamer.net'], 
+        sun_range, sat_range, 'daily', black_list)
         
 elif report_type == "SocialReport":
     network_breakdown = reporting.SocialReport(['foo@example.net'], 'Gamer Network monthly social report for', all_sites, 
@@ -79,9 +85,9 @@ elif report_type == "SocialReport":
 else:
 	print "unknown report type"	
 
-
-generated_html = network_breakdown.generate_report()['html'] 
-generated_html = html_slimmer(generated_html)
+if network_breakdown.data_available(override=True):
+  generated_html = network_breakdown.generate_report()['html'] 
+  generated_html = html_slimmer(generated_html)
     
 with open(file_src, 'w') as file:
 	file.write(generated_html.encode("utf-8"))	

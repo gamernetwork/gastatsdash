@@ -42,6 +42,8 @@
 	</style>
     <h1>{{subject}}</h1>
     <p>This data is confidential and for employees of {% if num_sites == 1 %}your site{% else %}Gamer Network{% endif %} only. Do not transmit outside the company. </p>
+    {% if num_sites == total_num_sites %}{% if warning|length > 0 %}<p>We are missing some data for the following sites: {% for site in warning %}{{site|capfirst}}, {% endfor %}</p>{% endif %}{% endif %}
+    {% if num_sites == 1 %}{% for site in warning %}{% if site in site_names %}<p>We are missing some data for this site.</p>{% endif %}{% endfor %}{% endif %}
     {% include "template_sections/overview_monthly_table.html" %}   
     {% include "template_sections/country_summary_table.html" with countries=country_data totals=metric_totals %}
     {% if num_sites == total_num_sites %} {% include "template_sections/site_summary_table.html" with sites=network_data totals=metric_totals %} {% endif %}		

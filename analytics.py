@@ -145,7 +145,7 @@ class Analytics(object):
         if sampling_level:
             kwargs['samplingLevel'] = sampling_level       
         if include_empty_rows:
-            kwargs['include-empty-rows'] = include_empty_rows        
+            kwargs['include_empty_rows'] = include_empty_rows        
         query = self.ga.get(**kwargs)	
         
         for i in range(1,6):
