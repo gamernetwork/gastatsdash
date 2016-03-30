@@ -228,7 +228,6 @@ class NetworkBreakdown(Report):
 
 class TrafficSourceBreakdown(Report):
     template='site_dash.html'
-    warning_sites = []
     
     #init
     def __init__(self, recipients, subject, sites, period, second_period, report_span, black_list):
@@ -236,6 +235,7 @@ class TrafficSourceBreakdown(Report):
         self.second_period = second_period
         self.report_span = report_span
         self.black_list = black_list
+        self.warning_sites = []
 
     def get_subject(self):
         start = self.period.start_date
@@ -449,12 +449,12 @@ class TrafficSourceBreakdown(Report):
 
 class SocialReport(Report):
     template='social_dash.html'
-    warning_sites = []
   
     def __init__(self, recipients, subject, sites, period, second_period, report_span):
         super(SocialReport, self).__init__(recipients, subject, sites, period)
         self.second_period = second_period
         self.report_span = report_span
+        self.warning_sites = []
 
     def get_subject(self):
         start = self.period.start_date
