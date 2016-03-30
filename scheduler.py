@@ -126,7 +126,7 @@ def _run():
             if run_logger.override_data == True:
                 data_available = report.data_available(override=True)
                 print "overriding data available", run_logger.override_data
-                logger.warning("overrriding data available and sending report anyway")
+                logger.warning("overriding data available and sending report anyway")
             else:
                 data_available = report.data_available()
 
