@@ -81,7 +81,7 @@ class RunLogger(object):
                 next_run = datetime(day=day, month=now.month, year=now.year)
                 if next_run < now:
                     next_run = add_one_month(next_run)
-                return next_runs
+                return next_run
        
         if frequency == 'DAILY':
             #if last run was over 2 days ago, set to yesterday 
