@@ -99,11 +99,11 @@ class TestNextRun(unittest.TestCase):
             print "next_run ", next_run
             self.assertEqual(01, next_run.day)        
     
-    def test_get_next_april(self):
-        """Test routine to check set dates return the 1st April"""
+    def test_last_run_last_day(self):
+        """Test routine to check works when last run is last day in the month"""
         print self.shortDescription()
-        test_date = [datetime(2016, 03, 31), datetime(2016, 03, 30)]
-        test_next_run = datetime(2016, 04, 01)
+        test_date = [datetime(2016, 03, 31, 00, 00, 00, 01)]
+        test_next_run = datetime(2016, 05, 01, 00, 00, 00, 01)
         for date in test_date:
             last_run = date
             print "last run ", last_run

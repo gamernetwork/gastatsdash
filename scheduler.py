@@ -68,7 +68,7 @@ class RunLogger(object):
         Returns a Date object
         """
         today = date.today() - timedelta(days=1)
-        now = datetime(today.year, today.month, today.day)  #returns now as datetime with time as 00 00 
+        now = datetime(today.year, today.month, today.day, 00, 00, 00, 01)  #returns now as datetime with time as 00 00 00 00001
         
         if last_run.year == 1:
             if frequency == 'DAILY':
@@ -81,7 +81,7 @@ class RunLogger(object):
                 next_run = datetime(day=day, month=now.month, year=now.year)
                 if next_run < now:
                     next_run = add_one_month(next_run)
-                return next_run
+                return next_runs
        
         if frequency == 'DAILY':
             #if last run was over 2 days ago, set to yesterday 
@@ -94,8 +94,11 @@ class RunLogger(object):
             day = frequency_options.get("day")
             next_run = add_one_month(last_run)
             next_run = next_run.replace(day=day)
-            if next_run < now:
-                next_run = add_one_month(next_run)           
+            print "next run ", next_run
+            print "now ", now+ timedelta(days=1)
+            if next_run <= now + timedelta(days=1):
+                next_run = add_one_month(next_run)    
+                print "add month ", next_run
             if (now - next_run).days >= 2:
               self.override_data = True
         return next_run
