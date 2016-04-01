@@ -94,11 +94,8 @@ class RunLogger(object):
             day = frequency_options.get("day")
             next_run = add_one_month(last_run)
             next_run = next_run.replace(day=day)
-            print "next run ", next_run
-            print "now ", now+ timedelta(days=1)
             if next_run <= now + timedelta(days=1):
                 next_run = add_one_month(next_run)    
-                print "add month ", next_run
             if (now - next_run).days >= 2:
               self.override_data = True
         return next_run
