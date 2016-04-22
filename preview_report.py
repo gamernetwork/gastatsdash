@@ -79,7 +79,7 @@ elif report_type == "TrafficSourceBreakdown":
         sun_range, sat_range, 'daily', black_list)
         
 elif report_type == "SocialReport":
-    network_breakdown = reporting.SocialReport(['foo@example.net'], 'VG247.com Social Referral Report for', ['vg247.com'], 
+    network_breakdown = reporting.SocialReport(['foo@example.net'], 'Vg247.com Social Referral Report for', ['vg247.com'], 
         mar_stats_range, feb_stats_range, 'monthly')
         
 else:
