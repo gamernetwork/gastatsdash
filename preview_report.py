@@ -37,11 +37,11 @@ last_week_stats_range = StatsRange("Week Before", last_week, week_before)
 
 first_feb = date(2016, 02, 01)
 last_feb = date(2016, 02, 29)
-first_jan = date(2016, 01, 01)
-last_jan = date(2016, 01, 30)
+first_mar = date(2016, 03, 01)
+last_mar = date(2016, 03, 31)
 
 feb_stats_range = StatsRange("FEb", first_feb, last_feb)
-jan_stats_range = StatsRange("Jan", first_jan, last_jan)
+mar_stats_range = StatsRange("Mar", first_mar, last_mar)
 
 sat = date(2016, 03, 12)
 sun = date(2016, 03, 13)
@@ -79,8 +79,8 @@ elif report_type == "TrafficSourceBreakdown":
         sun_range, sat_range, 'daily', black_list)
         
 elif report_type == "SocialReport":
-    network_breakdown = reporting.SocialReport(['foo@example.net'], 'Gamer Network monthly social report for', all_sites, 
-        feb_stats_range, jan_stats_range, 'monthly')
+    network_breakdown = reporting.SocialReport(['foo@example.net'], 'Vg247.com Social Referral Report for', ['vg247.com'], 
+        mar_stats_range, feb_stats_range, 'monthly')
         
 else:
 	print "unknown report type"	
