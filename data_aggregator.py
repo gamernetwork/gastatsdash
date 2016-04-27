@@ -525,6 +525,10 @@ class DataAggregator():
                 elif sort=='ascending':
                     year = period.start_date.year
                     month = period.start_date.strftime('%m') #need to get month as zero padded number
+                    #use regex filter to look only at articles published within this month
+                    #   looks for the year and month within the articles page path 
+                    #   assumes page path has date in the url 
+                    #   this doesn't work for all sites and should be updated when possible
                     filter = 'ga:pagePath=~.+(%d[/\-\s*]%s);ga:socialNetwork==%s' % (year, month, social_network)
                 
                     logger.debug("%s data for period %s - %s", social_network, period.start_date, period.end_date)
