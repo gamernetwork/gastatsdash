@@ -22,12 +22,12 @@ month_stats_range = []
 months = []
 while current != end_month:
     start_date = current
-    end_date = add_one_month(current)
+    end_date = add_one_month((current - timedelta(days=1)))
     print 'end date: ', end_date
-    month_stats_range.append(StatsRange("%s_%s" % (start_date.month, start_date.year), start_date, end_date))
-    name =  "%s_%s" % (start_date.month, start_date.year)
+    name =  start_date.strftime("%b-%Y")
+    month_stats_range.append(StatsRange(name, start_date, end_date))
     months.append(name)
-    current = end_date
+    current = add_one_month(start_date)
     
     
 #get data for each site for each month
