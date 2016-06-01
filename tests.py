@@ -198,7 +198,52 @@ class TestNextRun(unittest.TestCase):
         self.assertTrue(self.run_log.override_data)  
     
     
+class TestScheduler(unittest.TestCase):
+    #mock_run = mock.Mock(spec = RunLogger)
+    #mock_report = mock.Mock(spec = Report)
     
+    #@patch('scheduler.create_report')
+    #@patch('scheduler.reporting')
+    #@patch('scheduler.RunLogger')
+    def test_run_through(self):
+        """Test routine to check the scheduler run through"""
+        print self.shortDesciption()
+        with nested(
+            patch('scheduler.create_report'),
+            patch('scheduler.RunLogger')
+        ) as (mock, run):
+            instance = mock.return_value
+            instance.data_available.return_value = True
+            
+            runlog = run.return_value
+            runlog.override_data = False
+            runlog.get_last_run.return_value = datetime(2016, 03, 01)
+            runlog.get_next_run.return_value = datetime(2016, 04, 01)
+            runlog.record_run.return_value = None
+            #scheduler.run_schedule()
+            #check that scheduler calls reports with correct arguments ?            
+    
+    
+    """def test_500_error(self):
+        print self.shortDescription()
+        with nested(
+                patch('scheduler.create_report'), 
+                patch('scheduler.RunLogger')
+            ) as (mock, run):
+                instance = mock.return_value
+                instance.data_available.return_value = True
+                instance.send_report.side_effect = HttpError(mock.Mock(response=mock.Mock(status_code=500)), 'not found')
+                #instance.send_report.return_value = HttpError(mock.Mock(response=mock.Mock(status_code=500)), 'not found')
+                #instance.send_report.return_value = Exception("hello")
+                
+                runlog = run.return_value
+                runlog.override_data = False
+                runlog.get_last_run.return_value = datetime(2016, 03, 01)
+                runlog.get_next_run.return_value = datetime(2016, 04, 01)
+                runlog.record_run.return_value = None
+                scheduler.run_schedule()
+
+                self.assertRaises(HttpError)"""  
 
 
 if __name__ == '__main__':
