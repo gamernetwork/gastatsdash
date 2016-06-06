@@ -1,0 +1,155 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset='utf-8'> 
+	</head>
+<body>
+	<style>
+	body, p, td, th {
+		font-family: sans-serif;
+		text-align: left;
+	}
+	td, th {
+		padding: 0.3em 1em 0.3em 0.5em;
+		vertical-align: top;
+	}
+	tr.odd td, tr.odd th {
+		background-color: #f0f2f4;
+	}
+	thead th {
+		border-bottom: 1px solid #d0d9e0;
+		vertical-align: middle;
+	}
+    thead th.article-title {
+        width: 700px;
+    }
+	tr.site td, tr.site th {
+		border-top: 1px solid #d0d9e0;
+	}
+	tr.site td, tr.site th {
+		font-weight: bold;
+		padding-top: 1em;
+	}
+	tr.total td, tr.total th {
+		border-top: 1px solid #d0d9e0;
+	}
+	tr.total td, tr.total th {
+		padding-bottom: 1em;
+	}
+	td.num {
+		text-align: right;
+	}
+	.dup {
+		color: blue;
+	}
+
+	</style>
+	<h1>{{subject}}</h1>
+    <p>This data is confidential and for employees of {% if num_sites == 1 %}your site{% else %}Gamer Network{% endif %} only. Do not transmit outside the company. </p>
+    {% if num_sites == total_num_sites %}{% if warning|length > 0 %}<p>We are missing some data for the following sites: {% for site in warning %}{{site|capfirst}}, {% endfor %}</p>{% endif %}{% endif %}
+    {% if num_sites == 1 %}{% for site in warning %}{% if site in site_names %}<p>We are missing some data for this site.</p>{% endif %}{% endfor %}{% endif %}
+    {% if num_sites < total_num_sites %}<p>Site Total Visitors: <b>{{site_totals.first_period.visitors|intcomma|cut:".0"}}</b></p>{% endif %}
+	<p>Network Total Visitors: <b>{{network_totals.first_period.visitors|intcomma|cut:".0"}}</b></p>
+	{% if num_sites < total_num_sites %}<p>Site Total PVs: <b>{{site_totals.first_period.pageviews|intcomma|cut:".0"}}</b></p>{% endif %}
+	<p>Network Total PVs: <b>{{network_totals.first_period.pageviews|intcomma|cut:".0"}}</b></p>
+	<h2> Totals </h2>
+	<table border="0" cellspacing="0">
+  	<thead>
+    	<tr class = 'column_header'>
+      	<th rowspan="2">Social Network</th>
+      	<th colspan='5'>Visitors</th>
+      	<th colspan='5'>PageViews</th>
+    	</tr>
+    	<tr>
+      	<th>Social Network Totals</th>
+      	<th>+/- MoM</th>
+      	<th>+/- YoY</th>
+      	{% if num_sites < total_num_sites %}<th>% Site Total</th>{% endif %}
+      	<th>% Network Total</th>
+      	<th>Total</th>
+      	<th>+/- MoM</th>
+      	<th>+/- YoY</th>
+      	{% if num_sites < total_num_sites %}<th>% Site Total</th>{% endif %}
+      	<th>% Network Total</th>      	
+    	</tr>
+  	</thead>
+  	<tbody>
+    	{% for network in top_socials %}
+      	<tr class="{% cycle 'odd' 'even' %}">
+        	<td class = 'src' >{{network.dimensions.socialNetwork}}</td>
+        	<td class = 'num' >{{network.metrics.visitors|intcomma}}</td>
+        	<td class = 'num' style="color: {% if network.metrics.change_visitors > 0 %}green{% else %}red{% endif %};">{{network.metrics.change_visitors|as_percentage_of:network.metrics.visitors}}</td>
+        	<td class = 'num' style="color: {% if network.yoy_change.visitors > 0 %}green{% else %}red{% endif %};">{{network.yoy_change.visitors|as_percentage_of:network.metrics.visitors}}</td>
+        	{% if num_sites < total_num_sites %}<td class = 'num' >{{network.metrics.visitors|as_percentage_of:site_totals.first_period.visitors}}</td>{% endif %}
+        	<td class = 'num' >{{network.metrics.visitors|as_percentage_of:network_totals.first_period.visitors}}</td>
+        	
+        	<td class = 'num' >{{network.metrics.pageviews|intcomma}}</th>
+        	<td class = 'num' style="color: {% if network.metrics.change_pageviews > 0 %}green{% else %}red{% endif %};">{{network.metrics.change_pageviews|as_percentage_of:network.metrics.pageviews}}</td>
+        	<td class = 'num' style="color: {% if network.yoy_change.pageviews > 0 %}green{% else %}red{% endif %};">{{network.yoy_change.pageviews|as_percentage_of:network.metrics.pageviews}}</td>
+        	{% if num_sites < total_num_sites %}<td class = 'num' >{{network.metrics.pageviews|as_percentage_of:site_totals.first_period.pageviews}}</td>{% endif %}
+        	<td class = 'num' >{{network.metrics.pageviews|as_percentage_of:network_totals.first_period.pageviews}}</td>        	        
+                             	
+      	</tr>
+      {% endfor %}
+    	
+  	</tbody>  	
+	</table>
+	
+	<h2> Top 10 Articles </h2>
+	
+	<table border="0" cellspacing="0">
+  	<thead>
+    	<tr>
+      	<th>Social Network</th>
+      	<th>Article Title</th>
+      	<th>Page Views</th>      	
+    	</tr>
+  	</thead>
+  	<tbody>
+      {% for network, articles in social_articles.items %}
+    	<tr>
+      	<td rowspan="{{articles|length|add:'1'}}">{{network}}</td>
+        <td class = "src">
+          {% for article in articles %}
+          <tr class="{% cycle 'odd' 'even' %}">
+            <td class = 'src'><a href="http://{{article.dimensions.host}}{{article.dimensions.path}}">{{article.dimensions.title}}</a></td>
+            <td class = 'num'>{{article.metrics.pageviews|intcomma}}</td>
+          </tr> 
+          {% endfor %}
+        </td>    	
+      <tr>
+      {% endfor %}
+  	</tbody>  	
+	</table>
+	
+	<h2> Bottom 5 Articles </h2>
+	
+	<table border="0" cellspacing="0">
+  	<thead>
+    	<tr>
+      	<th>Social Network</th>
+      	<th>Article Title</th>
+      	<th>Page Views</th>      	
+    	</tr>
+  	</thead>
+  	<tbody>
+      {% for network, articles in bottom_social_articles.items %}
+    	<tr>
+      	<td rowspan="{{articles|length|add:'1'}}">{{network}}</td>
+        <td class = "src">
+          {% for article in articles %}
+          <tr class="{% cycle 'odd' 'even' %}">
+            <td class = 'src'><a href="http://{{article.dimensions.host}}{{article.dimensions.path}}">{{article.dimensions.title}}</a></td>
+            <td class = 'num'>{% if article.metrics.pageviews < 30 %}< 30{% elif article.metrics.pageviews < 100 %}< 100{% else %}{{article.metrics.pageviews|intcomma}}{% endif %}</td>
+          </tr> 
+          {% endfor %}
+        </td>    	
+      <tr>
+      {% endfor %}
+  	</tbody>  	
+	</table>
+	<img alt="embedded image" src ="cid:{{graph}}" />
+	
+</body>
+</html>

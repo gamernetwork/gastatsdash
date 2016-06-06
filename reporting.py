@@ -16,7 +16,7 @@ from email.mime.text import MIMEText
 from datetime import date, timedelta, datetime
 from collections import OrderedDict, defaultdict
 
-import config
+import GA.config as config
 from analytics import get_analytics, StatsRange
 from renderer import render_template
 from dateutils import subtract_one_month, add_one_month

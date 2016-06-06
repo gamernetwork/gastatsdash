@@ -5,7 +5,7 @@ from slimmer import html_slimmer
 
 from datetime import date, timedelta
 from dateutils import subtract_one_month
-import config
+import GA.config as config
 from analytics import get_analytics, StatsRange
 
 import logging, logging.config, logging.handlers
@@ -59,8 +59,8 @@ for i in range(0, previous_months):
 
 black_list = report_schedule.black_list
 
-logging.config.dictConfig(config.LOGGING)
-logger = logging.getLogger('report')
+#logging.config.dictConfig(config.LOGGING)
+#ogger = logging.getLogger('report')
    
 if report_type == "NetworkArticleBreakdown":
     network_breakdown = reporting.NetworkArticleBreakdown(['foo@example.net'], 'Network Article Breakdown', all_sites, 

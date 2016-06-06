@@ -1,0 +1,35 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset='utf-8'> 
+	</head>
+<body>
+  <h2>Most Popular Articles</h2>
+    <table border="0" cellspacing="0">
+        <thead>
+            <tr>
+                <th>Site</th>
+                <th class="article-title">Article Title</th>
+                <th>PV</th>
+                {% if report_span == 'daily' %}
+                  <th>DoD Change<th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for article in top_articles %}
+            <tr class="{% cycle 'odd' 'even' %}">
+                <th>{{article.dimensions.host|cut:"www."|cut:".com"|capfirst}}</th>
+                <td class="src"><a href="http://{{article.dimensions.host}}{{article.dimensions.path}}">{{article.dimensions.title}}</a></td>
+                <td class="num">{{article.metrics.pageviews|intcomma}}</td>
+                {% if report_span == 'daily' %}
+                  <td class="num">{% if article.metrics.change_pageviews == 0 %}New{% else %}<span style="color: {% if article.metrics.change_pageviews > 0 %}green{% else %}red{% endif %};">{{article.metrics.change_pageviews|as_percentage_of:article.metrics.second_pageviews}}</span>{% endif %}</td>
+                {% endif %}
+            </tr>
+            {% endfor %}          
+          
+        </tbody>
+    </table>
+</body>
+</html>

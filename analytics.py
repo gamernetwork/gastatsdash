@@ -7,7 +7,7 @@ from httplib2 import Http
 from googleapiclient import errors
 from apiclient.discovery import build
 
-import config
+import GA.config as config
 from dateutils import subtract_one_month
 
 import logging

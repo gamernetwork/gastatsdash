@@ -133,6 +133,12 @@ def _run():
             run_logger.override_data = False
             print "%s next run: %s.  Data available: %s" % (identifier, next_run_date, data_available)
             if data_available:
+            
+                #if data available
+                #try send report
+                #except exeptioin
+                #print/log exception
+                #continue to next report
                 report.send_report()
                 run_datetime = datetime(year=report.period.end_date.year, 
                     month=report.period.end_date.month, 

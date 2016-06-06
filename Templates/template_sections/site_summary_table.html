@@ -1,0 +1,79 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset='utf-8'> 
+	</head>
+<body>
+	<style>
+	body, p, td, th {
+		font-family: sans-serif;
+		text-align: left;
+	}
+	td, th {
+		padding: 0.3em 1em 0.3em 0.5em;
+		vertical-align: top;
+	}
+	tr.odd td, tr.odd th {
+		background-color: #f0f2f4;
+	}
+	thead th {
+		border-bottom: 1px solid #d0d9e0;
+		vertical-align: middle;
+	}
+	tr.site td, tr.site th {
+		border-top: 1px solid #d0d9e0;
+	}
+	tr.site td, tr.site th {
+		font-weight: bold;
+		padding-top: 1em;
+	}
+	tr.total td, tr.total th {
+		border-top: 1px solid #d0d9e0;
+	}
+	tr.total td, tr.total th {
+		padding-bottom: 1em;
+	}
+	td.num {
+		text-align: right;
+	}
+	.dup {
+		color: blue;
+	}
+	</style>
+	<h2>
+		Site summary
+	</h2>
+	<table border="0" cellspacing="0">
+		<thead>
+			<tr>
+				<th rowspan="2">Site</th>
+				<th colspan="3">Visitors</th>
+				<th colspan="3">Pages</th>
+				<th rowspan="2">P/V</th>
+			</tr>
+			<tr>
+				<th>Abs.</th>
+				<th>+/- {{ report_span|get_report_change }}</th>		
+				<th>+/- YoY</th>
+				<th>Abs.</th>
+				<th>+/- {{ report_span|get_report_change }}</th>
+				<th>+/- YoY</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for site in sites %}
+				<tr class="{% cycle 'odd' 'even' %}">
+					<th>{{ site.name|capfirst }}</th>
+					<td class="num">{{ site.totals.visitors|intcomma }}</td>
+					<td class="num"><span style="color: {% if site.change.visitors > 0 %}green{% else %}red{% endif %};">{{site.change.visitors|as_percentage_of:site.previous_totals.visitors}}</span></td>
+					<td class="num"><span style="color: {% if site.yoy_change.visitors > 0 %}green{% else %}red{% endif %};">{{site.yoy_change.visitors|as_percentage_of:site.yoy_totals.visitors}}</span></td>					
+					<td class="num">{{ site.totals.pageviews|intcomma }}</td>
+					<td class="num"><span style="color: {% if site.change.pageviews > 0 %}green{% else %}red{% endif %};">{{site.change.pageviews|as_percentage_of:site.previous_totals.pageviews}}</span></td>
+					<td class="num"><span style="color: {% if site.yoy_change.pageviews > 0 %}green{% else %}red{% endif %};">{{site.yoy_change.pageviews|as_percentage_of:site.yoy_totals.pageviews}}</span></td>
+					<td class="num">{{ site.totals.pageviews|pages_per_visitor:site.totals.visitors }}</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+</body>

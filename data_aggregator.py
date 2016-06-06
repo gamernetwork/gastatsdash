@@ -1,4 +1,4 @@
-import config
+import GA.config as config
 import re
 from datetime import date, timedelta, datetime
 from analytics import get_analytics, StatsRange
