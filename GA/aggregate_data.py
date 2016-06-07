@@ -59,31 +59,68 @@ class AnalyticsData(object):
                     row['ga:pageviews'] = float(row['ga:pageviews'])
                 
                 articles.extend(rows)
-            aggregated = utils.aggregate_data(articles, "ga:pagePath", "ga:pageviews")
+            aggregated = utils.aggregate_data(articles, "ga:pagePath", ["ga:pageviews"])
             sorted = utils.sort_data(aggregated, "ga:pageviews", limit=20)
             data[count] = sorted
             #group
-        #data[0] = period
-        #data[1] = previous period
-        #get change 
-        # return 
-        return data[0]
+
+        added_change = utils.add_change(data[0], data[1], "ga:pagePath", ["ga:pageviews"])
+
+        return added_change
         
         
         
     def country_table(self):
-        pass
-        #change dates -- put into function
-        #for each date:
-        #for site in sites:
-        # results = analytics.run_report(site, start, end, country, pageviws)
-        # results.format_data()
-        # append results       
-        #group_results by country function? 
-        #sort
+        countries = ["Czec", "Germa", "Denma", "Spai", "Franc", "Italy", 
+            "Portug", "Swede", "Polan", "Brazi", "Belgiu", "Netherl", 
+            "United Ki", "Irela", "United St", "Canad", "Austral", "New Ze"]
+            
+        countries_regex = '|'.join(countries)
+        filters = 'ga:country=~%s' % countries_regex
+        row_filters = 'ga:country!~%s' % countries_regex
+        self.previous = utils.StatsRange.get_previous_period(self.period, "WOW_DAILY")#how to do this
+        data = {}
+        for count, date in enumerate([self.period, self.previous]):
+            breakdown = []
+            for site in self.sites:
+                results = analytics.run_report(site_ids[site], date.get_start(), date.get_end(), metrics="ga:pageviews,ga:visitors", dimensions="ga:country", filters=filters, sort="-ga:pageviews")
+                world_results = analytics.run_report(site_ids[site], date.get_start(), date.get_end(), metrics="ga:pageviews,ga:visitors", filters=row_filters, sort="-ga:pageviews")
+                rows = utils.format_data_rows(results)
+                world_rows = utils.format_data_rows(world_results)
+                world_rows[0]['ga:country'] = "ROW"
+                
+                breakdown.extend(world_rows)
+                breakdown.extend(rows)
+                for row in breakdown:
+                    row['ga:pageviews'] = float(row['ga:pageviews'])
+                    row['ga:visitors'] = float(row['ga:visitors'])
+                    
+            aggregated = utils.aggregate_data(breakdown, "ga:country", ["ga:pageviews", "ga:visitors"])
+            sorted = utils.sort_data(aggregated, "ga:visitors")
+            data[count] = sorted
+            
+        added_change = utils.add_change(data[0], data[1], "ga:country", ["ga:pageviews", "ga:visitors"])
         
-        #add change
-        # return 
+        return added_change
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+        
+        
+        
         
         
         

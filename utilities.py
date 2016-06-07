@@ -51,7 +51,7 @@ def list_search(to_search, key, value):
     else:
         raise KeyError
 
-def aggregate_data(table, match_key, aggregate_key):
+def aggregate_data(table, match_key, aggregate_keys):
     """
     
     """
@@ -59,10 +59,32 @@ def aggregate_data(table, match_key, aggregate_key):
     for row in table:
         try: 
             result = list_search(new_table, match_key, row[match_key])
-            result[aggregate_key] += row[aggregate_key]
+            for key in aggregate_keys:
+                result[key] += row[key]
         except KeyError:
             new_table.append(row)
     return new_table
+
+
+def add_change(this_period, previous_period, match_key, change_keys):
+    
+    for row in this_period:
+        try:
+            result = list_search(previous_period, match_key, row[match_key])
+            for key in change_keys:
+                row['change_%s' % key]  = row[key] - result[key]
+                row['percentage_%s' % key] = percentage(row['change_%s' % key], result[key])
+        except KeyError:
+            for key in change_keys:
+                row['change_%s' % key]  = 0
+                row['percentage_%s' % key] = 0
+    return this_period
+
+
+
+
+
+
     
 	
 class StatsRange(object):
