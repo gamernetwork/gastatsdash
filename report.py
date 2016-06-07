@@ -122,16 +122,22 @@ class YoutubeReport(Report):
 
 class AnalyticsCoreReport(Report):
     
- 	def __init__(self, channels, start, end, recipients, frequency, subject):
-		super(NetworkYoutubeReport, self).__init__(channels, start, end, recipients, frequency, subject)
-		self.data = AnalyticsData(self.channels, self.start, self.end)
+ 	def __init__(self, sites, start, end, recipients, frequency, subject):
+		super(AnalyticsCoreReport, self).__init__(sites, start, end, recipients, frequency, subject)
+		self.data = AnalyticsData(self.sites, self.start, self.end)
 
+		
+    def generate_html(self):
+        
+        
+        
+        pass
 			
 class AnalyticsSocialReport(Report):
     
- 	def __init__(self, channels, start, end, recipients, frequency, subject):
-		super(NetworkYoutubeReport, self).__init__(channels, start, end, recipients, frequency, subject)
-		self.data = AnalyticsData(self.channels, self.start, self.end)    
+ 	def __init__(self, sites, start, end, recipients, frequency, subject):
+		super(AnalyticsSocialReport, self).__init__(sites, start, end, recipients, frequency, subject)
+		self.data = AnalyticsData(self.sites, self.start, self.end)    
 		
 		
 		
