@@ -24,7 +24,9 @@ class AnalyticsData(object):
 				run_report['result'] = False
 				run_report['channel'] = channel			
 		return run_report    
-		
+
+    def summary_table(self):
+        pass		
 
     def _remove_query_string(self, path):
         """
@@ -102,10 +104,7 @@ class AnalyticsData(object):
         added_change = utils.add_change(data[0], data[1], "ga:country", ["ga:pageviews", "ga:users"])
         
         return added_change
-                
-    
-    def summary_table():
-        pass
+            
         
     def traffic_source_table(self):
         data = {}
@@ -120,16 +119,36 @@ class AnalyticsData(object):
                     row['ga:users'] = float(row['ga:users'])
                 
             aggregated = utils.aggregate_data(traffic_sources, "ga:sourceMedium", ["ga:pageviews", "ga:users"])
-            sorted = utils.sort_data(aggregated, "ga:users")
+            sorted = utils.sort_data(aggregated, "ga:users", limit=10)
             data[count] = sorted
             
         added_change = utils.add_change(data[0], data[1], "ga:sourceMedium", ["ga:pageviews", "ga:users"])
         
         return added_change         
         
-        
-    def social_network_table():
+    def top_referring_sites(self):
         pass
+        
+    def social_network_table(self):
+        data = {}
+        for count, date in enumerate([self.period, self.previous]):
+            social = []
+            for site in self.sites:
+                results = analytics.run_report(site_ids[site], date.get_start(), date.get_end(), metrics="ga:pageviews,ga:users", dimensions="ga:socialNetwork", 
+                                                filters = "ga:socialNetwork!=(not set)", sort="-ga:users")
+                rows = utils.format_data_rows(results)
+                social.extend(rows)
+                for row in social:
+                    row['ga:pageviews'] = float(row['ga:pageviews'])
+                    row['ga:users'] = float(row['ga:users'])
+            
+            aggregated = utils.aggregate_data(social, "ga:socialNetwork", ["ga:pageviews", "ga:users"])
+            sorted = utils.sort_data(aggregated, "ga:users", limit=6)
+            data[count] = sorted
+            
+        added_change = utils.add_change(data[0], data[1], "ga:socialNetwork", ["ga:pageviews", "ga:users"])
+        
+        return added_change
                 
                 
                 
