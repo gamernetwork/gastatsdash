@@ -128,10 +128,31 @@ class AnalyticsCoreReport(Report):
 
 		
     def generate_html(self):
+        summary_table = self.data.summary_table()
+        if self.frequency != "MONTHLY":
+            #new self data with month to data dates
+            #month_to_table = self.data.summary_table()
+            pass
+        country_table = self.data.country_table()
+        site_table = self.data.site_summary_table()
+        article_table = self.data.article_table()
+        traffic_table = self.data.traffic_source_table()
+        referring_site_table = self.data.referring_sites_table()
+        device_table = self.data.device_table()
+        social_table = self.data.social_network_table()
         
-        
-        
-        pass
+		html = self.template.render(
+			subject=self.get_subject(),
+			change=self.get_freq_label(),
+			summary_table=summary_table,
+			geo_table=country_table,
+			top_articles=article_table,
+			traffic=traffic_table,	
+			referrals=referring_site_table,
+			device=device_table,
+			social=social_table, 		
+		)
+		return html		
 			
 class AnalyticsSocialReport(Report):
     

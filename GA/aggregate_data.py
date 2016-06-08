@@ -14,6 +14,8 @@ class AnalyticsData(object):
         self.period = period
         self.frequency = frequency
         self.previous = utils.StatsRange.get_previous_period(self.period, self.frequency)
+        self.yearly = utils.StatsRange.get_previous_period(self.period, "YEARLY")
+        self.date_list = [self.period, self.previous, self.yearly]
     
 	def check_available_data(self):
 		run_report = {"result":True}
@@ -21,18 +23,97 @@ class AnalyticsData(object):
 			id = channel_ids[channel]
 			data_available = analytics.data_available(id, self.end.strftime("%Y-%m-%d"))
 			if not data_available:
-				run_report['result'] = False
-				run_report['channel'] = channel			
+				run_report["result"] = False
+				run_report["channel"] = channel			
 		return run_report    
+		
+		
+    def _remove_ga_names(self, rows):
+        for row in rows:
+            for key in row.keys():
+                new = key.split("ga:")[1]
+                row[new] = row.pop(key)
+        return rows
+        
+    
 
-    def summary_table(self):
-        pass		
+    def summary_table(self):	
+        data = {}
+        for count, date in enumerate(self.date_list):
+            totals = []
+            for site in self.sites:
+                results = analytics.run_report(site_ids[site], date.get_start(), date.get_end(), metrics="ga:pageviews,ga:users,ga:sessions,ga:pageviewsPerSession,ga:avgSessionDuration")
+                rows = utils.format_data_rows(results)
+                rows = self._remove_ga_names(rows)
+                rows = utils.change_key_names(rows, {"pv_per_session":"pageviewsPerSession", "avg_session_time":"avgSessionDuration"})
+                for row in rows:
+                    row["pageviews"] = float(row["pageviews"])
+                    row["users"] = float(row["users"])
+                    row["sessions"] = float(row["sessions"])
+                    row["pv_per_session"] = float(row["pv_per_session"])    
+                    row["avg_session_time"] = float(row["avg_session_time"])
+                
+                totals.extend(rows)
+            #new aggregate data where just matches the metric and add it 
+            aggregate = {"pageviews":0, "users":0, "sessions":0, "pv_per_session":0, "avg_session_time":0}
+            for row in totals:
+                for key in aggregate.keys():
+                    aggregate[key] += row[key]
+            
+            data[count] = aggregate      
+        
+        for period in data:
+            data[period]["pv_per_session"] = data[period]["pv_per_session"]/len(self.sites)
+            data[period]["avg_session_time"] = (data[period]["avg_session_time"]/len(self.sites))/60.0
+            
+        #add change 
+        for key in ["pageviews", "users", "sessions", "pv_per_session", "avg_session_time"]:
+            this_period = data[0]
+            prev_period = data[1]
+            year_period = data[2]
+            this_period["%s_change_%s" % (self.frequency, key)] = this_period[key] - prev_period[key]
+            this_period["%s_percentage_%s" % (self.frequency, key)] = utils.percentage(this_period["%s_change_%s" % (self.frequency, key)], prev_period[key])
+            this_period["%s_change_%s" % ("YEARLY", key)] = this_period[key] - year_period[key]
+            this_period["%s_percentage_%s" % ("YEARLY", key)] = utils.percentage(this_period["%s_change_%s" % ("YEARLY", key)], year_period[key])  
+            
+        return this_period          
+                
+                              
+    def site_summary_table(self):
+        #should this be combined with overall summary table?
+        data = {}
+        for count, date in enumerate(self.date_list):
+            totals = []
+            for site in self.sites:
+                results = analytics.run_report(site_ids[site], date.get_start(), date.get_end(), metrics="ga:pageviews,ga:users,ga:sessions,ga:pageviewsPerSession,ga:avgSessionDuration")
+                rows = utils.format_data_rows(results)
+                rows = self._remove_ga_names(rows)
+                rows = utils.change_key_names(rows, {"pv_per_session":"pageviewsPerSession", "avg_session_time":"avgSessionDuration"})
+                for row in rows:
+                    row["pageviews"] = float(row["pageviews"])
+                    row["users"] = float(row["users"])
+                    row["sessions"] = float(row["sessions"])
+                    row["pv_per_session"] = float(row["pv_per_session"])    
+                    row["avg_session_time"] = float(row["avg_session_time"])
+                    row["site"] = site 
+                totals.extend(rows)
+            aggregated = utils.aggregate_data(totals, "site", ["pageviews", "users", "sessions", "pv_per_session", "avg_session_time"])
+            sorted = utils.sort_data(aggregated, "users")
+            data[count] = sorted
+            
+        added_change = utils.add_change(data[0], data[1], "site", ["pageviews", "users", "sessions", "pv_per_session", "avg_session_time"], self.frequency)
+        added_change = utils.add_change(added_change, data[2], "site", ["pageviews", "users", "sessions", "pv_per_session", "avg_session_time"], "YEARLY")
+        
+        return added_change
+                           
+
+
 
     def _remove_query_string(self, path):
         """
         Removes any queries attached to the end of a page path, so aggregation can be accurate
         """
-        exp = '^([^\?]+)\?.*'
+        exp = "^([^\?]+)\?.*"
         regex = re.compile(exp) 
         m = regex.search(path)
         if m:
@@ -49,25 +130,27 @@ class AnalyticsData(object):
         """
         self.previous = utils.StatsRange.get_previous_period(self.period, "DAILY")#how to do this
         data = {}
-        for count, date in enumerate([self.period, self.previous]):
+        for count, date in enumerate(self.date_list):
             articles = []
             for site in self.sites:
                 results = analytics.run_report(site_ids[site], date.get_start(), date.get_end(), metrics="ga:pageviews", dimensions="ga:pageTitle,ga:pagePath,ga:hostname", 
                                                 filters= config.ARTICLE_FILTER, sort="-ga:pageviews")
                 rows = utils.format_data_rows(results)
+                rows = self._remove_ga_names(rows)
+                rows = utils.change_key_names(rows, {"title":"pageTitle", "path":"pagePath", "host":"hostname"})
                 for row in rows:
-                    path = row['ga:pagePath']
+                    path = row["path"]
                     new_path = self._remove_query_string(path)
-                    row['ga:pagePath'] = new_path
-                    row['ga:pageviews'] = float(row['ga:pageviews'])
+                    row["path"] = new_path
+                    row["pageviews"] = float(row["pageviews"])
                 
                 articles.extend(rows)
-            aggregated = utils.aggregate_data(articles, "ga:pagePath", ["ga:pageviews"])
-            sorted = utils.sort_data(aggregated, "ga:pageviews", limit=20)
+            aggregated = utils.aggregate_data(articles, "path", ["pageviews"])
+            sorted = utils.sort_data(aggregated, "pageviews", limit=20)
             data[count] = sorted
             #group
 
-        added_change = utils.add_change(data[0], data[1], "ga:pagePath", ["ga:pageviews"])
+        added_change = utils.add_change(data[0], data[1], "pagePath", ["pageviews"], "DAILY")
 
         return added_change
         
@@ -78,75 +161,176 @@ class AnalyticsData(object):
             "Portug", "Swede", "Polan", "Brazi", "Belgiu", "Netherl", 
             "United Ki", "Irela", "United St", "Canad", "Austral", "New Ze"]
             
-        countries_regex = '|'.join(countries)
-        filters = 'ga:country=~%s' % countries_regex
-        row_filters = 'ga:country!~%s' % countries_regex
+        countries_regex = "|".join(countries)
+        filters = "ga:country=~%s" % countries_regex
+        row_filters = "ga:country!~%s" % countries_regex
         data = {}
-        for count, date in enumerate([self.period, self.previous]):
+        for count, date in enumerate(self.date_list):
             breakdown = []
             for site in self.sites:
                 results = analytics.run_report(site_ids[site], date.get_start(), date.get_end(), metrics="ga:pageviews,ga:users", dimensions="ga:country", filters=filters, sort="-ga:pageviews")
                 world_results = analytics.run_report(site_ids[site], date.get_start(), date.get_end(), metrics="ga:pageviews,ga:users", filters=row_filters, sort="-ga:pageviews")
                 rows = utils.format_data_rows(results)
                 world_rows = utils.format_data_rows(world_results)
-                world_rows[0]['ga:country'] = "ROW"
-                
-                breakdown.extend(world_rows)
-                breakdown.extend(rows)
-                for row in breakdown:
-                    row['ga:pageviews'] = float(row['ga:pageviews'])
-                    row['ga:users'] = float(row['ga:users'])
+                try:
+                    world_rows[0]["ga:country"] = "ROW"
+                except IndexError:
+                    world_rows = [{"ga:country":"ROW", "ga:pageviews":0, "ga:users":0}]
                     
-            aggregated = utils.aggregate_data(breakdown, "ga:country", ["ga:pageviews", "ga:users"])
-            sorted = utils.sort_data(aggregated, "ga:users")
+                rows.extend(world_rows)
+                rows = self._remove_ga_names(rows)
+                for row in rows:
+                    row["pageviews"] = float(row["pageviews"])
+                    row["users"] = float(row["users"])
+                    
+                breakdown.extend(rows)
+                    
+            aggregated = utils.aggregate_data(breakdown, "country", ["pageviews", "users"])
+            sorted = utils.sort_data(aggregated, "users")
             data[count] = sorted
             
-        added_change = utils.add_change(data[0], data[1], "ga:country", ["ga:pageviews", "ga:users"])
+        added_change = utils.add_change(data[0], data[1], "country", ["pageviews", "users"], self.frequency)
+        added_change = utils.add_change(added_change, data[2], "country", ["pageviews", "users"], "YEARLY")
         
         return added_change
             
-        
-    def traffic_source_table(self):
+    def _get_source_list(self):
         data = {}
-        for count, date in enumerate([self.period, self.previous]):
+        for count, date in enumerate(self.date_list):
             traffic_sources = []
             for site in self.sites:       
                 results = analytics.run_report(site_ids[site], date.get_start(), date.get_end(), metrics="ga:pageviews,ga:users", dimensions="ga:sourceMedium", sort="-ga:users")
                 rows = utils.format_data_rows(results)
+                rows = self._remove_ga_names(rows)
+                rows = utils.change_key_names(rows, {"source_medium":"sourceMedium"})
+                for row in rows:
+                    row["pageviews"] = float(row["pageviews"])
+                    row["users"] = float(row["users"])
+                    
                 traffic_sources.extend(rows)
-                for row in traffic_sources:
-                    row['ga:pageviews'] = float(row['ga:pageviews'])
-                    row['ga:users'] = float(row['ga:users'])
                 
-            aggregated = utils.aggregate_data(traffic_sources, "ga:sourceMedium", ["ga:pageviews", "ga:users"])
-            sorted = utils.sort_data(aggregated, "ga:users", limit=10)
-            data[count] = sorted
+            aggregated = utils.aggregate_data(traffic_sources, "source_medium", ["pageviews", "users"])
+            sorted = utils.sort_data(aggregated, "users")
+            data[count] = sorted   
             
-        added_change = utils.add_change(data[0], data[1], "ga:sourceMedium", ["ga:pageviews", "ga:users"])
+        added_change = utils.add_change(data[0], data[1], "source_medium", ["pageviews", "users"], self.frequency)
+        added_change = utils.add_change(added_change, data[2], "source_medium", ["pageviews", "users"], "YEARLY")
         
-        return added_change         
+        return added_change
+
         
-    def top_referring_sites(self):
-        pass
+    def traffic_source_table(self):
+        table = self._get_source_list()
+        table = table[:10]
+        return table    
+        
+        
+    def referring_sites_table(self):
+        sources = self._get_source_list()
+        count = 0
+        referrals = []
+        for row in sources:
+            source = row["source_medium"].split(" / ")[0] 
+            black_ex = '|'
+            black_string = black_ex.join(config.SOURCE_BLACK_LIST)
+            regex = re.compile(black_string)
+            match = regex.search(source)
+            if match: 
+                continue;           
+            else:
+                if count == 5:
+                    break
+                else:
+                    count += 1
+                    filter = "ga:source==%s" % source
+                    article = self.referral_articles(filter, 1)
+                    row["articles"] = article   
+                    referrals.append(row)    
+        
+        return referrals 
+        
         
     def social_network_table(self):
         data = {}
-        for count, date in enumerate([self.period, self.previous]):
+        for count, date in enumerate(self.date_list):
             social = []
             for site in self.sites:
                 results = analytics.run_report(site_ids[site], date.get_start(), date.get_end(), metrics="ga:pageviews,ga:users", dimensions="ga:socialNetwork", 
                                                 filters = "ga:socialNetwork!=(not set)", sort="-ga:users")
                 rows = utils.format_data_rows(results)
+                rows = self._remove_ga_names(rows)
+                rows = utils.change_key_names(rows, {"social_network":"socialNetwork"})
+                for row in rows:
+                    row["pageviews"] = float(row["pageviews"])
+                    row["users"] = float(row["users"])
+                    
                 social.extend(rows)
-                for row in social:
-                    row['ga:pageviews'] = float(row['ga:pageviews'])
-                    row['ga:users'] = float(row['ga:users'])
             
-            aggregated = utils.aggregate_data(social, "ga:socialNetwork", ["ga:pageviews", "ga:users"])
-            sorted = utils.sort_data(aggregated, "ga:users", limit=6)
+            aggregated = utils.aggregate_data(social, "social_network", ["pageviews", "users"])
+            sorted = utils.sort_data(aggregated, "users", limit=6)
             data[count] = sorted
             
-        added_change = utils.add_change(data[0], data[1], "ga:socialNetwork", ["ga:pageviews", "ga:users"])
+        added_change = utils.add_change(data[0], data[1], "social_network", ["pageviews", "users"], self.frequency)
+        added_change = utils.add_change(added_change, data[2], "social_network", ["pageviews", "users"], "yearly")
+        
+        for row in added_change:
+            filter = "ga:socialNetwork==%s" % row["social_network"]
+            article = self.referral_articles(filter, 1)
+            row["articles"] = article            
+        
+        return added_change
+        
+        
+    def referral_articles(self, filter, limit):
+        #pass in a social network and get the top articles?
+        filters = config.ARTICLE_FILTER + ";" + filter
+        self.previous = utils.StatsRange.get_previous_period(self.period, "DAILY")#how to do this
+        data = {}
+        for count, date in enumerate(self.date_list):
+            articles = []
+            for site in self.sites:
+                results = analytics.run_report(site_ids[site], date.get_start(), date.get_end(), metrics="ga:pageviews", dimensions="ga:pageTitle,ga:pagePath,ga:hostname", 
+                                                filters= filters, sort="-ga:pageviews")
+                rows = utils.format_data_rows(results)
+                rows = self._remove_ga_names(rows)
+                rows = utils.change_key_names(rows, {"title":"pageTitle", "path":"pagePath", "host":"hostname"})
+                for row in rows:
+                    path = row["path"]
+                    new_path = self._remove_query_string(path)
+                    row["path"] = new_path
+                    row["pageviews"] = float(row["pageviews"])
+                
+                articles.extend(rows)
+            aggregated = utils.aggregate_data(articles, "path", ["pageviews"])
+            sorted = utils.sort_data(aggregated, "pageviews", limit=limit)
+            data[count] = sorted
+            #group
+
+        added_change = utils.add_change(data[0], data[1], "pagePath", ["pageviews"], "DAILY")
+
+        return added_change                
+        
+        
+    def device_table(self):
+        data = {}
+        for count, date in enumerate(self.date_list):
+            devices = []
+            for site in self.sites:
+                results = analytics.run_report(site_ids[site], date.get_start(), date.get_end(), metrics="ga:users", dimensions="ga:deviceCategory", sort="-ga:users")
+                rows = utils.format_data_rows(results)
+                rows = self._remove_ga_names(rows)
+                rows = utils.change_key_names(rows, {"device_category":"deviceCategory"})
+                for row in rows:
+                    row["users"] = float(row["users"])
+                    
+                devices.extend(rows)
+            
+            aggregated = utils.aggregate_data(devices, "device_category", ["users"])
+            sorted = utils.sort_data(aggregated, "users", limit=6)
+            data[count] = sorted
+            
+        added_change = utils.add_change(data[0], data[1], "device_category", ["users"], self.frequency)
+        added_change = utils.add_change(added_change, data[2], "device_category", ["users"], "yearly")
         
         return added_change
                 

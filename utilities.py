@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 
 def format_data_rows(results):
 	"""
@@ -17,6 +17,15 @@ def sig_fig(sf, num):
 	condensed_num = "%0.*g" % ((sf), num)
 	return float(condensed_num)
 	
+def change_key_names(rows, changes):
+    """
+    Renames the keys specified in rows
+    Where changes = {new:original, new:original}
+    """
+    for row in rows:
+        for new, original in changes.items():
+            row[new] = row.pop(original)
+    return rows 
 	
 def percentage(change, total):
 	try:
@@ -66,27 +75,119 @@ def aggregate_data(table, match_key, aggregate_keys):
     return new_table
 
 
-def add_change(this_period, previous_period, match_key, change_keys):
+def add_change(this_period, previous_period, match_key, change_keys, label):
     
     for row in this_period:
         try:
             result = list_search(previous_period, match_key, row[match_key])
             for key in change_keys:
-                row['change_%s' % key]  = row[key] - result[key]
-                row['percentage_%s' % key] = percentage(row['change_%s' % key], result[key])
+                row['%s_change_%s' % (label, key)]  = row[key] - result[key]
+                row['%s_percentage_%s' % (label, key)] = percentage(row['%s_change_%s' % (label,key)], result[key])
         except KeyError:
             for key in change_keys:
-                row['change_%s' % key]  = 0
-                row['percentage_%s' % key] = 0
+                row['%s_change_%s' % (label,key)]  = 0
+                row['%s_percentage_%s' % (label, key)] = 0
     return this_period
 
 
 
 
 
+#date utils
+import datetime
+
+def add_one_month(t):
+    """Return a `datetime.date` or `datetime.datetime` (as given) that is
+    one month earlier.
+    
+    Note that the resultant day of the month might change if the following
+    month has fewer days:
+    
+        >>> add_one_month(datetime.date(2010, 1, 31))
+        datetime.date(2010, 2, 28)
+    """
+    
+    one_day = datetime.timedelta(days=1)
+    one_month_later = t + one_day
+
+    while one_month_later.month == t.month: # advance to start of next month
+        one_month_later += one_day
+
+    target_month = one_month_later.month
+    
+    while one_month_later.day < t.day:  # advance to appropriate day, needs to always get to the end of the month 
+        one_month_later += one_day
+        if one_month_later.month != target_month:  # gone too far
+            one_month_later -= one_day
+            break
+    return one_month_later
+
+def subtract_one_month(t):
+    """Return a `datetime.date` or `datetime.datetime` (as given) that is
+    one month later.
+    
+    Note that the resultant day of the month might change if the following
+    month has fewer days:
+    
+        >>> subtract_one_month(datetime.date(2010, 3, 31))
+        datetime.date(2010, 2, 28)
+    """
+    one_day = datetime.timedelta(days=1)
+    one_month_earlier = t - one_day
+    while one_month_earlier.month == t.month or one_month_earlier.day > t.day:
+        one_month_earlier -= one_day
+    return one_month_earlier
+
+WEEKDAY_INDEXES = {
+    'Monday':       0,
+    'Tuesday':      1, 
+    'Wednesday':    2,
+    'Thursday':     3,
+    'Friday':       4,
+    'Saturday':     5, 
+    'Sunday':       6,
+}
+
+def find_last_weekday(start_date, weekday):
+    """
+    given a starting date and a string weekday, return the date object for the 
+    closest date in the past with that weekday.  returns today if that matches.
+
+    eg: last_weekday(date(01,01,2015), "monday")
+    returns date(29,12,2014) since this is the previous monday
+    """
+    desired_weekday = WEEKDAY_INDEXES[weekday]
+    current_weekday = start_date.weekday()
+    if desired_weekday == current_weekday:
+        days = 0
+    if desired_weekday < current_weekday:
+        days = current_weekday - desired_weekday
+    if desired_weekday > current_weekday:
+        days = 7 - (desired_weekday - current_weekday)
+    return start_date - datetime.timedelta(days=days)
+
+def find_next_weekday(start_date, weekday):
+    """
+    given a starting date and a string weekday, return the date object for the 
+    closest date in the future with that weekday.  returns today if that matches.
+
+    eg: last_weekday(date(01,01,2015), "monday")
+    returns date(29,12,2014) since this is the previous monday
+    """
+    desired_weekday = WEEKDAY_INDEXES[weekday]
+    current_weekday = start_date.weekday()
+    if desired_weekday == current_weekday:
+        days = 0
+    if desired_weekday < current_weekday:
+        days = 7 - current_weekday + desired_weekday
+    if desired_weekday > current_weekday:
+        days = desired_weekday - current_weekday
+    return start_date + datetime.timedelta(days=days)
+
+
 
     
-	
+#stats range 	
 class StatsRange(object):
    
     def __init__(self, name, start_date, end_date):
@@ -135,6 +236,11 @@ class StatsRange(object):
             previous_start = subtract_one_month(current_period.start_date)
             previous_end = current_period.start_date - timedelta(days=1)
             return cls("Previous Month", previous_start, previous_end)
+        if frequency == "YEARLY":
+            #should it be year-1 or -timedelta(days=365)
+            previous_start = date(current_period.start_date.year-1, current_period.start_date.month, current_period.start_date.day)
+            previous_end = date(current_period.start_date.year-1, current_period.start_date.month, current_period.start_date.day)
+            return cls("Period Last Year", previous_start, previous_end)
 
     @classmethod
     def get_one_day_period(cls, date):

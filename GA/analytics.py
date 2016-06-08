@@ -76,7 +76,8 @@ class Analytics(object):
             dimensions=dimensions,
             filters=filters,
             sort=sort,
-            max_results=max_results
+            max_results=max_results,
+            include_empty_rows=True,
             
         )
         
