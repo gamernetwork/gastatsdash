@@ -122,7 +122,7 @@
       {% endfor %}
   	</tbody>  	
 	</table>
-	
+	{% if num_sites < total_num_sites %}
 	<h2> Bottom 5 Articles </h2>
 	
 	<table border="0" cellspacing="0">
@@ -149,6 +149,8 @@
       {% endfor %}
   	</tbody>  	
 	</table>
+	{% endif %}
+	
 	<img alt="embedded image" src ="cid:{{graph}}" />
 	
 </body>

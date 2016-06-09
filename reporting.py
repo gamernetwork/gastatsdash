@@ -527,9 +527,9 @@ class SocialReport(Report):
             
         alternate_social_results = get_data.sort_data(alternate_social_results, 'visitors', 3)
         
-        top_4_socials = top_social_results
-        
-        bottom_social_articles = get_data.get_social_referral_articles(self.sites, self.period, self.second_period, top_4_socials, 5, sort='ascending')
+        if num_sites != total_num_sites:
+            top_4_socials = top_social_results
+            bottom_social_articles = get_data.get_social_referral_articles(self.sites, self.period, self.second_period, top_4_socials, 5, sort='ascending')
         
         top_social_results.extend(alternate_social_results)
         top_social_results = get_data.sort_data(top_social_results, 'visitors', 10)

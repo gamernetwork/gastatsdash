@@ -523,10 +523,18 @@ class DataAggregator():
                     logger.debug("%s data for period %s - %s", social_network, second_period.start_date, second_period.end_date)
                     second_data = analytics.get_article_breakdown(site_ga_id, second_period, extra_filters='ga:socialNetwork==%s' % social_network)
                 elif sort=='ascending':
+                    year = period.start_date.year
+                    month = period.start_date.strftime('%m') #need to get month as zero padded number
+                    #use regex filter to look only at articles published within this month
+                    #   looks for the year and month within the articles page path 
+                    #   assumes page path has date in the url 
+                    #   this doesn't work for all sites and should be updated when possible
+                    filter = 'ga:pagePath=~.+(%d[/\-\s*]%s);ga:socialNetwork==%s' % (year, month, social_network)
+                
                     logger.debug("%s data for period %s - %s", social_network, period.start_date, period.end_date)
-                    data = analytics.get_article_breakdown(site_ga_id, period, extra_filters='ga:pagePath=~^/articles/2015-12.*;ga:socialNetwork==%s' % social_network, min_pageviews=0, sort='ga:pageviews')
+                    data = analytics.get_article_breakdown(site_ga_id, period, extra_filters=filter, min_pageviews=0, sort='ga:pageviews')
                     logger.debug("%s data for period %s - %s", social_network, second_period.start_date, second_period.end_date)
-                    second_data = analytics.get_article_breakdown(site_ga_id, second_period, extra_filters='ga:pagePath=~^/articles/2015-12.*;ga:socialNetwork==%s' % social_network, min_pageviews=0, sort='ga:pageviews')       
+                    second_data = analytics.get_article_breakdown(site_ga_id, second_period, extra_filters=filter, min_pageviews=0, sort='ga:pageviews')       
 
                     
                             
