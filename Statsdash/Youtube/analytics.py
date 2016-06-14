@@ -166,3 +166,7 @@ class Analytics(object):
 		)
 	
 		return self.execute_query(video_results)
+		
+		
+if __name__ == '__main__':
+    analytics = Analytics()

@@ -1,6 +1,8 @@
 *.p12
 config.py
+*.py-oauth2.json
 *.pyc
+*.json
 credentials.py
 daily.sh
 env/

@@ -2,7 +2,8 @@ import config
 import re
 from datetime import date, timedelta, datetime
 from analytics import Analytics
-import utilities as utils
+
+import Statsdash.utilities as utils
 
 site_ids = config.TABLES
 analytics = Analytics()
@@ -18,13 +19,13 @@ class AnalyticsData(object):
         self.date_list = [self.period, self.previous, self.yearly]
     
 	def check_available_data(self):
-		run_report = {"result":True}
-		for channel in self.channels:
+		run_report = {"result":True, "site":[]}
+		for site in self.sites:
 			id = channel_ids[channel]
-			data_available = analytics.data_available(id, self.end.strftime("%Y-%m-%d"))
+			data_available = analytics.data_available(id, self.period.get_end())
 			if not data_available:
 				run_report["result"] = False
-				run_report["channel"] = channel			
+				run_report["site"].append(site)		
 		return run_report    
 		
 		
@@ -35,23 +36,36 @@ class AnalyticsData(object):
                 row[new] = row.pop(key)
         return rows
         
-    
+        
+    def _rollup_rows(self, ids, metrics, dimensions=None, filters=None, sort=None, max_results=None):
+        #is this the best way to aggregate site data 
+        pass
+        main_row = []
+        for id in ids:
+            results = analytics.run_report(id, date.get_start(), date.get_end(), metrics=metrics, dimensions=dimensions, sort=sort, max_results=max_results)
+            rows = utils.format_data_rows(results)
+            for row in rows:
+                for metric in metrics.split(","):
+                    row[metric] = float(row[metric])
+            rows = self._remove_ga_names(rows)
+            main_row.append(rows)
+            
+        main_row = utils.aggregate_data
+            
 
     def summary_table(self):	
         data = {}
         for count, date in enumerate(self.date_list):
             totals = []
+            metrics="ga:pageviews,ga:users,ga:sessions,ga:pageviewsPerSession,ga:avgSessionDuration"
             for site in self.sites:
-                results = analytics.run_report(site_ids[site], date.get_start(), date.get_end(), metrics="ga:pageviews,ga:users,ga:sessions,ga:pageviewsPerSession,ga:avgSessionDuration")
+                results = analytics.run_report(site_ids[site], date.get_start(), date.get_end(), metrics=metrics)
                 rows = utils.format_data_rows(results)
+                for row in rows:
+                    row =  utils.convet_to_floats(row, metrics.split(","))
+
                 rows = self._remove_ga_names(rows)
                 rows = utils.change_key_names(rows, {"pv_per_session":"pageviewsPerSession", "avg_session_time":"avgSessionDuration"})
-                for row in rows:
-                    row["pageviews"] = float(row["pageviews"])
-                    row["users"] = float(row["users"])
-                    row["sessions"] = float(row["sessions"])
-                    row["pv_per_session"] = float(row["pv_per_session"])    
-                    row["avg_session_time"] = float(row["avg_session_time"])
                 
                 totals.extend(rows)
             #new aggregate data where just matches the metric and add it 
@@ -84,29 +98,28 @@ class AnalyticsData(object):
         data = {}
         for count, date in enumerate(self.date_list):
             totals = []
+            metrics="ga:pageviews,ga:users,ga:sessions,ga:pageviewsPerSession,ga:avgSessionDuration"
             for site in self.sites:
-                results = analytics.run_report(site_ids[site], date.get_start(), date.get_end(), metrics="ga:pageviews,ga:users,ga:sessions,ga:pageviewsPerSession,ga:avgSessionDuration")
+                results = analytics.run_report(site_ids[site], date.get_start(), date.get_end(), metrics=metrics)
                 rows = utils.format_data_rows(results)
-                rows = self._remove_ga_names(rows)
-                rows = utils.change_key_names(rows, {"pv_per_session":"pageviewsPerSession", "avg_session_time":"avgSessionDuration"})
                 for row in rows:
-                    row["pageviews"] = float(row["pageviews"])
-                    row["users"] = float(row["users"])
-                    row["sessions"] = float(row["sessions"])
-                    row["pv_per_session"] = float(row["pv_per_session"])    
-                    row["avg_session_time"] = float(row["avg_session_time"])
+                    row =  utils.convet_to_floats(row, metrics.split(","))
                     row["site"] = site 
+
+                rows = self._remove_ga_names(rows)
+                #rows = utils.change_key_names(rows, {"pv_per_session":"pageviewsPerSession", "avg_session_time":"avgSessionDuration"})
+                                    
                 totals.extend(rows)
-            aggregated = utils.aggregate_data(totals, "site", ["pageviews", "users", "sessions", "pv_per_session", "avg_session_time"])
+                
+            aggregated = utils.aggregate_data(totals, "site", metrics.split(","))
             sorted = utils.sort_data(aggregated, "users")
             data[count] = sorted
             
-        added_change = utils.add_change(data[0], data[1], "site", ["pageviews", "users", "sessions", "pv_per_session", "avg_session_time"], self.frequency)
-        added_change = utils.add_change(added_change, data[2], "site", ["pageviews", "users", "sessions", "pv_per_session", "avg_session_time"], "YEARLY")
+        added_change = utils.add_change(data[0], data[1], "site", metrics.split(","), self.frequency)
+        added_change = utils.add_change(added_change, data[2], "site", metrics.split(","), "YEARLY")
         
         return added_change
                            
-
 
 
     def _remove_query_string(self, path):
@@ -167,8 +180,9 @@ class AnalyticsData(object):
         data = {}
         for count, date in enumerate(self.date_list):
             breakdown = []
+            metrics = "ga:pageviews,ga:users"
             for site in self.sites:
-                results = analytics.run_report(site_ids[site], date.get_start(), date.get_end(), metrics="ga:pageviews,ga:users", dimensions="ga:country", filters=filters, sort="-ga:pageviews")
+                results = analytics.run_report(site_ids[site], date.get_start(), date.get_end(), metrics=metrics, dimensions="ga:country", filters=filters, sort="-ga:pageviews")
                 world_results = analytics.run_report(site_ids[site], date.get_start(), date.get_end(), metrics="ga:pageviews,ga:users", filters=row_filters, sort="-ga:pageviews")
                 rows = utils.format_data_rows(results)
                 world_rows = utils.format_data_rows(world_results)
@@ -180,8 +194,7 @@ class AnalyticsData(object):
                 rows.extend(world_rows)
                 rows = self._remove_ga_names(rows)
                 for row in rows:
-                    row["pageviews"] = float(row["pageviews"])
-                    row["users"] = float(row["users"])
+                    row =  utils.convet_to_floats(row, metrics.split(","))
                     
                 breakdown.extend(rows)
                     
@@ -198,14 +211,14 @@ class AnalyticsData(object):
         data = {}
         for count, date in enumerate(self.date_list):
             traffic_sources = []
+            metrics = "ga:pageviews,ga:users"
             for site in self.sites:       
-                results = analytics.run_report(site_ids[site], date.get_start(), date.get_end(), metrics="ga:pageviews,ga:users", dimensions="ga:sourceMedium", sort="-ga:users")
+                results = analytics.run_report(site_ids[site], date.get_start(), date.get_end(), metrics=metrics, dimensions="ga:sourceMedium", sort="-ga:users")
                 rows = utils.format_data_rows(results)
                 rows = self._remove_ga_names(rows)
                 rows = utils.change_key_names(rows, {"source_medium":"sourceMedium"})
                 for row in rows:
-                    row["pageviews"] = float(row["pageviews"])
-                    row["users"] = float(row["users"])
+                    row =  utils.convet_to_floats(row, metrics.split(","))
                     
                 traffic_sources.extend(rows)
                 
@@ -254,20 +267,20 @@ class AnalyticsData(object):
         data = {}
         for count, date in enumerate(self.date_list):
             social = []
+            metrics = "ga:pageviews,ga:users"
             for site in self.sites:
-                results = analytics.run_report(site_ids[site], date.get_start(), date.get_end(), metrics="ga:pageviews,ga:users", dimensions="ga:socialNetwork", 
+                results = analytics.run_report(site_ids[site], date.get_start(), date.get_end(), metrics=metrics, dimensions="ga:socialNetwork", 
                                                 filters = "ga:socialNetwork!=(not set)", sort="-ga:users")
                 rows = utils.format_data_rows(results)
                 rows = self._remove_ga_names(rows)
                 rows = utils.change_key_names(rows, {"social_network":"socialNetwork"})
                 for row in rows:
-                    row["pageviews"] = float(row["pageviews"])
-                    row["users"] = float(row["users"])
+                    row =  utils.convet_to_floats(row, metrics.split(","))
                     
                 social.extend(rows)
             
             aggregated = utils.aggregate_data(social, "social_network", ["pageviews", "users"])
-            sorted = utils.sort_data(aggregated, "users", limit=6)
+            sorted = utils.sort_data(aggregated, "users", limit=15)
             data[count] = sorted
             
         added_change = utils.add_change(data[0], data[1], "social_network", ["pageviews", "users"], self.frequency)
@@ -333,14 +346,6 @@ class AnalyticsData(object):
         added_change = utils.add_change(added_change, data[2], "device_category", ["users"], "yearly")
         
         return added_change
-                
-                
-                
-                
-                
-                
-                
-                
                 
                 
                 

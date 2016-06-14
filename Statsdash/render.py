@@ -1,5 +1,6 @@
 from jinja2 import Environment, FileSystemLoader
 
+
 #custom filters 
 def int_comma(value):
 	"""
@@ -34,6 +35,6 @@ def get_environment():
     """
     Returns Jinja2 rendering environment and creates context with custom filterss
     """
-	env = Environment(loader=FileSystemLoader('Templates'))
-	env.filters['intcomma'] = int_comma
-	return env
+    env = Environment(loader=FileSystemLoader('Statsdash/Templates'), extensions=['jinja2.ext.loopcontrols'])
+    env.filters['intcomma'] = int_comma
+    return env

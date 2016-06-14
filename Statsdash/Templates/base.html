@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+	<head>
+    	<meta charset="UTF-8">
+	</head>
+<body>
+	<style>
+	body, p{
+		font-family: sans-serif;
+		text-align: left;
+		font-weight: normal;
+	}
+	thead th{
+    	border-bottom: 1px solid #d0d9e0;
+	}
+	td, th {
+		padding: 0.3em 1em 0.3em 0.5em;
+		vertical-align: top;
+	}
+	th.src {
+    	font-weight: lighter;
+	}
+	td.num {
+    	text-align: right;
+	}
+	
+	tr.odd {
+    	background-color: #f0f2f4;
+	}	
+	
+	tr.even {
+    	
+	}
+    span  {
+        display: list-item;
+        list-style-type: none;
+	}	
+	img {
+    	margin: 0.2em;
+	}
+	</style>
+	<h1>{{ subject }}</h1>
+	<p>This data is confidential and for employees of {{ site }} only. Do not transmit outside the company. </p>
+	
+	{% block body %}
+	{% endblock %}
+</body>
+</html>

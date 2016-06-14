@@ -34,6 +34,10 @@ def percentage(change, total):
 		percentage = 0		
 	return percentage
 	
+def convert_to_floats(row, metrics):
+    for metric in metrics:
+        row[metric] = float(row[metric])
+    return row 	
 	
 def rate_per_1000(metric, comparative):
 	try: 
@@ -42,7 +46,7 @@ def rate_per_1000(metric, comparative):
 		rate = 0
 	return rate
 
-def sort_data(unsorted_list, metric, limit = 100, reverse=True):           
+def sort_data(unsorted_list, metric, limit = 10000, reverse=True):           
     """
     Sorts a list of dictionaries by the "metric" key given
     """
@@ -239,7 +243,7 @@ class StatsRange(object):
         if frequency == "YEARLY":
             #should it be year-1 or -timedelta(days=365)
             previous_start = date(current_period.start_date.year-1, current_period.start_date.month, current_period.start_date.day)
-            previous_end = date(current_period.start_date.year-1, current_period.start_date.month, current_period.start_date.day)
+            previous_end = date(current_period.end_date.year-1, current_period.end_date.month, current_period.end_date.day)
             return cls("Period Last Year", previous_start, previous_end)
 
     @classmethod

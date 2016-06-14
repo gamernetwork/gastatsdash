@@ -1,14 +1,13 @@
-import reporting
+from Statsdash.report import YoutubeReport
 import argparse
-import report_schedule
-from slimmer import html_slimmer
+#import report_schedule
 
 from datetime import date, timedelta
-from dateutils import subtract_one_month
-import GA.config as config
-from analytics import get_analytics, StatsRange
+#from Statdateutils import subtract_one_month
 
-import logging, logging.config, logging.handlers
+import Statsdash.Youtube.config as yt_config
+import Statsdash.utilities as utils
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument("reporttype", help="the type of report you wish to generate")
@@ -24,6 +23,16 @@ else:
 	
 file_src = args.destination + "/" + file_name
 
+
+period = utils.StatsRange("period", date(2016, 04, 01), date(2016, 04, 30))
+
+yt = YoutubeReport(yt_config.CHANNELS.keys(), period, ["test"], "MONTHLY", "Gamer Network Video Report for")
+html = yt.generate_html()
+
+with open(file_src, 'w') as file:
+	file.write(html.encode("utf-8"))	
+
+""""
 all_sites = config.TABLES.keys()
 today = date.today() - timedelta(days=2)
 day_before = date.today() - timedelta(days=3)
@@ -88,6 +97,5 @@ else:
 if network_breakdown.data_available(override=True):
   generated_html = network_breakdown.generate_report()['html'] 
   generated_html = html_slimmer(generated_html)
-    
-with open(file_src, 'w') as file:
-	file.write(generated_html.encode("utf-8"))	
+"""    
+

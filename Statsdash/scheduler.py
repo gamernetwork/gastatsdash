@@ -12,7 +12,6 @@ from dateutils import find_last_weekday, add_one_month, find_next_weekday
 
 import logging, logging.config, logging.handlers
 
-
 class RunLogger(object):
     """
     Persistence layer for recording the last run of a report and querying
@@ -160,4 +159,5 @@ def run_schedule():
     print "** Finished run at %s" % datetime.now().isoformat()
 
 if __name__ == '__main__':
-    run_schedule()
+
+    #run_schedule()

@@ -1,10 +1,12 @@
 import json
 from datetime import timedelta
 
-from oauth2client.client import SignedJwtAssertionCredentials
+#from oauth2client.client import SignedJwtAssertionCredentials
 from httplib2 import Http
 from googleapiclient import errors
 from apiclient.discovery import build
+
+from oauth2client.service_account import ServiceAccountCredentials
 
 import config
 
@@ -14,8 +16,9 @@ with open(config.KEY_FILE) as f:
 class Analytics(object):
     
     def __init__(self):
-        credentials = SignedJwtAssertionCredentials(config.CLIENT_EMAIL, PRIVATE_KEY,
-            'https://www.googleapis.com/auth/analytics.readonly')
+        #credentials = SignedJwtAssertionCredentials(config.CLIENT_EMAIL, PRIVATE_KEY,
+            #'https://www.googleapis.com/auth/analytics.readonly')
+        credentials = ServiceAccountCredentials.from_p12_keyfile(config.CLIENT_EMAIL, config.KEY_FILE, scopes='https://www.googleapis.com/auth/analytics.readonly')
         http_auth = credentials.authorize(Http())
         ga_service = build('analytics', 'v3', http=http_auth)
         self.ga = ga_service.data().ga()   
