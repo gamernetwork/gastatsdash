@@ -142,7 +142,7 @@ class AnalyticsData(object):
         Return top articles as a list of dictionaries
         Each dictionary has the pageviews, page title, page path and host name
         """
-        self.previous = utils.StatsRange.get_previous_period(self.period, "DAILY")#how to do this
+        self.previous = utils.StatsRange.get_previous_period(self.period, "WOW_DAILY")#how to do this
         data = {}
         for count, date in enumerate(self.date_list):
             articles = []
@@ -219,7 +219,7 @@ class AnalyticsData(object):
                 rows = self._remove_ga_names(rows)
                 rows = utils.change_key_names(rows, {"source_medium":"sourceMedium"})
                 for row in rows:
-                    row =  utils.convert_to_floats(row, metrics.split(","))
+                    row =  utils.convert_to_floats(row, ["pageviews", "users"])
                     
                 traffic_sources.extend(rows)
                 
@@ -258,6 +258,7 @@ class AnalyticsData(object):
                     count += 1
                     filter = "ga:source==%s" % source
                     article = self.referral_articles(filter, 1)
+                    row["source"] = source
                     row["articles"] = article   
                     referrals.append(row)    
         
@@ -276,7 +277,7 @@ class AnalyticsData(object):
                 rows = self._remove_ga_names(rows)
                 rows = utils.change_key_names(rows, {"social_network":"socialNetwork"})
                 for row in rows:
-                    row =  utils.convert_to_floats(row, metrics.split(","))
+                    row =  utils.convert_to_floats(row, ["pageviews", "users"])
                     
                 social.extend(rows)
             

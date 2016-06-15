@@ -26,12 +26,14 @@ file_src = args.destination + "/" + file_name
 
 
 period = utils.StatsRange("period", date(2016, 04, 01), date(2016, 04, 30))
+daily_period = utils.StatsRange("period", date(2016, 06, 05), date(2016, 06, 05))
 
 #yt = YoutubeReport(yt_config.CHANNELS.keys(), period, ["test"], "MONTHLY", "Gamer Network Video Report for")
 #html = yt.generate_html()
 
 
-ac = AnalyticsCoreReport(ga_config.TABLES.keys(), period, ["test"], "MONTHLY", "Gamer Network Report for")
+#ac = AnalyticsCoreReport(ga_config.TABLES.keys(), period, ["test"], "MONTHLY", "Gamer Network Report for")
+ac = AnalyticsCoreReport(["eurogamer.net"], daily_period, ["test"], "DAILY", "Eurogamer Report for")
 html = ac.generate_html()
 
 with open(file_src, 'w') as file:

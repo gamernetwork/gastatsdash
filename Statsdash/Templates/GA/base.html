@@ -12,12 +12,13 @@
 {% block body %}
 
 {% if summary_table %}{% include "GA/summary_table.html" with context %}{% endif %}
-{% if geo_table %}{% include "GA/geo_table.html" %}{% endif %}
-{% if site_summary %}{% include "GA/site_summary_table.html" %}{% endif %}
-{#{% if top_articles %}{% include "article_table.html" %}{% endif %}
-{% if traffic %}{% include "traffic_table.html" %}{% endif %}
-{% if referrals %}{% include "referral_table.html" %}{% endif %}
-{% if device %}{% include "device_table.html" %}{% endif %}
-{% if social %}{% include "social_table.html" %}{% endif %}#}
+{% if site == "Gamer Network" %}
+    {% if geo_table %}{% include "GA/geo_table.html" %}{% endif %}
+    {% if site_summary %}{% include "GA/site_summary_table.html" %}{% endif %}
+{% endif %}
+{% if top_articles %}{% include "GA/article_table.html" %}{% endif %}
+{% if traffic_table %}{% include "GA/traffic_table.html" %}{% endif %}
+{% if device_table %}{% include "GA/device_table.html" %}{% endif %}
+{% if social_table %}{% include "GA/social_table.html" %}{% endif %}
     
 {% endblock %}

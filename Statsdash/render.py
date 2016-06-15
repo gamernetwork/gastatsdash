@@ -30,6 +30,15 @@ def int_comma(value):
 	final += val_point
 	return final
 	
+def cut(word, part="www."):
+    """
+    Where word is a string
+    Removes the section specified by part
+    """
+    split = word.split(part)
+    truncated = "".join(split)
+    return truncated 
+
 
 def get_environment():
     """
@@ -37,4 +46,5 @@ def get_environment():
     """
     env = Environment(loader=FileSystemLoader('Statsdash/Templates'), extensions=['jinja2.ext.loopcontrols'])
     env.filters['intcomma'] = int_comma
+    env.filters['cut'] = cut
     return env

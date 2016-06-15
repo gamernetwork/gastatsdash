@@ -1,0 +1,40 @@
+<h2>Social Networks </h2> 
+<p>The number of visitors to {{site|capitalize}} who came via a social network.</p>
+<p>Total Visitors that come from social networks: <b>{{social_table|sum(attribute="users")|int|intcomma}}</b></p>
+<p>Percentage of total visitors that come from social networks: <b>{{((social_table|sum(attribute="users") / summary_table.users) * 100)|round(1)}}%</b></p>
+<table border="0" cellspacing="0">
+    <thead>
+        <tr class = 'column_header'>
+            <th> Social Network </th>
+            
+            <th> Page Views</th>
+            <th> PV {{ change }} Change </th>
+            {% if report_span == 'MONTHLY' %}<th> PV YoY Change </th>{% endif %}   
+                         
+            <th> Visitors </th>
+            <th> Visitors {{ change }} Change </th>
+            {% if report_span == 'MONTHLY' %}<th> Visitors YoY Change </th>{% endif %}
+            <th> Percentage of Total Social Visitors </th>
+            
+            <th> Top linked article from this social network</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in social_table %}
+            <tr class="{{ loop.cycle('odd', 'even') }}">
+                <th> {{row.social_network}} </th>
+                
+                <td class = 'num'> {{row.pageviews|int|intcomma}} </td> 
+                <td class = 'num' style="color: {% if row.previous_percentage_pageviews > 0 %}green{% else %}red{% endif %};"> {{row.previous_percentage_pageviews|round(1)}}%</td>     
+                {% if report_span == 'MONTHLY' %}<td class = 'num' style="color: {% if row.yearly_percentage_pageviews > 0 %}green{% else %}red{% endif %};"> {{row.yearly_percentage_pageviews|round(1)}}%</td>{% endif %}                 
+
+                <td class = 'num'> {{row.users|int|intcomma}} </td>
+                <td class = 'num' style="color: {% if row.previous_percentage_users > 0 %}green{% else %}red{% endif %};"> {{row.previous_percentage_users|round(1)}}%</td>     
+                {% if report_span == 'MONTHLY' %}<td class = 'num' style="color: {% if row.yearly_percentage_users > 0 %}green{% else %}red{% endif %};"> {{row.yearly_percentage_users|round(1)}}%</td>{% endif %} 
+                <td class = 'num'> {{((row.users / summary_table.users) * 100)|round(1)}}% </td> 
+                
+                <td class = "src">{% for article in row.articles %}<span><a href="http://{{article.host}}{{article.path}}">{{article.title}}</a></span> {% endfor %}</td>
+            </tr>
+        {% endfor %}
+    </tbody>       
+</table>

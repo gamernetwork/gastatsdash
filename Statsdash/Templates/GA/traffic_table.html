@@ -1,0 +1,53 @@
+<h2>Where our traffic came from</h2>
+<p>Shows the number of visitors referred from a specific source and the type of referral (medium). Note that Facebook is split into desktop and mobile.</p> 
+<table border="0" cellspacing="0">
+    <thead>
+        <tr class = 'column_header'>
+            <th> Source / Medium </th>
+
+            <th> Page Views </th>
+            <th> {{ change }} Pageviews Change </th>
+            <th> Percentage of Total Pageviews </th> 
+            
+            <th> Visitors </th>
+            <th> {{ change }} Visitors Change </th>
+            <th> Percentage of Total Visitors </th>                
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in traffic_table %}
+            <tr class="{{ loop.cycle('odd', 'even') }}">
+                <th> {{row.source_medium}} </th>
+
+                <td class = 'num'> {{row.pageviews|int|intcomma}} </td>
+                <td class = 'num' style="color: {% if row.previous_percentage_pageviews > 0 %}green{% else %}red{% endif %};"> {{row.previous_percentage_pageviews|round(1)}} </td>
+                <td class = 'num'> {{ ((row.pageviews / summary_table.pageviews) * 100)|round(1)}}% </td>
+                
+                <td class = 'num'> {{row.users|int|intcomma}} </td>
+                <td class = 'num' style="color: {% if row.previous_percentage_users > 0 %}green{% else %}red{% endif %};"> {{row.previous_percentage_users|round(1)}} </td>
+                <td class = 'num'> {{((row.users / summary_table.users) * 100)|round(1)}}%</td>
+            </tr>
+        {% endfor %}
+    </tbody>      
+</table>    
+<h3>Top Referring Sites</h3>
+<p>Top sites (that aren't social networks) and the articles they've linked to.</p>
+<table border="0" cellspacing="0">
+    <thead>
+        <tr class = 'column_header'>
+            <th> Source </th>
+            <th> Total Page Views </th>
+            <th> Top Article Linked to </th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in referrals %}
+        <tr class="{{ loop.cycle('odd', 'even') }}">
+            <th> {{row.source|capitalize}} </th>
+            <td class="num">{{row.pageviews|int|intcomma}}</td>
+            <td class = "src">{% for article in row.articles %}<span><a href="http://{{article.host}}{{article.path}}">{{article.title}}</a></span> {% endfor %}</td>
+            <!--<td class="num">{% for article in value %}<span>{{article.metrics.pageviews}}</span> {% endfor %}</td>-->
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

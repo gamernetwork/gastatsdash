@@ -34,9 +34,9 @@ class Report(object):
         """
         Return the subject of the email that includes the dates for this period
         """
-        if self.frequency == 'daily':
+        if self.frequency == 'DAILY':
         	subject = ' '.join([self.subject, self.period.end_date.strftime("%a %d %b %Y")])
-        elif self.frequency  == 'weekly':
+        elif self.frequency  == 'WEEKLY':
         	weekly_date = self.period.start_date.strftime("%a %d %b %Y") + ' - ' + self.period.end_date.strftime("%a %d %b %Y")
         	subject = ' '.join([self.subject, weekly_date])
         elif self.frequency == 'MONTHLY':
@@ -183,7 +183,7 @@ class AnalyticsCoreReport(Report):
         if self.frequency != "MONTHLY":
             today = self.period.end_date
             first = datetime(today.year, today.month, 1).date()
-            month_range = StatsRange("Month to date Aggregate", first, today)            
+            month_range = utils.StatsRange("Month to date Aggregate", first, today)            
             to_month_data = AnalyticsData(self.sites, month_range, self.frequency)
             to_month_table = to_month_data.summary_table()
         if self.get_site() != "Gamer Network":
@@ -194,13 +194,21 @@ class AnalyticsCoreReport(Report):
                 network_month_summary_table = network_month_data.summary_table()
             
         summary_table = self.data.summary_table()    
+        print "done summary table"
         country_table = self.data.country_table()
+        print "done country table"
         site_table = self.data.site_summary_table()
-        #article_table = self.data.article_table()
-        #traffic_table = self.data.traffic_source_table()
-        #referring_site_table = self.data.referring_sites_table()
-        #device_table = self.data.device_table()
-        #social_table = self.data.social_network_table()
+        print "done site summary table"
+        article_table = self.data.article_table()
+        print "done article table"
+        traffic_table = self.data.traffic_source_table()
+        print "done traffic table"
+        referring_site_table = self.data.referring_sites_table()
+        print "done referral table"
+        device_table = self.data.device_table()
+        print "done device table"
+        social_table = self.data.social_network_table()
+        print "done social table"
         
         html = self.template.render(
             subject=self.get_subject(),
@@ -214,11 +222,11 @@ class AnalyticsCoreReport(Report):
             summary_table=summary_table,
             geo_table=country_table,
             site_summary=site_table,
-            #top_articles=article_table,
-            #traffic=traffic_table,	
-            #referrals=referring_site_table,
-            #device=device_table,
-            #social=social_table, 		
+            top_articles=article_table,
+            traffic_table=traffic_table,	
+            referrals=referring_site_table,
+            device_table=device_table,
+            social_table=social_table, 		
         )
         return html		
 			
