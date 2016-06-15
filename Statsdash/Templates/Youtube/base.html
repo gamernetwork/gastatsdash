@@ -33,15 +33,15 @@
 				<tr class="{{ loop.cycle('odd', 'even') }}">
 					<td>{{row.channel}}</td>
 					<td class="num">{{row.estimatedMinutesWatched|intcomma}}</td>
-					<td class="num" style="{% if row.MONTHLY_percentage_estimatedMinutesWatched > 0 %}color:green;{% else %}color:red;{% endif %}">{{row.MONTHLY_percentage_estimatedMinutesWatched|round}}%</td>
-					<td class="num" style="{% if row.YEARLY_percentage_estimatedMinutesWatched > 0 %}color:green;{% else %}color:red;{% endif %}">{{row.YEARLY_percentage_estimatedMinutesWatched|round}}%</td>
+					<td class="num" style="{% if row.previous_percentage_estimatedMinutesWatched > 0 %}color:green;{% else %}color:red;{% endif %}">{{row.previous_percentage_estimatedMinutesWatched|round}}%</td>
+					<td class="num" style="{% if row.yearly_percentage_estimatedMinutesWatched > 0 %}color:green;{% else %}color:red;{% endif %}">{{row.yearly_percentage_estimatedMinutesWatched|round}}%</td>
 										
 					<td class="num">{{row.subscriberChange|intcomma}}</td>
-					<td class="num" style="{% if row.MONTHLY_percentage_subscriberChange > 0 %}color:green;{% else %}color:red;{% endif %}">{{row.MONTHLY_percentage_subscriberChange|round}}%</td>
-					<td class="num" style="{% if row.YEARLY_percentage_subscriberChange > 0 %}color:green;{% else %}color:red;{% endif %}">{{row.YEARLY_percentage_subscriberChange|round}}%</td>
+					<td class="num" style="{% if row.previous_percentage_subscriberChange > 0 %}color:green;{% else %}color:red;{% endif %}">{{row.previous_percentage_subscriberChange|round}}%</td>
+					<td class="num" style="{% if row.yearly_percentage_subscriberChange > 0 %}color:green;{% else %}color:red;{% endif %}">{{row.yearly_percentage_subscriberChange|round}}%</td>
 					
 					<td class="num">{{row.subscriberCount|intcomma}}</td>
-					<td class="num" style="{% if row.MONTHLY_percentage_subscriberCount > 0 %}color:green;{% else %}color:red;{% endif %}">{{row.MONTHLY_percentage_subscriberCount|round}}%</td>
+					<td class="num" style="{% if row.previous_percentage_subscriberCount > 0 %}color:green;{% else %}color:red;{% endif %}">{{row.previous_percentage_subscriberCount|round}}%</td>
 				</tr>
 				{% endfor %}
 			</tbody>
@@ -65,13 +65,13 @@
 				<tr class="{{ loop.cycle('odd', 'even') }}">
 					<td>{{row.channel}}</td>
 					<td class="num">{{row.views|round|intcomma}}</td>
-					<td class="num">{{row.likeRatio|round|intcomma}}:{{row.dislikeRatio|round|intcomma}} (<span style="{% if row.MONTHLY_percentage_likeRatio > 0 %}color:green;{% else %}color:red;{% endif %}">{{row.MONTHLY_percentage_likeRatio|round|intcomma}}%</span>)</td>
-					<td class="num">{{row.likeRate|round|intcomma}} (<span style="{% if row.MONTHLY_percentage_likeRate > 0 %}color:green;{% else %}color:red;{% endif %}">{{row.MONTHLY_percentage_likeRate|round|intcomma}}%</span>)</td>																								
-					<td class="num">{{row.subsRate|round|intcomma}} (<span style="{% if row.MONTHLY_percentage_subsRate > 0 %}color:green;{% else %}color:red;{% endif %}">{{row.MONTHLY_percentage_subsRate|round|intcomma}}%</span>)</td>
+					<td class="num">{{row.likeRatio|round|intcomma}}:{{row.dislikeRatio|round|intcomma}} (<span style="{% if row.previous_percentage_likeRatio > 0 %}color:green;{% else %}color:red;{% endif %}">{{row.previous_percentage_likeRatio|round|intcomma}}%</span>)</td>
+					<td class="num">{{row.likeRate|round|intcomma}} (<span style="{% if row.previous_percentage_likeRate > 0 %}color:green;{% else %}color:red;{% endif %}">{{row.previous_percentage_likeRate|round|intcomma}}%</span>)</td>																								
+					<td class="num">{{row.subsRate|round|intcomma}} (<span style="{% if row.previous_percentage_subsRate > 0 %}color:green;{% else %}color:red;{% endif %}">{{row.previous_percentage_subsRate|round|intcomma}}%</span>)</td>
 
-					<td class="num">{{row.commentRate|round|intcomma}} (<span style="{% if row.MONTHLY_percentage_commentRate > 0 %}color:green;{% else %}color:red;{% endif %}">{{row.MONTHLY_percentage_commentRate|round|intcomma}}%</span>)</td>
+					<td class="num">{{row.commentRate|round|intcomma}} (<span style="{% if row.previous_percentage_commentRate > 0 %}color:green;{% else %}color:red;{% endif %}">{{row.previous_percentage_commentRate|round|intcomma}}%</span>)</td>
 
-					<td class="num">{{row.sharesRate|round|intcomma}} (<span style="{% if row.MONTHLY_percentage_sharesRate > 0 %}color:green;{% else %}color:red;{% endif %}">{{row.MONTHLY_percentage_sharesRate|round|intcomma}}%</span>)</td>					
+					<td class="num">{{row.sharesRate|round|intcomma}} (<span style="{% if row.previous_percentage_sharesRate > 0 %}color:green;{% else %}color:red;{% endif %}">{{row.previous_percentage_sharesRate|round|intcomma}}%</span>)</td>					
 
 				</tr>
 				{% endfor %}
@@ -92,9 +92,9 @@
 				{% for row  in geo_table %}
 				<tr class="{{ loop.cycle('odd', 'even') }}">
 					<td>{{row.country}}</td>
-					<td class="num">{{row.estimatedMinutesWatched|round|intcomma}} (<span style="{% if row.MONTHLY_percentage_estimatedMinutesWatched > 0 %}color:green;{% else %}color:red;{% endif %}">{{row.MONTHLY_percentage_estimatedMinutesWatched|round|intcomma}}%</span>)</td>
-					<td class="num">{{row.views|round|intcomma}} (<span style="{% if row.MONTHLY_percentage_views > 0 %}color:green;{% else %}color:red;{% endif %}">{{row.MONTHLY_percentage_views|round|intcomma}}%</span>)</td>
-					<td class="num">{{row.subscriberChange|round|intcomma}} (<span style="{% if row.MONTHLY_percentage_subscriberChange > 0 %}color:green;{% else %}color:red;{% endif %}">{{row.MONTHLY_percentage_subscriberChange|round|intcomma}}%</span>)</td>
+					<td class="num">{{row.estimatedMinutesWatched|round|intcomma}} (<span style="{% if row.previous_percentage_estimatedMinutesWatched > 0 %}color:green;{% else %}color:red;{% endif %}">{{row.previous_percentage_estimatedMinutesWatched|round|intcomma}}%</span>)</td>
+					<td class="num">{{row.views|round|intcomma}} (<span style="{% if row.previous_percentage_views > 0 %}color:green;{% else %}color:red;{% endif %}">{{row.previous_percentage_views|round|intcomma}}%</span>)</td>
+					<td class="num">{{row.subscriberChange|round|intcomma}} (<span style="{% if row.previous_percentage_subscriberChange > 0 %}color:green;{% else %}color:red;{% endif %}">{{row.previous_percentage_subscriberChange|round|intcomma}}%</span>)</td>
 				</tr>
 				{% endfor %}
 			</tbody>

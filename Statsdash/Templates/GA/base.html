@@ -1,7 +1,7 @@
-{% extends "../base.html" %}
+{% extends "base.html" %}
 
 
-{% if warning_sites|length > 0 %}<p>We are missing some data for the following sites: {% for site in warning %}{{site|capita;ize}}, {% endfor %}</p>{% endif %}{% endif %}
+{% if warning_sites|length > 0 %}<p>We are missing some data for the following sites: {% for site in warning %}{{site|capitalize}}, {% endfor %}</p>{% endif %}
 
 {# 
 {% if num_sites == total_num_sites %}{% if warning|length > 0 %}<p>We are missing some data for the following sites: {% for site in warning %}{{site|capfirst}}, {% endfor %}</p>{% endif %}{% endif %}
@@ -10,12 +10,13 @@
 
 
 {% block body %}
-{% if summary_table %}{% include "summary_table.html" %}{% endif %}
-{% if geo_table %}{% include "geo_table.html" %}{% endif %}
+
+{% if summary_table %}{% include "GA/summary_table.html" with context %}{% endif %}
+{#{% if geo_table %}{% include "geo_table.html" %}{% endif %}
 {% if top_articles %}{% include "article_table.html" %}{% endif %}
 {% if traffic %}{% include "traffic_table.html" %}{% endif %}
 {% if referrals %}{% include "referral_table.html" %}{% endif %}
 {% if device %}{% include "device_table.html" %}{% endif %}
-{% if social %}{% include "social_table.html" %}{% endif %}
+{% if social %}{% include "social_table.html" %}{% endif %}#}
     
 {% endblock %}

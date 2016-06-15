@@ -1,4 +1,4 @@
-from Statsdash.report import YoutubeReport
+from Statsdash.report import YoutubeReport, AnalyticsCoreReport
 import argparse
 #import report_schedule
 
@@ -6,6 +6,7 @@ from datetime import date, timedelta
 #from Statdateutils import subtract_one_month
 
 import Statsdash.Youtube.config as yt_config
+import Statsdash.GA.config as ga_config
 import Statsdash.utilities as utils
 
 
@@ -26,8 +27,12 @@ file_src = args.destination + "/" + file_name
 
 period = utils.StatsRange("period", date(2016, 04, 01), date(2016, 04, 30))
 
-yt = YoutubeReport(yt_config.CHANNELS.keys(), period, ["test"], "MONTHLY", "Gamer Network Video Report for")
-html = yt.generate_html()
+#yt = YoutubeReport(yt_config.CHANNELS.keys(), period, ["test"], "MONTHLY", "Gamer Network Video Report for")
+#html = yt.generate_html()
+
+
+ac = AnalyticsCoreReport(ga_config.TABLES.keys(), period, ["test"], "MONTHLY", "Gamer Network Report for")
+html = ac.generate_html()
 
 with open(file_src, 'w') as file:
 	file.write(html.encode("utf-8"))	

@@ -12,6 +12,7 @@ import config
 from Statsdash.Youtube.aggregate_data import YoutubeData
 from Statsdash.GA.aggregate_data import AnalyticsData
 import Statsdash.utilities as utils
+import Statsdash.GA.config as ga_config
 
 class Report(object):
     #template = "Templates/base.html"
@@ -105,6 +106,7 @@ class YoutubeReport(Report):
         html = self.template.render(
             subject=self.get_subject(),
             change=self.get_freq_label(),
+            report_span = self.frequency,
             summary_table=tableone,
             stats_table=tabletwo,
             geo_table=tablethree,
@@ -143,6 +145,7 @@ class AnalyticsCoreReport(Report):
         self.subject = subject
         self.data = AnalyticsData(self.sites, self.period, self.frequency)
         self.warning_sites = []
+        self.template = self.env.get_template("GA/base.html")
 
     def check_data_availability(self, override=False):
         """
@@ -160,8 +163,22 @@ class AnalyticsCoreReport(Report):
                 return True
             else:
                 return False
+                
+                
+    def get_site(self):
+        if len(self.sites) == 1:
+            return self.sites[0]
+        #TO DO: make this a check against total number of sites 
+        elif len(self.sites) == len(ga_config.TABLES.keys()):
+            return "Gamer Network"
+    
 
     def generate_html(self):
+        
+        to_month_table = None
+        network_summary_table = None
+        network_month_summary_table = None
+        
 
         if self.frequency != "MONTHLY":
             today = self.period.end_date
@@ -169,28 +186,38 @@ class AnalyticsCoreReport(Report):
             month_range = StatsRange("Month to date Aggregate", first, today)            
             to_month_data = AnalyticsData(self.sites, month_range, self.frequency)
             to_month_table = to_month_data.summary_table()
+        if self.get_site() != "Gamer Network":
+            network_data = AnalyticsData(ga_config.TABLES.keys(), self.period, self.frequency)
+            network_summary_table = network_data.summary_table()
+            if self.frequency != "MONTHLY":
+                network_month_data = AnalyticsData(ga_config.TABLES.keys(), month_range, self.frequency)
+                network_month_summary_table = network_month_data.summary_table()
             
         summary_table = self.data.summary_table()    
-        country_table = self.data.country_table()
-        site_table = self.data.site_summary_table()
-        article_table = self.data.article_table()
-        traffic_table = self.data.traffic_source_table()
-        referring_site_table = self.data.referring_sites_table()
-        device_table = self.data.device_table()
-        social_table = self.data.social_network_table()
+        #country_table = self.data.country_table()
+        #site_table = self.data.site_summary_table()
+        #article_table = self.data.article_table()
+        #traffic_table = self.data.traffic_source_table()
+        #referring_site_table = self.data.referring_sites_table()
+        #device_table = self.data.device_table()
+        #social_table = self.data.social_network_table()
         
         html = self.template.render(
             subject=self.get_subject(),
             change=self.get_freq_label(),
+            site = self.get_site(),
+            report_span = self.frequency,
             warning_sites = self.warning_sites,
             month_summary_table = to_month_table,
+            network_summary_table = network_summary_table,
+            network_month_summary_table = network_month_summary_table,
             summary_table=summary_table,
-            geo_table=country_table,
-            top_articles=article_table,
-            traffic=traffic_table,	
-            referrals=referring_site_table,
-            device=device_table,
-            social=social_table, 		
+            #geo_table=country_table,
+            #top_articles=article_table,
+            #traffic=traffic_table,	
+            #referrals=referring_site_table,
+            #device=device_table,
+            #social=social_table, 		
         )
         return html		
 			

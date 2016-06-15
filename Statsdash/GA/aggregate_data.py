@@ -62,7 +62,7 @@ class AnalyticsData(object):
                 results = analytics.run_report(site_ids[site], date.get_start(), date.get_end(), metrics=metrics)
                 rows = utils.format_data_rows(results)
                 for row in rows:
-                    row =  utils.convet_to_floats(row, metrics.split(","))
+                    row =  utils.convert_to_floats(row, metrics.split(","))
 
                 rows = self._remove_ga_names(rows)
                 rows = utils.change_key_names(rows, {"pv_per_session":"pageviewsPerSession", "avg_session_time":"avgSessionDuration"})
@@ -85,10 +85,11 @@ class AnalyticsData(object):
             this_period = data[0]
             prev_period = data[1]
             year_period = data[2]
-            this_period["%s_change_%s" % (self.frequency, key)] = this_period[key] - prev_period[key]
-            this_period["%s_percentage_%s" % (self.frequency, key)] = utils.percentage(this_period["%s_change_%s" % (self.frequency, key)], prev_period[key])
-            this_period["%s_change_%s" % ("YEARLY", key)] = this_period[key] - year_period[key]
-            this_period["%s_percentage_%s" % ("YEARLY", key)] = utils.percentage(this_period["%s_change_%s" % ("YEARLY", key)], year_period[key])  
+            this_period["%s_figure_%s" % ("previous", key)] = prev_period[key]
+            this_period["%s_change_%s" % ("previous", key)] = this_period[key] - prev_period[key]
+            this_period["%s_percentage_%s" % ("previous", key)] = utils.percentage(this_period["%s_change_%s" % ("previous", key)], prev_period[key])
+            this_period["%s_change_%s" % ("yearly", key)] = this_period[key] - year_period[key]
+            this_period["%s_percentage_%s" % ("yearly", key)] = utils.percentage(this_period["%s_change_%s" % ("yearly", key)], year_period[key])  
             
         return this_period          
                 
@@ -115,8 +116,8 @@ class AnalyticsData(object):
             sorted = utils.sort_data(aggregated, "users")
             data[count] = sorted
             
-        added_change = utils.add_change(data[0], data[1], "site", metrics.split(","), self.frequency)
-        added_change = utils.add_change(added_change, data[2], "site", metrics.split(","), "YEARLY")
+        added_change = utils.add_change(data[0], data[1], "site", metrics.split(","), "previous")
+        added_change = utils.add_change(added_change, data[2], "site", metrics.split(","), "yearly")
         
         return added_change
                            
@@ -202,8 +203,8 @@ class AnalyticsData(object):
             sorted = utils.sort_data(aggregated, "users")
             data[count] = sorted
             
-        added_change = utils.add_change(data[0], data[1], "country", ["pageviews", "users"], self.frequency)
-        added_change = utils.add_change(added_change, data[2], "country", ["pageviews", "users"], "YEARLY")
+        added_change = utils.add_change(data[0], data[1], "country", ["pageviews", "users"], "previous")
+        added_change = utils.add_change(added_change, data[2], "country", ["pageviews", "users"], "yearly")
         
         return added_change
             
@@ -226,8 +227,8 @@ class AnalyticsData(object):
             sorted = utils.sort_data(aggregated, "users")
             data[count] = sorted   
             
-        added_change = utils.add_change(data[0], data[1], "source_medium", ["pageviews", "users"], self.frequency)
-        added_change = utils.add_change(added_change, data[2], "source_medium", ["pageviews", "users"], "YEARLY")
+        added_change = utils.add_change(data[0], data[1], "source_medium", ["pageviews", "users"], "previous")
+        added_change = utils.add_change(added_change, data[2], "source_medium", ["pageviews", "users"], "yearly")
         
         return added_change
 
@@ -283,7 +284,7 @@ class AnalyticsData(object):
             sorted = utils.sort_data(aggregated, "users", limit=15)
             data[count] = sorted
             
-        added_change = utils.add_change(data[0], data[1], "social_network", ["pageviews", "users"], self.frequency)
+        added_change = utils.add_change(data[0], data[1], "social_network", ["pageviews", "users"], "previous")
         added_change = utils.add_change(added_change, data[2], "social_network", ["pageviews", "users"], "yearly")
         
         for row in added_change:
@@ -342,7 +343,7 @@ class AnalyticsData(object):
             sorted = utils.sort_data(aggregated, "users", limit=6)
             data[count] = sorted
             
-        added_change = utils.add_change(data[0], data[1], "device_category", ["users"], self.frequency)
+        added_change = utils.add_change(data[0], data[1], "device_category", ["users"], "previous")
         added_change = utils.add_change(added_change, data[2], "device_category", ["users"], "yearly")
         
         return added_change

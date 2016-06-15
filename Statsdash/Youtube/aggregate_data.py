@@ -76,8 +76,8 @@ class YoutubeData(object):
             sorted = utils.sort_data(aggregated, "estimatedMinutesWatched", limit=20)
             data[count] = sorted
         
-        added_change = utils.add_change(data[0], data[1], "country", ["views","estimatedMinutesWatched","subscriberChange"], self.frequency)
-        added_change = utils.add_change(added_change, data[2], "country", ["views","estimatedMinutesWatched","subscriberChange"], "YEARLY")
+        added_change = utils.add_change(data[0], data[1], "country", ["views","estimatedMinutesWatched","subscriberChange"], "previous")
+        added_change = utils.add_change(added_change, data[2], "country", ["views","estimatedMinutesWatched","subscriberChange"], "yearly")
         
         return added_change
 
@@ -115,8 +115,8 @@ class YoutubeData(object):
             sorted = utils.sort_data(aggregated, "estimatedMinutesWatched")
             data[count] = sorted
             
-        added_change = utils.add_change(data[0], data[1], "channel", ["subscriberChange", "subscriberCount", "estimatedMinutesWatched"], self.frequency)
-        added_change = utils.add_change(added_change, data[2], "channel", ["subscriberChange", "estimatedMinutesWatched"], "YEARLY")
+        added_change = utils.add_change(data[0], data[1], "channel", ["subscriberChange", "subscriberCount", "estimatedMinutesWatched"], "previous")
+        added_change = utils.add_change(added_change, data[2], "channel", ["subscriberChange", "estimatedMinutesWatched"], "yearly")
         
         return added_change
  
@@ -153,8 +153,8 @@ class YoutubeData(object):
             sorted = utils.sort_data(table, "views")
             data[count] = sorted
             
-        added_change = utils.add_change(data[0], data[1], "channel", ["views", "likeRate", "commentRate", "sharesRate", "subsRate", "likeRatio", "dislikeRatio"], self.frequency)
-        added_change = utils.add_change(added_change, data[2], "channel", ["views", "likeRate", "commentRate", "sharesRate", "subsRate", "likeRatio", "dislikeRatio"], "YEARLY") 
+        added_change = utils.add_change(data[0], data[1], "channel", ["views", "likeRate", "commentRate", "sharesRate", "subsRate", "likeRatio", "dislikeRatio"], "previous")
+        added_change = utils.add_change(added_change, data[2], "channel", ["views", "likeRate", "commentRate", "sharesRate", "subsRate", "likeRatio", "dislikeRatio"], "yearly") 
         
         return added_change               
 
