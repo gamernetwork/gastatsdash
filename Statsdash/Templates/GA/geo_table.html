@@ -1,0 +1,37 @@
+<h2>Country summary</h2>
+<table border="0" cellspacing="0">
+	<thead>
+		<tr>
+			<th rowspan="2">Country</th>
+			<th colspan="{% if report_span == 'MONTHLY' %}3{% else %}2{% endif %}">Pageviews</th>
+			<th colspan="{% if report_span == 'MONTHLY' %}3{% else %}2{% endif %}">Visitors</th>				
+			<th rowspan="2">P/V</th>
+		</tr>
+		<tr>
+			<th>Abs.</th>
+			<th>+/- {{ change }}</th>
+			{% if report_span == 'MONTHLY' %}<th>+/- YoY</th>{% endif %}
+			<th>Abs.</th>
+			<th>+/- {{ change }}</th>
+			{% if report_span == 'MONTHLY' %}<th>+/- YoY</th>{% endif %}
+		</tr>
+	</thead>
+	<tbody>
+		{% for row in geo_table %}
+			<tr class="{{ loop.cycle('odd', 'even') }}">
+				<th>{{ row.country }}</th>
+									
+				<td class="num">{{ row.pageviews|int|intcomma }}</td>
+				<td class="num" style="color: {% if row.previous_percentage_pageviews > 0 %}green{% else %}red{% endif %};">{{ row.previous_percentage_pageviews|round(1) }}%</td>
+				{% if report_span == 'MONTHLY' %}<td class="num" style="color: {% if row.yearly_percentage_pageviews > 0 %}green{% else %}red{% endif %};">{{ row.yearly_percentage_pageviews|round(1) }}%</td>{% endif %}
+				
+				<td class="num">{{ row.users|int|intcomma }}</td>
+				<td class="num" style="color: {% if row.previous_percentage_users > 0 %}green{% else %}red{% endif %};">{{ row.previous_percentage_users|round(1) }}%</td>
+				{% if report_span == 'MONTHLY' %}<td class="num" style="color: {% if row.yearly_percentage_users > 0 %}green{% else %}red{% endif %};">{{ row.yearly_percentage_users|round(1) }}%</td>{% endif %}					
+				
+				<td class="num">{{ (row.pageviews|int / row.users|int)|round(1) }}</td>
+
+			</tr>
+		{% endfor %}
+	</tbody>
+</table>

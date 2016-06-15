@@ -194,8 +194,8 @@ class AnalyticsCoreReport(Report):
                 network_month_summary_table = network_month_data.summary_table()
             
         summary_table = self.data.summary_table()    
-        #country_table = self.data.country_table()
-        #site_table = self.data.site_summary_table()
+        country_table = self.data.country_table()
+        site_table = self.data.site_summary_table()
         #article_table = self.data.article_table()
         #traffic_table = self.data.traffic_source_table()
         #referring_site_table = self.data.referring_sites_table()
@@ -212,7 +212,8 @@ class AnalyticsCoreReport(Report):
             network_summary_table = network_summary_table,
             network_month_summary_table = network_month_summary_table,
             summary_table=summary_table,
-            #geo_table=country_table,
+            geo_table=country_table,
+            site_summary=site_table,
             #top_articles=article_table,
             #traffic=traffic_table,	
             #referrals=referring_site_table,

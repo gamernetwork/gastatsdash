@@ -104,20 +104,20 @@ class AnalyticsData(object):
                 results = analytics.run_report(site_ids[site], date.get_start(), date.get_end(), metrics=metrics)
                 rows = utils.format_data_rows(results)
                 for row in rows:
-                    row =  utils.convet_to_floats(row, metrics.split(","))
-                    row["site"] = site 
+                    row =  utils.convert_to_floats(row, metrics.split(","))
+                    row["ga:site"] = site 
 
                 rows = self._remove_ga_names(rows)
-                #rows = utils.change_key_names(rows, {"pv_per_session":"pageviewsPerSession", "avg_session_time":"avgSessionDuration"})
+                rows = utils.change_key_names(rows, {"pv_per_session":"pageviewsPerSession", "avg_session_time":"avgSessionDuration"})
                                     
                 totals.extend(rows)
                 
-            aggregated = utils.aggregate_data(totals, "site", metrics.split(","))
+            aggregated = utils.aggregate_data(totals, "site", ["pageviews", "users", "sessions", "pv_per_session", "avg_session_time"])
             sorted = utils.sort_data(aggregated, "users")
             data[count] = sorted
             
-        added_change = utils.add_change(data[0], data[1], "site", metrics.split(","), "previous")
-        added_change = utils.add_change(added_change, data[2], "site", metrics.split(","), "yearly")
+        added_change = utils.add_change(data[0], data[1], "site", ["pageviews", "users", "sessions", "pv_per_session", "avg_session_time"], "previous")
+        added_change = utils.add_change(added_change, data[2], "site", ["pageviews", "users", "sessions", "pv_per_session", "avg_session_time"], "yearly")
         
         return added_change
                            
@@ -193,10 +193,10 @@ class AnalyticsData(object):
                     world_rows = [{"ga:country":"ROW", "ga:pageviews":0, "ga:users":0}]
                     
                 rows.extend(world_rows)
-                rows = self._remove_ga_names(rows)
                 for row in rows:
-                    row =  utils.convet_to_floats(row, metrics.split(","))
+                    row =  utils.convert_to_floats(row, metrics.split(","))
                     
+                rows = self._remove_ga_names(rows)   
                 breakdown.extend(rows)
                     
             aggregated = utils.aggregate_data(breakdown, "country", ["pageviews", "users"])
@@ -219,7 +219,7 @@ class AnalyticsData(object):
                 rows = self._remove_ga_names(rows)
                 rows = utils.change_key_names(rows, {"source_medium":"sourceMedium"})
                 for row in rows:
-                    row =  utils.convet_to_floats(row, metrics.split(","))
+                    row =  utils.convert_to_floats(row, metrics.split(","))
                     
                 traffic_sources.extend(rows)
                 
@@ -276,7 +276,7 @@ class AnalyticsData(object):
                 rows = self._remove_ga_names(rows)
                 rows = utils.change_key_names(rows, {"social_network":"socialNetwork"})
                 for row in rows:
-                    row =  utils.convet_to_floats(row, metrics.split(","))
+                    row =  utils.convert_to_floats(row, metrics.split(","))
                     
                 social.extend(rows)
             
