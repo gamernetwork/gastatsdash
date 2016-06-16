@@ -1,12 +1,9 @@
-import sys
-sys.path.append('/home/faye/src/gastatsdash/')
-
-
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.image import MIMEImage
 from datetime import datetime, timedelta
 from render import get_environment
+import smtplib
 
 import config
 from Statsdash.Youtube.aggregate_data import YoutubeData
@@ -34,7 +31,7 @@ class Report(object):
         """
         Return the subject of the email that includes the dates for this period
         """
-        if self.frequency == 'DAILY':
+        if self.frequency == 'DAILY' or self.frequency == "WOW_DAILY":
         	subject = ' '.join([self.subject, self.period.end_date.strftime("%a %d %b %Y")])
         elif self.frequency  == 'WEEKLY':
         	weekly_date = self.period.start_date.strftime("%a %d %b %Y") + ' - ' + self.period.end_date.strftime("%a %d %b %Y")
@@ -66,9 +63,9 @@ class Report(object):
         """
         msg = MIMEMultipart('alternative')
         msg.set_charset('utf8')
-        msg['Subject'] = self.subject
+        msg['Subject'] = self.get_subject()
         msg['From'] = config.SEND_FROM
-        msg['To'] = self.recipients
+        msg['To'] = ', '.join(self.recipients)
         text_part = MIMEText("Please open with an HTML-enabled Email client.", 'plain')
         html_part = MIMEText(html.encode("utf-8"), 'html')
         
@@ -232,8 +229,8 @@ class AnalyticsCoreReport(Report):
 			
 class AnalyticsSocialReport(Report):
     
-    def __init__(self, sites, start, end, recipients, frequency, subject):
-        super(AnalyticsSocialReport, self).__init__(sites, start, end, recipients, frequency, subject)
+    def __init__(self, sites, period, recipients, frequency, subject):
+        super(AnalyticsSocialReport, self).__init__(sites, period, recipients, frequency, subject)
         self.sites = sites
         self.period = period
         self.recipients = recipients
@@ -241,6 +238,7 @@ class AnalyticsSocialReport(Report):
         self.subject = subject		
         self.data = AnalyticsData(self.sites, self.period, self.frequency)    
         self.warning_sites = []
+        self.template = self.env.get_template("GA/social_report.html")
 		
     def check_data_availability(self, override=False):
         """
@@ -257,22 +255,44 @@ class AnalyticsSocialReport(Report):
                 self.warning_sites = check["sites"]
                 return True
             else:
-                return False		
+                return False	
+                
+    def get_site(self):
+        if len(self.sites) == 1:
+            return self.sites[0]
+        #TO DO: make this a check against total number of sites 
+        elif len(self.sites) == len(ga_config.TABLES.keys()):
+            return "Gamer Network"
+    	
                 
     def generate_html(self):
         #TO DO 
-        pass
-		
-		
-if __name__ == '__main__':
-    from datetime import datetime, timedelta, date
-    import Statsdash.Youtube.config as yt_config
-    
-    period = utils.StatsRange("period", date(2016, 04, 01), date(2016, 04, 30))
-    
-    yt = YoutubeReport(yt_config.CHANNELS.keys(), period, ["test"], "MONTHLY", "Gamer Network Video Report for")
-    html = yt.generate_html()
-		
+        
+        summary_table = self.data.summary_table()
+        print "summary table done"
+        network_data = AnalyticsData(ga_config.TABLES.keys(), self.period, self.frequency)
+        network_summary_table = network_data.summary_table()
+        print "network summary table done"
+        
+        social_table = self.data.social_network_table()
+        print "social network table done"
+        #article_table = self.data.article_table()
+        #print "article table done"
+        #image
+        
+        html = self.template.render(
+            subject=self.get_subject(),
+            change=self.get_freq_label(),
+            site = self.get_site(),
+            report_span = self.frequency,
+            warning_sites = self.warning_sites,
+            network_summary_table = network_summary_table,
+            summary_table=summary_table,
+            #top_articles=article_table,
+            social_table=social_table, 		
+        )
+        return html		
+
 		
 		
 		

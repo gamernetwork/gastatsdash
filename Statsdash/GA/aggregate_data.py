@@ -142,9 +142,9 @@ class AnalyticsData(object):
         Return top articles as a list of dictionaries
         Each dictionary has the pageviews, page title, page path and host name
         """
-        self.previous = utils.StatsRange.get_previous_period(self.period, "WOW_DAILY")#how to do this
+        article_previous = utils.StatsRange.get_previous_period(self.period, "DAILY")#how to do this
         data = {}
-        for count, date in enumerate(self.date_list):
+        for count, date in enumerate([self.period, article_previous]):
             articles = []
             for site in self.sites:
                 results = analytics.run_report(site_ids[site], date.get_start(), date.get_end(), metrics="ga:pageviews", dimensions="ga:pageTitle,ga:pagePath,ga:hostname", 
@@ -164,7 +164,7 @@ class AnalyticsData(object):
             data[count] = sorted
             #group
 
-        added_change = utils.add_change(data[0], data[1], "pagePath", ["pageviews"], "DAILY")
+        added_change = utils.add_change(data[0], data[1], "pagePath", ["pageviews"], "previous")
 
         return added_change
         
@@ -299,9 +299,9 @@ class AnalyticsData(object):
     def referral_articles(self, filter, limit):
         #pass in a social network and get the top articles?
         filters = config.ARTICLE_FILTER + ";" + filter
-        self.previous = utils.StatsRange.get_previous_period(self.period, "DAILY")#how to do this
+        article_previous = utils.StatsRange.get_previous_period(self.period, "DAILY")#how to do this
         data = {}
-        for count, date in enumerate(self.date_list):
+        for count, date in enumerate([self.period, article_previous]):
             articles = []
             for site in self.sites:
                 results = analytics.run_report(site_ids[site], date.get_start(), date.get_end(), metrics="ga:pageviews", dimensions="ga:pageTitle,ga:pagePath,ga:hostname", 
@@ -321,7 +321,7 @@ class AnalyticsData(object):
             data[count] = sorted
             #group
 
-        added_change = utils.add_change(data[0], data[1], "pagePath", ["pageviews"], "DAILY")
+        added_change = utils.add_change(data[0], data[1], "pagePath", ["pageviews"], "previous")
 
         return added_change                
         

@@ -1,4 +1,4 @@
-from Statsdash.report import YoutubeReport, AnalyticsCoreReport
+from Statsdash.report import YoutubeReport, AnalyticsCoreReport, AnalyticsSocialReport
 import argparse
 #import report_schedule
 
@@ -25,16 +25,21 @@ else:
 file_src = args.destination + "/" + file_name
 
 
-period = utils.StatsRange("period", date(2016, 04, 01), date(2016, 04, 30))
+monthly_period = utils.StatsRange("period", date(2016, 04, 01), date(2016, 04, 30))
 daily_period = utils.StatsRange("period", date(2016, 06, 05), date(2016, 06, 05))
 
-#yt = YoutubeReport(yt_config.CHANNELS.keys(), period, ["test"], "MONTHLY", "Gamer Network Video Report for")
+#yt = YoutubeReport(yt_config.CHANNELS.keys(), period, ["faye.butler@gamer-network.net"], "MONTHLY", "Gamer Network Video Report for")
 #html = yt.generate_html()
+#yt.send_email(html)
 
+#ac = AnalyticsCoreReport(ga_config.TABLES.keys(), monthly_period, ["faye.butler@gamer-network.net"], "MONTHLY", "Gamer Network Report for")
+#ac = AnalyticsCoreReport(["eurogamer.net"], daily_period, ["faye.butler@gamer-network.net"], "DAILY", "Eurogamer.net Report for")
+#html = ac.generate_html()
 
-#ac = AnalyticsCoreReport(ga_config.TABLES.keys(), period, ["test"], "MONTHLY", "Gamer Network Report for")
-ac = AnalyticsCoreReport(["eurogamer.net"], daily_period, ["test"], "DAILY", "Eurogamer Report for")
-html = ac.generate_html()
+#sc = AnalyticsSocialReport(ga_config.TABLES.keys(), monthly_period, ["faye.butler@gamer-network.net"], "MONTHLY", "Gamer Network Social Report for")
+sc = AnalyticsSocialReport(["eurogamer.net"], monthly_period, ["faye.butler@gamer-network.net"], "MONTHLY", "Eurogamer.net Social Report for")
+html = sc.generate_html()
+sc.send_email(html)
 
 with open(file_src, 'w') as file:
 	file.write(html.encode("utf-8"))	

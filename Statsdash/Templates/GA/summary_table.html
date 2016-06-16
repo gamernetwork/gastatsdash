@@ -11,7 +11,7 @@
     </thead>
     <tbody>
         <tr class="odd">
-            <th> {{ site }}{% if report_span == 'MONTHLY' %} total this month{% else %} on this date{% endif %}</th>
+            <th> {{ site|capitalize }}{% if report_span == 'MONTHLY' %} total this month{% else %} on this date{% endif %}</th>
             <td class="num"> {{summary_table.pageviews|int|intcomma}} </td>
             <td class="num"> {{summary_table.users|int|intcomma}} </td>
             <td class="num"> {{summary_table.pv_per_session|round(1)}} </td>
@@ -92,7 +92,7 @@
 {% if report_span != 'MONTHLY' %}
   <h2>Traffic for this month so far</h2>
   <p>Accumulation of the data so far this month. {#From 01/{{end_date|date:"m/y"}} to {{end_date|date:"d/m/y"}}.#}</p>
-  <p>To match this month last year's total of {{summary_table.pageviews|int|intcomma}} PVs, we need <b>{{summary_table.pageviews - month_summary_table.pageviews|int|intcomma}}</b> PVs in the next <b>{# num of days #}</b> days.</p>
+  <p>To match this month last year's total of {{summary_table.pageviews|int|intcomma}} PVs, we need <b>{{(summary_table.pageviews - month_summary_table.pageviews|int)|intcomma}}</b> PVs in the next <b>{# num of days #}</b> days.</p>
   <table border="0" cellspacing="0">
       <thead>
           <tr>
@@ -104,7 +104,7 @@
       </thead>
       <tbody>
           <tr class="odd">
-              <th> {{ site }} month to date</th>
+              <th> {{ site|capitalize }} month to date</th>
               <td class="num"> {{month_summary_table.pageviews|int|intcomma}} </td>                  
               <td class="num"> {{month_summary_table.users|int|intcomma}} </td>
               <td class="num"> {{month_summary_table.sessions|int|intcomma}} </td>

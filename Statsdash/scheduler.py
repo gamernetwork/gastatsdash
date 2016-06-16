@@ -104,7 +104,46 @@ def _run():
     """
     The main loop.  Iterate over our report config and try to run reports that
     are scheduled to run now.
-    """
+    """   
+    run_logger = RunLogger()
+    
+    for config in reports:
+        identifier = config['identifier']
+        frequency = config['frequency']
+        frequency_options = config.get('frequency_options', {})
+        report_class = config['report']
+        last_run = run_logger.get_last_run(identifier)
+        next_run_date = run_logger.get_next_run(last_run, frequency, frequency_options).date()
+        today = date.today()
+        needs_run = next_run_date <= today
+        print "%s next run: %s.  Needs run: %s" % (identifier, next_run_date, needs_run)
+        if needs_run:
+            period = None #set up period
+            report = config["report_class"](config["sites"], period, config["frequency"], config["subject"])  
+            if run_logger.override_data = True:
+                data_available = report.check_data_availability(override=True)
+            else:
+                data_available = report.check_data_availability()
+            
+            run_logger.override_data = False
+            print "%s next run: %s.  Data available: %s" % (identifier, next_run_date, data_available)
+            if data_available:
+                html = report.generate_html()
+                report.send_email(html)
+                run_datetime = datetime(year=report.period.end_date.year, 
+                    month=report.period.end_date.month, 
+                    day=report.period.end_date.day,
+                    hour=0,
+                    minute=0,
+                    second=0,
+                    microsecond=1
+                )           
+                run_logger.record_run(identifier, run_datetime)
+
+
+"""
+def _run():
+
     run_logger = RunLogger()
     
     logging.config.dictConfig(LOGGING)
@@ -149,6 +188,8 @@ def _run():
                 ) 
                            
                 run_logger.record_run(identifier, run_datetime)
+
+"""
 
 def run_schedule():
     print "** Running schedule at %s" % datetime.now().isoformat()

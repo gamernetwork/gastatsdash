@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block body %}
+
+{% if site != "Gamer Network" %}<p>Site Total Visitors: <b>{{summary_table.users|int|intcomma}}</b></p>{% endif %}
+<p>Network Total Visitors: <b>{{network_summary_table.users|int|intcomma}}</b></p>
+{% if site != "Gamer Network" %}<p>Site Total PVs: <b>{{summary_table.pageviews|int|intcomma}}</b></p>{% endif %}
+<p>Network Total PVs: <b>{{network_summary_table.pageviews|int|intcomma}}</b></p>
+<h2> Totals </h2>
+<table border="0" cellspacing="0">
+	<thead>
+	<tr class = 'column_header'>
+  	<th rowspan="2">Social Network</th>
+  	<th colspan='5'>Visitors</th>
+  	<th colspan='5'>PageViews</th>
+	</tr>
+	<tr>
+  	<th>Social Network Totals</th>
+  	<th>+/- MoM</th>
+  	<th>+/- YoY</th>
+  	{% if site != "Gamer Network" %}<th>% Site Total</th>{% endif %}
+  	<th>% Network Total</th>
+  	<th>Total</th>
+  	<th>+/- MoM</th>
+  	<th>+/- YoY</th>
+  	{% if site != "Gamer Network" %}<th>% Site Total</th>{% endif %}
+  	<th>% Network Total</th>      	
+	</tr>
+	</thead>
+	<tbody>
+	{% for row in social_table %}
+  	<tr class="{{ loop.cycle('odd', 'even') }}">
+    	<td class = 'src' >{{row.social_network}}</td>
+    	<td class = 'num' >{{row.users|int|intcomma}}</td>
+    	<td class = 'num' style="color: {% if row.previous_percentage_users > 0 %}green{% else %}red{% endif %};">{{row.previous_percentage_users|round(1)}}%</td>
+    	<td class = 'num' style="color: {% if row.yearly_percentage_users > 0 %}green{% else %}red{% endif %};">{{row.yearly_percentage_users|round(1)}}%</td>
+    	{% if site != "Gamer Network" %}<td class = 'num' >{{((row.users / summary_table.users) * 100)|round(1)}}</td>{% endif %}
+    	<td class = 'num' >{{((row.users / network_summary_table.users) * 100)|round(1)}}</td>
+    	
+    	<td class = 'num' >{{row.pageviews|int|intcomma}}</th>
+    	<td class = 'num' style="color: {% if row.previous_percentage_pageviews > 0 %}green{% else %}red{% endif %};">{{row.previous_percentage_pageviews|round(1)}}%</td>
+    	<td class = 'num' style="color: {% if row.yearly_percentage_pageviews > 0 %}green{% else %}red{% endif %};">{{row.yearly_percentage_pageviews|round(1)}}%</td>
+    	{% if site != "Gamer Network" %}<td class = 'num' >{{((row.pageviews / summary_table.pageviews) * 100)|round(1)}}</td>{% endif %}
+    	<td class = 'num' >{{((row.pageviews / network_summary_table.pageviews) * 100)|round(1)}}</td>        	        
+                         	
+  	</tr>
+  {% endfor %}
+	
+	</tbody>  	
+</table>
+
+
+
+
+<h2> Top 10 Articles </h2>
+
+<table border="0" cellspacing="0">
+	<thead>
+	    <tr>
+            <th>Social Network</th>
+            <th>Article Title</th>
+            <th>Page Views</th>      	
+	    </tr>
+	</thead>
+	<tbody>
+        {% for row in social_table %}
+        <tr>
+            <td rowspan="{{row.articles|length + 1}}">{{row.social_network}}</td>
+            <td class = "src">
+            {% for article in row.articles %}
+                <tr class="{{ loop.cycle('odd', 'even') }}">
+                    <td class = 'src'><a href="http://{{article.host}}{{article.path}}">{{article.title}}</a></td>
+                    <td class = 'num'>{{article.pageviews|int|intcomma}}</td>
+                </tr> 
+            {% endfor %}
+            </td>    	
+        </tr>
+        {% endfor %}
+	</tbody>  	
+</table>
+
+    
+{% endblock %}

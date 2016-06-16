@@ -2,6 +2,37 @@
 <html>
 	<head>
     	<meta charset="UTF-8">
+    	<style>
+    	body, p{
+    		font-family: sans-serif;
+    		text-align: left;
+    		font-weight: normal;
+    	}
+    	thead th{
+        	border-bottom: 1px solid #d0d9e0;
+    	}
+    	td, th {
+    		padding: 0.3em 1em 0.3em 0.5em;
+    		vertical-align: top;
+    	}
+    	th.src {
+        	font-weight: lighter;
+    	}
+    	td.num {
+        	text-align: right;
+    	}
+    	
+    	tr.odd {
+        	background-color: #f0f2f4;
+    	}	
+    	
+    	tr.even {
+        	
+    	}
+    	img {
+        	margin: 0.2em;
+    	}
+    	</style>
 	</head>
 <body>
 	<style>
@@ -37,6 +68,9 @@
 	</style>
 	<h1>{{ subject }}</h1>
 	<p>This data is confidential and for employees of {{ site }} only. Do not transmit outside the company. </p>
+	{% if warning_sites|length > 0 %}<p>We are missing some data for the following sites: {% for site in warning %}{{site|capitalize}}, {% endfor %}</p>{% endif %}
+
+    {% if site != "Gamer Network" and site in warning %}<p>We are missing some data for this site.</p>{% endif %}
 	
 	{% block body %}
 	{% endblock %}

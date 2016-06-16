@@ -1,14 +1,6 @@
 {% extends "base.html" %}
 
 
-{% if warning_sites|length > 0 %}<p>We are missing some data for the following sites: {% for site in warning %}{{site|capitalize}}, {% endfor %}</p>{% endif %}
-
-{# 
-{% if num_sites == total_num_sites %}{% if warning|length > 0 %}<p>We are missing some data for the following sites: {% for site in warning %}{{site|capfirst}}, {% endfor %}</p>{% endif %}{% endif %}
-{% if num_sites == 1 %}{% for site in warning %}{% if site in site_names %}<p>We are missing some data for this site.</p>{% endif %}{% endfor %}{% endif %}
- #}    
-
-
 {% block body %}
 
 {% if summary_table %}{% include "GA/summary_table.html" with context %}{% endif %}
