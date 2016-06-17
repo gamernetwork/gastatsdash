@@ -1,0 +1,29 @@
+<table border="0" cellspacing="0" style="margin-top:30px;">
+	<thead>
+		<tr>
+			<th>Channel</th>
+			<th>Views</th>
+			<th>Likes:Dislikes Ratio</th>
+			<th>Likes/1000 views</th>
+			<th>Subs/1000 views</th>
+			<th>Comments/1000 views</th>
+			<th>Shares/1000 views</th>					
+		</tr>			
+	</thead>
+	<tbody>
+		{% for row in stats_table %}
+		<tr class="{{ loop.cycle('odd', 'even') }}">
+			<td>{{row.channel}}</td>
+			<td class="num">{{row.views|int|intcomma}}</td>
+			<td class="num">{{row.likeRatio|round(1)|intcomma}}:{{row.dislikeRatio|round(1)|intcomma}} (<span style="{% if row.previous_percentage_likeRatio > 0 %}color:green;{% else %}color:red;{% endif %}">{{row.previous_percentage_likeRatio|round(1)|intcomma}}%</span>)</td>
+			<td class="num">{{row.likeRate|round(1)|intcomma}} (<span style="{% if row.previous_percentage_likeRate > 0 %}color:green;{% else %}color:red;{% endif %}">{{row.previous_percentage_likeRate|round(1)|intcomma}}%</span>)</td>																								
+			<td class="num">{{row.subsRate|round(1)|intcomma}} (<span style="{% if row.previous_percentage_subsRate > 0 %}color:green;{% else %}color:red;{% endif %}">{{row.previous_percentage_subsRate|round(1)|intcomma}}%</span>)</td>
+
+			<td class="num">{{row.commentRate|round(1)|intcomma}} (<span style="{% if row.previous_percentage_commentRate > 0 %}color:green;{% else %}color:red;{% endif %}">{{row.previous_percentage_commentRate|round(1)|intcomma}}%</span>)</td>
+
+			<td class="num">{{row.sharesRate|round(1)|intcomma}} (<span style="{% if row.previous_percentage_sharesRate > 0 %}color:green;{% else %}color:red;{% endif %}">{{row.previous_percentage_sharesRate|round(1)|intcomma}}%</span>)</td>					
+
+		</tr>
+		{% endfor %}
+	</tbody>
+</table>

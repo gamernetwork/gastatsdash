@@ -175,9 +175,10 @@ class AnalyticsCoreReport(Report):
         to_month_table = None
         network_summary_table = None
         network_month_summary_table = None
-        
+        num_social_articles = 1
 
         if self.frequency != "MONTHLY":
+            num_social_articles = 5
             today = self.period.end_date
             first = datetime(today.year, today.month, 1).date()
             month_range = utils.StatsRange("Month to date Aggregate", first, today)            
@@ -204,7 +205,7 @@ class AnalyticsCoreReport(Report):
         print "done referral table"
         device_table = self.data.device_table()
         print "done device table"
-        social_table = self.data.social_network_table()
+        social_table = self.data.social_network_table(num_social_articles)
         print "done social table"
         
         html = self.template.render(
@@ -274,7 +275,7 @@ class AnalyticsSocialReport(Report):
         network_summary_table = network_data.summary_table()
         print "network summary table done"
         
-        social_table = self.data.social_network_table()
+        social_table = self.data.social_network_table(10)
         print "social network table done"
         #article_table = self.data.article_table()
         #print "article table done"

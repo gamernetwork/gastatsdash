@@ -170,7 +170,10 @@ class YoutubeData(object):
                 for row in rows:
                     row = utils.convert_to_floats(row, ["estimatedMinutesWatched", "views"])
                     video_name = analytics.get_video(row['video'])
-                    row['title'] = video_name['items'][0]['snippet']['title'] 
+                    try:
+                        row['title'] = video_name['items'][0]['snippet']['title']
+                    except IndexError:
+                        row["title"] = "Video Not Found" 
                     row['channel'] = channel	
 
                 table.extend(rows)

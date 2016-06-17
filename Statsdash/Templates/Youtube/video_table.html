@@ -1,0 +1,25 @@
+
+<h2>Top 10 Videos</h2>
+<p>Most popular videos this period, sorted by watch time.</p>
+<table border="0" cellspacing="0">
+	<thead>
+		<tr>
+			<th>Channel</th>
+			<th>Video</th>
+			<th>Watch Time</th>
+			<th>Views</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for row  in top_vids %}
+		<tr class="{{ loop.cycle('odd', 'even') }}">
+			<td>{{row.channel}}</td>
+			<td><a href="https://www.youtube.com/watch?v={{row.video}}" target="_blank">{{row.title}}</a></td>
+			<td class="num">{{row.estimatedMinutesWatched|int|intcomma}}</td>
+			<td class="num">{{row.views|int|intcomma}}</td>
+		</tr>
+		{% endfor %}
+	</tbody>
+</table>		
+
+

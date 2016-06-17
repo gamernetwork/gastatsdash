@@ -45,12 +45,10 @@ class AnalyticsData(object):
             results = analytics.run_report(id, date.get_start(), date.get_end(), metrics=metrics, dimensions=dimensions, sort=sort, max_results=max_results)
             rows = utils.format_data_rows(results)
             for row in rows:
-                for metric in metrics.split(","):
-                    row[metric] = float(row[metric])
-            rows = self._remove_ga_names(rows)
+                row =  utils.convert_to_floats(row, metrics.split(","))
             main_row.append(rows)
             
-        main_row = utils.aggregate_data
+        #main_row = utils.aggregate_data
             
 
     def summary_table(self):	
@@ -265,7 +263,7 @@ class AnalyticsData(object):
         return referrals 
         
         
-    def social_network_table(self):
+    def social_network_table(self, num_articles):
         data = {}
         for count, date in enumerate(self.date_list):
             social = []
@@ -290,7 +288,7 @@ class AnalyticsData(object):
         
         for row in added_change:
             filter = "ga:socialNetwork==%s" % row["social_network"]
-            article = self.referral_articles(filter, 1)
+            article = self.referral_articles(filter, num_articles)
             row["articles"] = article            
         
         return added_change

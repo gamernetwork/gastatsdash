@@ -1,0 +1,21 @@
+<h2>Breakdown by Country</h2>
+<table border="0" cellspacing="0">
+	<thead>
+		<tr>
+			<th>Country</th>
+			<th>Watch Time</th>
+			<th>Views</th>
+			<th>Subscriber Gain</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for row  in geo_table %}
+		<tr class="{{ loop.cycle('odd', 'even') }}">
+			<td>{{row.country}}</td>
+			<td class="num">{{row.estimatedMinutesWatched|int|intcomma}} (<span style="{% if row.previous_percentage_estimatedMinutesWatched > 0 %}color:green;{% else %}color:red;{% endif %}">{{row.previous_percentage_estimatedMinutesWatched|round(1)|intcomma}}%</span>)</td>
+			<td class="num">{{row.views|int|intcomma}} (<span style="{% if row.previous_percentage_views > 0 %}color:green;{% else %}color:red;{% endif %}">{{row.previous_percentage_views|round(1)|intcomma}}%</span>)</td>
+			<td class="num">{{row.subscriberChange|int|intcomma}} (<span style="{% if row.previous_percentage_subscriberChange > 0 %}color:green;{% else %}color:red;{% endif %}">{{row.previous_percentage_subscriberChange|round(1)|intcomma}}%</span>)</td>
+		</tr>
+		{% endfor %}
+	</tbody>
+</table>	
