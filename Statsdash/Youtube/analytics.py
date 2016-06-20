@@ -14,6 +14,10 @@ from oauth2client.client import flow_from_clientsecrets
 from oauth2client.file import Storage
 from oauth2client.tools import argparser, run_flow
 from oauth2client.service_account import ServiceAccountCredentials
+import logging, logging.config, logging.handlers
+
+logging.config.dictConfig(LOGGING)
+logger = logging.getLogger('report')
 
 CLIENT_SECRETS_FILE = config.CLIENT_SECRETS_FILE
 
@@ -81,7 +85,7 @@ class Analytics(object):
     		results = query.execute()
     		return results
     	except HttpError, e:
-    		print "An HTTP error %d occurred:\n%s" % (e.resp.status, e.content)
+    		logger.warning("HTTP error %d occurred:\n%s" % (e.resp.status, e.content))
     
     def data_available(self, id, date):
     	analytics_query_response = self.youtube_analytics.reports().query(

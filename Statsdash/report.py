@@ -4,12 +4,17 @@ from email.mime.image import MIMEImage
 from datetime import datetime, timedelta
 from render import get_environment
 import smtplib
+from premailer import transform
 
 import config
 from Statsdash.Youtube.aggregate_data import YoutubeData
 from Statsdash.GA.aggregate_data import AnalyticsData
 import Statsdash.utilities as utils
 import Statsdash.GA.config as ga_config
+import logging, logging.config, logging.handlers
+
+logging.config.dictConfig(LOGGING)
+logger = logging.getLogger('report')
 
 class Report(object):
     #template = "Templates/base.html"
@@ -61,6 +66,7 @@ class Report(object):
         """
         Send html email using config parameters
         """
+        html = transform(html) #inline css using premailer
         msg = MIMEMultipart('alternative')
         msg.set_charset('utf8')
         msg['Subject'] = self.get_subject()
@@ -91,6 +97,8 @@ class YoutubeReport(Report):
         #check = self.data.check_available_data()
         #if not check['result']:
         	#raise Exception("Data not available for %s" % check['channel'])
+        	
+        logger.debug("Running youtube report")
 
 
     def generate_html(self):   	
@@ -124,8 +132,10 @@ class YoutubeReport(Report):
         if check["result"]:
             return True
         else:
+            logger.debug("Data not available for: %s", % check["channel"])
             if override:
                 self.warning_sites = check["channel"]
+                
                 return True
             else:
                 return False
@@ -143,6 +153,8 @@ class AnalyticsCoreReport(Report):
         self.data = AnalyticsData(self.sites, self.period, self.frequency)
         self.warning_sites = []
         self.template = self.env.get_template("GA/base.html")
+        
+        logger.debug("Running analytics core report")
 
     def check_data_availability(self, override=False):
         """
@@ -155,6 +167,7 @@ class AnalyticsCoreReport(Report):
         if check["result"]:
             return True
         else:
+            logger.debug("Data not available for: %s", % check["site"])
             if override:
                 self.warning_sites = check["site"]
                 return True
@@ -240,6 +253,8 @@ class AnalyticsSocialReport(Report):
         self.data = AnalyticsData(self.sites, self.period, self.frequency)    
         self.warning_sites = []
         self.template = self.env.get_template("GA/social_report.html")
+        
+        logger.debug("Running analytics social report")
 		
     def check_data_availability(self, override=False):
         """
@@ -252,6 +267,7 @@ class AnalyticsSocialReport(Report):
         if check["result"]:
             return True
         else:
+            logger.debug("Data not available for: %s", % check["site"])
             if override:
                 self.warning_sites = check["site"]
                 return True

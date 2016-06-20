@@ -10,6 +10,10 @@ from oauth2client.service_account import ServiceAccountCredentials
 
 import config
 import Statsdash.utilities as utils
+import logging, logging.config, logging.handlers
+
+logging.config.dictConfig(LOGGING)
+logger = logging.getLogger('report')
 
 with open(config.KEY_FILE) as f:
     PRIVATE_KEY = f.read()
@@ -31,21 +35,15 @@ class Analytics(object):
             except errors.HttpError, e:
                 error = json.loads(e.content)
                 if i == 5:
-                    print 'Error, request has failed 5 times'
-                    #logger.warning("Error, request has failed 5 times")
+                    logger.warning("Error, request has failed 5 times")
                     raise
                 if error['error'].get('code') == 500:
-                    print '500 Error #%d, trying again ...' % i
-                    #logger.warning("500 Error, #%d, trying again...", i)
+                    logger.warning("500 Error, #%d, trying again...", i)
                 else:
                     raise
             except Exception, e:
-                print 'We got an unknown error from GA'
-                #print 'Type:'
-                #print type(e)
-                #print e
-                #logger.warning("Unknown error from GA")
-                #logger.warning("Type: ", type(e), e)
+                logger.warning("Unknown error from GA")
+                logger.warning("Type: ", type(e), e)
         return None
 
         
