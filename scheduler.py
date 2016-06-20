@@ -106,6 +106,8 @@ def _run():
     are scheduled to run now.
     """   
     run_logger = RunLogger()
+    logging.config.dictConfig(LOGGING)
+    logger = logging.getLogger('report')
     
     for config in reports:
         identifier = config['identifier']
@@ -122,6 +124,7 @@ def _run():
             report = config["report"](config["sites"], period, config["recipients"], config["frequency"], config["subject"])  
             if run_logger.override_data == True:
                 data_available = report.check_data_availability(override=True)
+                logger.warning("Overriding data availability and sending report anyway")
             else:
                 data_available = report.check_data_availability()
             
