@@ -8,19 +8,6 @@ import Statsdash.utilities as utils
 site_ids = config.TABLES
 analytics = Analytics()
 
-"""
-def rollup_ids(ids, date, metrics, dimensions=None, filters=None, sort=None, max_results=None, aggregate_key=None):
-    main_row = []
-    for id in ids:
-        results = analytics.run_report(id, date.get_start(), date.get_end(), metrics=metrics, dimensions=dimensions, filters=filters, sort=sort, max_results=max_results)
-        rows = utils.format_data_rows(results)
-        for row in rows:
-            row =  utils.convert_to_floats(row, metrics.split(","))
-        main_row.extend(rows)
-    main_row = utils.aggregate_data(main_row, metrics.split(","), aggregate_key)
-    return main_row
-"""
-        
 
 class AnalyticsData(object):
     
@@ -34,16 +21,16 @@ class AnalyticsData(object):
         
         self.site_ids = utils.convert_values_list(site_ids)
     
-	def check_available_data(self):
-		run_report = {"result":True, "site":[]}
-		for site in self.sites:
-			ids = self.site_ids[site]
-			for id in ids:
-    			data_available = analytics.data_available(id, self.period.get_end())
-    			if not data_available:
-    				run_report["result"] = False
-    				run_report["site"].append(site)		
-		return run_report    
+    def check_available_data(self):
+        run_report = {"result":True, "site":[]}
+        for site in self.sites:
+            ids = self.site_ids[site]
+            for id in ids:
+                data_available = analytics.data_available(id, self.period.get_end())
+                if not data_available:
+                    run_report["result"] = False
+                    run_report["site"].append(site)		
+    	return run_report    
 		
 		
     def _remove_ga_names(self, rows):
@@ -70,11 +57,7 @@ class AnalyticsData(object):
                 rows = utils.change_key_names(rows, {"pv_per_session":"pageviewsPerSession", "avg_session_time":"avgSessionDuration"})
                 
                 totals.extend(rows)
-            #new aggregate data where just matches the metric and add it 
-            #aggregate = {"pageviews":0, "users":0, "sessions":0, "pv_per_session":0, "avg_session_time":0}
-            #for row in totals:
-            #    for key in aggregate.keys():
-            #        aggregate[key] += row[key]
+
             
             aggregate  = utils.aggregate_data(totals, ["pageviews", "users", "sessions", "pv_per_session", "avg_session_time"])
             
@@ -84,16 +67,6 @@ class AnalyticsData(object):
             data[period]["pv_per_session"] = data[period]["pv_per_session"]/len(self.sites)
             data[period]["avg_session_time"] = (data[period]["avg_session_time"]/len(self.sites))/60.0
             
-        #add change 
-        """for key in ["pageviews", "users", "sessions", "pv_per_session", "avg_session_time"]:
-            this_period = data[0]
-            prev_period = data[1]
-            year_period = data[2]
-            this_period["%s_figure_%s" % ("previous", key)] = prev_period[key]
-            this_period["%s_change_%s" % ("previous", key)] = this_period[key] - prev_period[key]
-            this_period["%s_percentage_%s" % ("previous", key)] = utils.percentage(this_period["%s_change_%s" % ("previous", key)], prev_period[key])
-            this_period["%s_change_%s" % ("yearly", key)] = this_period[key] - year_period[key]
-            this_period["%s_percentage_%s" % ("yearly", key)] = utils.percentage(this_period["%s_change_%s" % ("yearly", key)], year_period[key])  """
             
         this_period = utils.add_change(data[0], data[1], ["pageviews", "users", "sessions", "pv_per_session", "avg_session_time"], "previous")
         this_period = utils.add_change(this_period, data[2], ["pageviews", "users", "sessions", "pv_per_session", "avg_session_time"], "yearly")

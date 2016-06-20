@@ -49,7 +49,7 @@ class Analytics(object):
         return None
 
         
-    def data_available_for_site(self, site_id, stats_date):
+    def data_available(self, site_id, stats_date):
         # TODO: Persist these results in a cache so we don't smash our rate limit
         query = self.ga.get(
             ids=site_id,

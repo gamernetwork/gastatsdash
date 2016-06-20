@@ -4,11 +4,11 @@ import sqlite3, os, traceback
 from sqlite3 import OperationalError
 from datetime import date, datetime, timedelta
 
-import config
-from config import LOGGING
-from report_schedule import reports
-from reporting import create_report
-from dateutils import find_last_weekday, add_one_month, find_next_weekday
+import Statsdash.config as config
+from Statsdash.report_schedule import reports
+from Statsdash.report import AnalyticsCoreReport, AnalyticsSocialReport, YoutubeReport
+import Statsdash.utilities as utils
+from Statsdash.utilities import find_last_weekday, add_one_month, find_next_weekday
 
 import logging, logging.config, logging.handlers
 
@@ -70,7 +70,7 @@ class RunLogger(object):
         now = datetime(today.year, today.month, today.day, 00, 00, 00, 01)  #returns now as datetime with time as 00 00 00 00001
         
         if last_run.year == 1:
-            if frequency == 'DAILY':
+            if frequency == 'DAILY' or frequency == "WOW_DAILY":
                 return now
             if frequency == 'WEEKLY':
                 weekday = frequency_options.get('weekday', 'Monday')
@@ -82,7 +82,7 @@ class RunLogger(object):
                     next_run = add_one_month(next_run)
                 return next_run
        
-        if frequency == 'DAILY':
+        if frequency == 'DAILY' or frequency == "WOW_DAILY":
             #if last run was over 2 days ago, set to yesterday 
             next_run = last_run + timedelta(days=1)
             if (now - last_run).days >= 2:
@@ -118,9 +118,9 @@ def _run():
         needs_run = next_run_date <= today
         print "%s next run: %s.  Needs run: %s" % (identifier, next_run_date, needs_run)
         if needs_run:
-            period = None #set up period
-            report = config["report_class"](config["sites"], period, config["frequency"], config["subject"])  
-            if run_logger.override_data = True:
+            period = utils.StatsRange.get_period(next_run_date, frequency)
+            report = config["report"](config["sites"], period, config["recipients"], config["frequency"], config["subject"])  
+            if run_logger.override_data == True:
                 data_available = report.check_data_availability(override=True)
             else:
                 data_available = report.check_data_availability()
@@ -128,8 +128,8 @@ def _run():
             run_logger.override_data = False
             print "%s next run: %s.  Data available: %s" % (identifier, next_run_date, data_available)
             if data_available:
-                html = report.generate_html()
-                report.send_email(html)
+                #html = report.generate_html()
+                #report.send_email(html)
                 run_datetime = datetime(year=report.period.end_date.year, 
                     month=report.period.end_date.month, 
                     day=report.period.end_date.day,
@@ -138,7 +138,7 @@ def _run():
                     second=0,
                     microsecond=1
                 )           
-                run_logger.record_run(identifier, run_datetime)
+                #run_logger.record_run(identifier, run_datetime)
 
 
 """
@@ -201,4 +201,4 @@ def run_schedule():
 
 if __name__ == '__main__':
 
-    #run_schedule()
+    run_schedule()

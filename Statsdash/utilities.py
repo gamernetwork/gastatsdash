@@ -63,37 +63,7 @@ def list_search(to_search, key, value):
         return result[0]
     else:
         raise KeyError
-        
 
-
-""""
-def aggregate_data(table, match_key, aggregate_keys):
-
-    new_table = []
-    for row in table:
-        try: 
-            result = list_search(new_table, match_key, row[match_key])
-            for key in aggregate_keys:
-                result[key] += row[key]
-        except KeyError:
-            new_table.append(row)
-    return new_table
-
-
-def add_change(this_period, previous_period, match_key, change_keys, label):
-    
-    for row in this_period:
-        try:
-            result = list_search(previous_period, match_key, row[match_key])
-            for key in change_keys:
-                row['%s_change_%s' % (label, key)]  = row[key] - result[key]
-                row['%s_percentage_%s' % (label, key)] = percentage(row['%s_change_%s' % (label,key)], result[key])
-        except KeyError:
-            for key in change_keys:
-                row['%s_change_%s' % (label,key)]  = 0
-                row['%s_percentage_%s' % (label, key)] = 0
-    return this_period
-"""
 
 def aggregate_data(table, aggregate_keys, match_key=None):
     """
@@ -120,7 +90,6 @@ def aggregate_data(table, aggregate_keys, match_key=None):
                     new_table[key] = row[key]
                     
     return new_table
-
 
 
 def add_change(this_period, previous_period, change_keys, label, match_key=None):
@@ -293,6 +262,8 @@ class StatsRange(object):
     @classmethod
     def get_period(cls, date, frequency):
         if frequency == 'DAILY':
+            return cls.get_one_day_period(date)
+        if frequency == 'WOW_DAILY':
             return cls.get_one_day_period(date)
         if frequency == 'WEEKLY':
             return cls.get_one_week_period(date)

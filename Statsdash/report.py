@@ -156,7 +156,7 @@ class AnalyticsCoreReport(Report):
             return True
         else:
             if override:
-                self.warning_sites = check["sites"]
+                self.warning_sites = check["site"]
                 return True
             else:
                 return False
@@ -253,7 +253,7 @@ class AnalyticsSocialReport(Report):
             return True
         else:
             if override:
-                self.warning_sites = check["sites"]
+                self.warning_sites = check["site"]
                 return True
             else:
                 return False	

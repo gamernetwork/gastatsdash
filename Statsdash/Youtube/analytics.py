@@ -1,6 +1,4 @@
 #!/usr/bin/python
-import sys
-sys.path.append('/home/faye/src/gastatsdash/')
 
 from datetime import datetime, timedelta
 import httplib2
@@ -201,9 +199,3 @@ class Analytics(object):
         
         return self.execute_query(video_results)
 		
-		
-		
-if __name__ == '__main__':
-    analytics = Analytics()
-    rows = analytics.rollup_stats(["UCKk076mm-7JjLxJcFSXIPJA","UCciKycgzURdymx-GRSY2_dA"])
-    print rows
