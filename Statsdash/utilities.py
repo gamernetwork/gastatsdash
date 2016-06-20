@@ -63,11 +63,12 @@ def list_search(to_search, key, value):
         return result[0]
     else:
         raise KeyError
+        
 
+
+""""
 def aggregate_data(table, match_key, aggregate_keys):
-    """
-    
-    """
+
     new_table = []
     for row in table:
         try: 
@@ -92,6 +93,79 @@ def add_change(this_period, previous_period, match_key, change_keys, label):
                 row['%s_change_%s' % (label,key)]  = 0
                 row['%s_percentage_%s' % (label, key)] = 0
     return this_period
+"""
+
+def aggregate_data(table, aggregate_keys, match_key=None):
+    """
+    Aggregates data given
+    Returns list of dictionaries if aggregating by given dimension key
+    Else returns dictionary of all metrics aggregated 
+    """
+    if match_key:
+        new_table = []
+        for row in table:
+            try: 
+                result = list_search(new_table, match_key, row[match_key])
+                for key in aggregate_keys:
+                    result[key] += row[key]
+            except KeyError:
+                new_table.append(row)
+    else:
+        new_table = {}
+        for row in table:
+            for key in aggregate_keys:
+                try:
+                    new_table[key] += row[key]
+                except KeyError:
+                    new_table[key] = row[key]
+                    
+    return new_table
+
+
+
+def add_change(this_period, previous_period, change_keys, label, match_key=None):
+    """
+    Adds change data to current period data structure, either by dimension or not
+    """
+    if match_key:
+        for row in this_period:
+            try:
+                result = list_search(previous_period, match_key, row[match_key])
+                for key in change_keys:
+                    row['%s_figure_%s' % (label, key)]  = result[key]
+                    row['%s_change_%s' % (label, key)]  = row[key] - result[key]
+                    row['%s_percentage_%s' % (label, key)] = percentage(row['%s_change_%s' % (label,key)], result[key])
+            except KeyError:
+                for key in change_keys:
+                    row['%s_figure_%s' % (label,key)]  = 0
+                    row['%s_change_%s' % (label,key)]  = 0
+                    row['%s_percentage_%s' % (label, key)] = 0
+    else:
+        for key in change_keys:
+            try:
+                this_period['%s_figure_%s' % (label, key)]  = previous_period[key]
+                this_period['%s_change_%s' % (label, key)]  = this_period[key] - previous_period[key]
+                this_period['%s_percentage_%s' % (label, key)] = percentage(this_period['%s_change_%s' % (label,key)], previous_period[key])       
+            except KeyError:
+                this_period['%s_figure_%s' % (label,key)]  = 0
+                this_period['%s_change_%s' % (label,key)]  = 0
+                this_period['%s_percentage_%s' % (label, key)] = 0      
+    
+    return this_period               
+
+
+
+def convert_values_list(id_dict):
+    """
+    Converts the values of a dictionary to be list format
+    """
+    for key in id_dict:
+        try:
+            converted = id_dict[key].split()
+        except AttributeError:
+            converted = id_dict[key]
+        id_dict[key] = converted
+    return id_dict 
 
 
 

@@ -9,6 +9,7 @@ from apiclient.discovery import build
 from oauth2client.service_account import ServiceAccountCredentials
 
 import config
+import Statsdash.utilities as utils
 
 with open(config.KEY_FILE) as f:
     PRIVATE_KEY = f.read()
@@ -80,12 +81,22 @@ class Analytics(object):
             filters=filters,
             sort=sort,
             max_results=max_results,
-            include_empty_rows=True,
-            
+            include_empty_rows=True,     
         )
         
         return self.execute_query(query)
-        
+ 
+ 
+    def rollup_ids(self, ids, start, end, metrics, dimensions=None, filters=None, sort=None, max_results=None, aggregate_key=None):
+        main_row = []
+        for id in ids:
+            results = self.run_report(id, start, end, metrics=metrics, dimensions=dimensions, filters=filters, sort=sort, max_results=max_results)
+            rows = utils.format_data_rows(results)
+            for row in rows:
+                row =  utils.convert_to_floats(row, metrics.split(","))
+            main_row.extend(rows)
+        main_row = utils.aggregate_data(main_row, metrics.split(","), aggregate_key)
+        return main_row       
         
         
         

@@ -33,7 +33,7 @@
                 {% if report_span == 'MONTHLY' %}<td class = 'num' style="color: {% if row.yearly_percentage_users > 0 %}green{% else %}red{% endif %};"> {{row.yearly_percentage_users|round(1)}}%</td>{% endif %} 
                 <td class = 'num'> {{((row.users / summary_table.users) * 100)|round(1)}}% </td> 
                 
-                <td class = "src">{% for article in row.articles %}<span><a href="http://{{article.host}}{{article.path}}">{{article.title}}</a></span> {% endfor %}</td>
+                <td class = "src">{% for article in row.articles %}<span style="display:list-item;list-style:none;"><a href="http://{{article.host}}{{article.path}}">{{article.title}}</a></span> {% endfor %}</td>
             </tr>
         {% endfor %}
     </tbody>       

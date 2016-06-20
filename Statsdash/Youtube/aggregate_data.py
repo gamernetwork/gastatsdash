@@ -14,6 +14,7 @@ import Statsdash.utilities as utils
 analytics = Analytics()
 channel_ids = config.CHANNELS
 
+
 class YoutubeData(object):
     """
     Set the parameters for the data tables
@@ -35,6 +36,8 @@ class YoutubeData(object):
         self.previous = utils.StatsRange.get_previous_period(self.period, self.frequency)
         self.yearly = utils.StatsRange.get_previous_period(self.period, "YEARLY")
         self.date_list = [self.period, self.previous, self.yearly]
+        
+        self.channel_ids = utils.convert_values_list(channel_ids)
         
         """"
         if self.frequency == "DAILY":
@@ -62,22 +65,24 @@ class YoutubeData(object):
             table = []
             metrics = "views,estimatedMinutesWatched,subscribersGained,subscribersLost"
             for channel in self.channels:
-                id = channel_ids[channel]
-                results = analytics.run_analytics_report(start_date=date.get_start(), end_date=date.get_end(), metrics=metrics, dimensions="country", 
-                												filters="channel==%s" % id, max_results=None, sort="-estimatedMinutesWatched")		
-                									
-                rows = utils.format_data_rows(results)
+                ids = self.channel_ids[channel]
+                #results = analytics.run_analytics_report(start_date=date.get_start(), end_date=date.get_end(), metrics=metrics, dimensions="country", 
+                #												filters="channel==%s" % id, max_results=None, sort="-estimatedMinutesWatched")		                									
+                #rows = utils.format_data_rows(results)
+                
+                rows = analytics.rollup_ids(ids, date.get_start(), date.get_end(), metrics=metrics, dimensions="country", 
+                												filters=None, max_results=None, sort="-estimatedMinutesWatched", aggregate_key="country")	
                 for row in rows:
                     row =  utils.convert_to_floats(row, metrics.split(","))
                     row["subscriberChange"] = row["subscribersGained"] - row["subscribersLost"]
                 table.extend(rows)
             	    			
-            aggregated = utils.aggregate_data(table, "country", (metrics + ",subscriberChange").split(","))
+            aggregated = utils.aggregate_data(table, (metrics + ",subscriberChange").split(","),  match_key="country")
             sorted = utils.sort_data(aggregated, "estimatedMinutesWatched", limit=20)
             data[count] = sorted
         
-        added_change = utils.add_change(data[0], data[1], "country", ["views","estimatedMinutesWatched","subscriberChange"], "previous")
-        added_change = utils.add_change(added_change, data[2], "country", ["views","estimatedMinutesWatched","subscriberChange"], "yearly")
+        added_change = utils.add_change(data[0], data[1], ["views","estimatedMinutesWatched","subscriberChange"], "previous", match_key="country")
+        added_change = utils.add_change(added_change, data[2], ["views","estimatedMinutesWatched","subscriberChange"], "yearly", match_key="country")
         
         return added_change
 
@@ -88,10 +93,10 @@ class YoutubeData(object):
             table = []
             metrics="subscribersGained,subscribersLost,estimatedMinutesWatched"
             for channel_num, channel in enumerate(self.channels):
-                id = channel_ids[channel]
+                ids = self.channel_ids[channel]
 
                 if count == 0:
-                    subscriber_count = analytics.get_stats(id)['subscriberCount'] #only gets the current subscriber count
+                    subscriber_count = analytics.rollup_stats(ids)['subscriberCount'] #only gets the current subscriber count
                 elif count == 1:
                     #last period date, work out last periods subscriber count from current periods sub change 
                     this_channel = utils.list_search(data[0], "channel", channel)
@@ -100,9 +105,10 @@ class YoutubeData(object):
                     #don't need to work out yearly sub change 
                     subscriber_count = 0.0
                     
-                results = analytics.run_analytics_report(start_date=date.get_start(), end_date=date.get_end(), metrics=metrics, dimensions=None, filters="channel==%s" % id)	
-                  
-                rows = utils.format_data_rows(results)
+                #results = analytics.run_analytics_report(start_date=date.get_start(), end_date=date.get_end(), metrics=metrics, dimensions=None, filters="channel==%s" % id)	             
+                #rows = utils.format_data_rows(results)
+                rows = [analytics.rollup_ids(ids, date.get_start(), date.get_end(), metrics, dimensions=None, filters=None, sort=None, max_results=None, aggregate_key=None)]
+                
                 for row in rows:
                     row = utils.convert_to_floats(row, metrics.split(","))
                     row["channel"] = channel
@@ -111,12 +117,12 @@ class YoutubeData(object):
                     
                 table.extend(rows)
                 
-            aggregated = utils.aggregate_data(table, "channel", ["subscriberChange", "subscriberCount", "estimatedMinutesWatched"])
+            aggregated = utils.aggregate_data(table, ["subscriberChange", "subscriberCount", "estimatedMinutesWatched"], match_key= "channel")
             sorted = utils.sort_data(aggregated, "estimatedMinutesWatched")
             data[count] = sorted
             
-        added_change = utils.add_change(data[0], data[1], "channel", ["subscriberChange", "subscriberCount", "estimatedMinutesWatched"], "previous")
-        added_change = utils.add_change(added_change, data[2], "channel", ["subscriberChange", "estimatedMinutesWatched"], "yearly")
+        added_change = utils.add_change(data[0], data[1], ["subscriberChange", "subscriberCount", "estimatedMinutesWatched"], "previous", match_key= "channel")
+        added_change = utils.add_change(added_change, data[2], ["subscriberChange", "estimatedMinutesWatched"], "yearly", match_key= "channel")
         
         return added_change
  
@@ -128,9 +134,12 @@ class YoutubeData(object):
             #just subscribersGained to get number of subscribers per 1000 views 
             metrics="views,likes,dislikes,comments,shares,subscribersGained"
             for channel_num, channel in enumerate(self.channels):
-                id = channel_ids[channel]
-                results = analytics.run_analytics_report(start_date=date.get_start(), end_date=date.get_end(), metrics=metrics, dimensions=None, filters="channel==%s" % id)	
-                rows = utils.format_data_rows(results)
+                ids = self.channel_ids[channel]
+                #results = analytics.run_analytics_report(start_date=date.get_start(), end_date=date.get_end(), metrics=metrics, dimensions=None, filters="channel==%s" % id)	
+                #rows = utils.format_data_rows(results)
+                
+                rows = [analytics.rollup_ids(ids, date.get_start(), date.get_end(), metrics=metrics, dimensions=None)]
+                
                 for row in rows:
                     row = utils.convert_to_floats(row, metrics.split(","))
                     row["channel"] = channel
@@ -153,8 +162,8 @@ class YoutubeData(object):
             sorted = utils.sort_data(table, "views")
             data[count] = sorted
             
-        added_change = utils.add_change(data[0], data[1], "channel", ["views", "likeRate", "commentRate", "sharesRate", "subsRate", "likeRatio", "dislikeRatio"], "previous")
-        added_change = utils.add_change(added_change, data[2], "channel", ["views", "likeRate", "commentRate", "sharesRate", "subsRate", "likeRatio", "dislikeRatio"], "yearly") 
+        added_change = utils.add_change(data[0], data[1], ["views", "likeRate", "commentRate", "sharesRate", "subsRate", "likeRatio", "dislikeRatio"], "previous", match_key= "channel")
+        added_change = utils.add_change(added_change, data[2], ["views", "likeRate", "commentRate", "sharesRate", "subsRate", "likeRatio", "dislikeRatio"], "yearly", match_key= "channel") 
         
         return added_change               
 
@@ -163,10 +172,13 @@ class YoutubeData(object):
         for count, date in enumerate([self.period]):
             table = []        
             for channel_num, channel in enumerate(self.channels):
-                id = channel_ids[channel]
-                results = analytics.run_analytics_report(start_date=date.get_start(), end_date=date.get_end(), metrics="estimatedMinutesWatched,views", dimensions="video", 
-        											filters="channel==%s" % id, max_results="20", sort="-estimatedMinutesWatched")
-                rows = utils.format_data_rows(results)
+                ids = self.channel_ids[channel]
+                #results = analytics.run_analytics_report(start_date=date.get_start(), end_date=date.get_end(), metrics="estimatedMinutesWatched,views", dimensions="video", 
+        		#									filters="channel==%s" % id, max_results="20", sort="-estimatedMinutesWatched")
+                #rows = utils.format_data_rows(results)
+                
+                rows = analytics.rollup_ids(ids, date.get_start(), date.get_end(), metrics="estimatedMinutesWatched,views", dimensions="video", filters=None, max_results="20", 
+                                                sort="-estimatedMinutesWatched", aggregate_key="video")
                 for row in rows:
                     row = utils.convert_to_floats(row, ["estimatedMinutesWatched", "views"])
                     video_name = analytics.get_video(row['video'])
@@ -178,7 +190,7 @@ class YoutubeData(object):
 
                 table.extend(rows)
             		
-            aggregated = utils.aggregate_data(table, "video", ["estimatedMinutesWatched", "views"])
+            aggregated = utils.aggregate_data(table, ["estimatedMinutesWatched", "views"], match_key="video")
             sorted = utils.sort_data(aggregated, "estimatedMinutesWatched", limit=10)
             data[count] = sorted
             #group
@@ -201,10 +213,14 @@ class YoutubeData(object):
         for count, date in enumerate(self.date_list):
             table = []
             for channel in self.channels:
-                id = channel_ids[channel]
-                results = analytics.run_analytics_report(start_date=date.get_start(), end_date=date.get_end(), metrics="estimatedMinutesWatched",
-                                                            dimensions="insightTrafficSourceType", filters="channel==%s" % id, sort="-estimatedMinutesWatched")	
-                rows = utils.format_data_rows(results)
+                ids = self.channel_ids[channel]
+                #results = analytics.run_analytics_report(start_date=date.get_start(), end_date=date.get_end(), metrics="estimatedMinutesWatched",
+                #                                            dimensions="insightTrafficSourceType", filters="channel==%s" % id, sort="-estimatedMinutesWatched")	
+                #rows = utils.format_data_rows(results)
+                
+                rows = analytics.rollup_ids(ids, date.get_start(), date.get_end(), metrics="estimatedMinutesWatched", dimensions="insightTrafficSourceType", filters=None, 
+                                                sort="-estimatedMinutesWatched", aggregate_key="insightTrafficSourceType")
+                
                 channel_total = 0.0
                 for row in rows:
                     row = utils.convert_to_floats(row, ["estimatedMinutesWatched"])

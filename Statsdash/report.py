@@ -175,10 +175,10 @@ class AnalyticsCoreReport(Report):
         to_month_table = None
         network_summary_table = None
         network_month_summary_table = None
-        num_social_articles = 1
+        num_social_articles = 5
 
         if self.frequency != "MONTHLY":
-            num_social_articles = 5
+            num_social_articles = 1
             today = self.period.end_date
             first = datetime(today.year, today.month, 1).date()
             month_range = utils.StatsRange("Month to date Aggregate", first, today)            
@@ -193,10 +193,10 @@ class AnalyticsCoreReport(Report):
             
         summary_table = self.data.summary_table()    
         print "done summary table"
-        country_table = self.data.country_table()
-        print "done country table"
         site_table = self.data.site_summary_table()
         print "done site summary table"
+        country_table = self.data.country_table()
+        print "done country table"
         article_table = self.data.article_table()
         print "done article table"
         traffic_table = self.data.traffic_source_table()
