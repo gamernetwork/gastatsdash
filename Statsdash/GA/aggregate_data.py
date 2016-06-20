@@ -37,11 +37,12 @@ class AnalyticsData(object):
 	def check_available_data(self):
 		run_report = {"result":True, "site":[]}
 		for site in self.sites:
-			id = channel_ids[channel]
-			data_available = analytics.data_available(id, self.period.get_end())
-			if not data_available:
-				run_report["result"] = False
-				run_report["site"].append(site)		
+			ids = self.site_ids[site]
+			for id in ids:
+    			data_available = analytics.data_available(id, self.period.get_end())
+    			if not data_available:
+    				run_report["result"] = False
+    				run_report["site"].append(site)		
 		return run_report    
 		
 		
