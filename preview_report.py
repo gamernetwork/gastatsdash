@@ -1,4 +1,4 @@
-from Statsdash.report import YoutubeReport, AnalyticsCoreReport, AnalyticsSocialReport
+from Statsdash.report import YoutubeReport, AnalyticsCoreReport, AnalyticsSocialReport, AnalyticsSocialExport
 import argparse
 #import report_schedule
 
@@ -22,7 +22,8 @@ user_file_name = args.filename
 if(user_file_name == 0):
 	file_name = "%s_preview.html" % report_type
 else:
-	file_name = "%s.html" % user_file_name
+	#file_name = "%s.html" % user_file_name
+	file_name = user_file_name
 	
 file_src = args.destination + "/" + file_name
 
@@ -44,9 +45,15 @@ elif report_type == "AnalyticsSocialReport":
     sc = AnalyticsSocialReport(["eurogamer.net"], monthly_period, ["faye.butler@gamer-network.net"], "MONTHLY", "Eurogamer.net Social Report for")
     html = sc.generate_html()
     sc.send_email(transform(html))
+elif report_type == "AnalyticsSocialExport":
+    sc = AnalyticsSocialExport(["eurogamer.net"], monthly_period, ["faye.butler@gamer-network.net"], "MONTHLY", "Eurogamer.net Social Export for")
+    html = sc.generate_html()   
+    sc.send_email_attachment(html) 
 else:
     raise Exception("Unknown report type")
 
+print html
 with open(file_src, 'w') as file:
 	file.write(html.encode("utf-8"))	
+	#file.write(html)
 

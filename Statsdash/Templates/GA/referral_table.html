@@ -1,0 +1,21 @@
+<h3>Top Referring Sites</h3>
+<p>Top sites (that aren't social networks) and the articles they've linked to.</p>
+<table border="0" cellspacing="0">
+    <thead>
+        <tr class = 'column_header'>
+            <th> Source </th>
+            <th> Total Page Views </th>
+            <th> Top Article Linked to </th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in referrals %}
+        <tr class="{{ loop.cycle('odd', 'even') }}">
+            <th> {{row.source|capitalize}} </th>
+            <td class="num">{{row.pageviews|int|intcomma}}</td>
+            <td class = "src">{% for article in row.articles %}<span style="display:list-item;list-style:none;"><a href="http://{{article.host}}{{article.path}}">{{article.title}}</a></span> {% endfor %}</td>
+            <!--<td class="num">{% for article in value %}<span>{{article.metrics.pageviews}}</span> {% endfor %}</td>-->
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

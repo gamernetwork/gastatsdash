@@ -1,10 +1,11 @@
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.image import MIMEImage
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from render import get_environment
 import smtplib
 from premailer import transform
+from Statsdash.config import LOGGING
 
 import config
 from Statsdash.Youtube.aggregate_data import YoutubeData
@@ -80,7 +81,26 @@ class Report(object):
         
         sender = smtplib.SMTP(config.SMTP_ADDRESS)
         sender.sendmail(config.SEND_FROM, self.recipients, msg.as_string())
+    
         sender.quit()
+    
+    def send_email_attachment(self, csv):
+        msg = MIMEMultipart('alternative')
+        #msg.set_charset('utf8')
+        msg['Subject'] = self.get_subject()
+        msg['From'] = config.SEND_FROM
+        msg['To'] = ', '.join(self.recipients)
+        
+        attachment= MIMEText(csv)
+        
+        attachment.add_header("Content-Disposition", "attachment", filename="test.csv")
+        msg.attach(attachment)
+        
+        sender = smtplib.SMTP(config.SMTP_ADDRESS)
+        sender.sendmail(config.SEND_FROM, self.recipients, msg.as_string())
+    
+        sender.quit()       
+    
 
 
 class YoutubeReport(Report):
@@ -132,7 +152,7 @@ class YoutubeReport(Report):
         if check["result"]:
             return True
         else:
-            logger.debug("Data not available for: %s", % check["channel"])
+            logger.debug("Data not available for: %s" % check["channel"])
             if override:
                 self.warning_sites = check["channel"]
                 
@@ -167,7 +187,7 @@ class AnalyticsCoreReport(Report):
         if check["result"]:
             return True
         else:
-            logger.debug("Data not available for: %s", % check["site"])
+            logger.debug("Data not available for: %s" % check["site"])
             if override:
                 self.warning_sites = check["site"]
                 return True
@@ -205,21 +225,14 @@ class AnalyticsCoreReport(Report):
                 network_month_summary_table = network_month_data.summary_table()
             
         summary_table = self.data.summary_table()    
-        print "done summary table"
         site_table = self.data.site_summary_table()
-        print "done site summary table"
         country_table = self.data.country_table()
-        print "done country table"
         article_table = self.data.article_table()
-        print "done article table"
         traffic_table = self.data.traffic_source_table()
-        print "done traffic table"
         referring_site_table = self.data.referring_sites_table()
-        print "done referral table"
         device_table = self.data.device_table()
-        print "done device table"
         social_table = self.data.social_network_table(num_social_articles)
-        print "done social table"
+
         
         html = self.template.render(
             subject=self.get_subject(),
@@ -267,7 +280,7 @@ class AnalyticsSocialReport(Report):
         if check["result"]:
             return True
         else:
-            logger.debug("Data not available for: %s", % check["site"])
+            logger.debug("Data not available for: %s" % check["site"])
             if override:
                 self.warning_sites = check["site"]
                 return True
@@ -286,17 +299,11 @@ class AnalyticsSocialReport(Report):
         #TO DO 
         
         summary_table = self.data.summary_table()
-        print "summary table done"
         network_data = AnalyticsData(ga_config.TABLES.keys(), self.period, self.frequency)
         network_summary_table = network_data.summary_table()
-        print "network summary table done"
         
         social_table = self.data.social_network_table(10)
-        print "social network table done"
-        #article_table = self.data.article_table()
-        #print "article table done"
-        #image
-        
+
         html = self.template.render(
             subject=self.get_subject(),
             change=self.get_freq_label(),
@@ -310,7 +317,74 @@ class AnalyticsSocialReport(Report):
         )
         return html		
 
-		
-		
+class AnalyticsSocialExport(Report):
+    def __init__(self, sites, period, recipients, frequency, subject):
+        super(AnalyticsSocialExport, self).__init__(sites, period, recipients, frequency, subject)
+        self.sites = sites
+        self.period = period
+        self.recipients = recipients
+        self.frequency = frequency
+        self.subject = subject		 
+        self.warning_sites = []
+        self.template = self.env.get_template("test.csv")
+        
+        #logger.debug("Running analytics social report")   	
+
+    def check_data_availability(self, override=False):
+        """
+        incomplete
+        - could this be in main report
+        - does it need override or in scheduler should it only be called if override is false? 
+        - is there a better way than a function to call a function??
+        """
+        check = self.data.check_available_data()
+        if check["result"]:
+            return True
+        else:
+            logger.debug("Data not available for: %s" % check["site"])
+            if override:
+                self.warning_sites = check["site"]
+                return True
+            else:
+                return False	
+        
+    	
+    def generate_html(self):
+        #TO DO 
+        
+        #summary_table = self.data.summary_table()
+        #network_data = AnalyticsData(ga_config.TABLES.keys(), self.period, self.frequency)
+        #network_summary_table = network_data.summary_table()
+        #social_table = self.data.social_network_table(10)
+        start_month = date(self.period.start_date.year - 1, self.period.start_date.month, 01)
+        end_month = date(self.period.start_date.year, self.period.start_date.month, 01)
+        current = start_month
+        month_stats_range = []
+        months = []
+        while current != end_month:
+            start_date = current
+            end_date = utils.add_one_month((current - timedelta(days=1)))
+            name =  start_date.strftime("%b-%Y")
+            month_stats_range.append(utils.StatsRange(name, start_date, end_date))
+            months.append(name)
+            current = utils.add_one_month(start_date)
+         
+        social_export = []   
+        for month in month_stats_range:
+            new_row = {}
+            new_row["month"] = month.get_start()
+            data = AnalyticsData(self.sites, month, self.frequency)
+            new_row["data"] = data.social_network_table(0)
+            social_export.append(new_row)
+            
+
+        csv = self.template.render(
+            subject=self.get_subject(),
+            change=self.get_freq_label(),
+            report_span = self.frequency,
+            warning_sites = self.warning_sites,
+            social_export = social_export	
+        )
+        return csv		
 		
 		

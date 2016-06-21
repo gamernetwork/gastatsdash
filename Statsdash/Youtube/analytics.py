@@ -7,6 +7,7 @@ import sys
 import json
 import config
 import Statsdash.utilities as utils
+from Statsdash.config import LOGGING
 
 from apiclient.discovery import build
 from apiclient.errors import HttpError

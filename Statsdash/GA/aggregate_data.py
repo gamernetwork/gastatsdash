@@ -258,7 +258,7 @@ class AnalyticsData(object):
         data = {}
         for count, date in enumerate(self.date_list):
             social = []
-            metrics = "ga:pageviews,ga:users"
+            metrics = "ga:pageviews,ga:users,ga:sessions"
             for site in self.sites:
                 #results = analytics.run_report(site_ids[site], date.get_start(), date.get_end(), metrics=metrics, dimensions="ga:socialNetwork", 
                                                 #filters = "ga:socialNetwork!=(not set)", sort="-ga:users")
@@ -268,16 +268,16 @@ class AnalyticsData(object):
                 rows = self._remove_ga_names(rows)
                 rows = utils.change_key_names(rows, {"social_network":"socialNetwork"})
                 for row in rows:
-                    row =  utils.convert_to_floats(row, ["pageviews", "users"])
+                    row =  utils.convert_to_floats(row, ["pageviews", "users", "sessions"])
                     
                 social.extend(rows)
             
-            aggregated = utils.aggregate_data(social, ["pageviews", "users"], match_key="social_network")
+            aggregated = utils.aggregate_data(social, ["pageviews", "users", "sessions"], match_key="social_network")
             sorted = utils.sort_data(aggregated, "users", limit=15)
             data[count] = sorted
             
-        added_change = utils.add_change(data[0], data[1], ["pageviews", "users"], "previous", match_key="social_network")
-        added_change = utils.add_change(added_change, data[2], ["pageviews", "users"], "yearly", match_key="social_network")
+        added_change = utils.add_change(data[0], data[1], ["pageviews", "users", "sessions"], "previous", match_key="social_network")
+        added_change = utils.add_change(added_change, data[2], ["pageviews", "users", "sessions"], "yearly", match_key="social_network")
         
         for row in added_change:
             filter = "ga:socialNetwork==%s" % row["social_network"]
