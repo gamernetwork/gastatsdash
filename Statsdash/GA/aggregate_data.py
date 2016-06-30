@@ -1,5 +1,7 @@
+
 import config
 import re
+import pygal
 from datetime import date, timedelta, datetime
 from analytics import Analytics
 
@@ -53,10 +55,14 @@ class AnalyticsData(object):
                 #for row in rows:
                     #row =  utils.convert_to_floats(row, metrics.split(","))
 
-                rows = self._remove_ga_names(rows)
-                rows = utils.change_key_names(rows, {"pv_per_session":"pageviewsPerSession", "avg_session_time":"avgSessionDuration"})
+                if rows[0]:
+                    rows = self._remove_ga_names(rows)
+                    rows = utils.change_key_names(rows, {"pv_per_session":"pageviewsPerSession", "avg_session_time":"avgSessionDuration"})
                 
-                totals.extend(rows)
+                    totals.extend(rows)
+                else:
+                    print "No data for site " + site + " on " + date.get_start() + " - " + date.get_end()
+                    #logger.debug("No data for site " + site + " on " + date.get_start() + " - " + date.get_end())
 
             
             aggregate  = utils.aggregate_data(totals, ["pageviews", "users", "sessions", "pv_per_session", "avg_session_time"])
@@ -84,15 +90,19 @@ class AnalyticsData(object):
                 #results = analytics.run_report(site_ids[site], date.get_start(), date.get_end(), metrics=metrics)
                 rows = [analytics.rollup_ids(self.site_ids[site], date.get_start(), date.get_end(), metrics=metrics)]
                 #rows = utils.format_data_rows(results)
-                for row in rows:
-                    row =  utils.convert_to_floats(row, metrics.split(","))
-                    row["ga:site"] = site 
-
-                rows = self._remove_ga_names(rows)
-                rows = utils.change_key_names(rows, {"pv_per_session":"pageviewsPerSession", "avg_session_time":"avgSessionDuration"})
+                if rows[0]:
+                    for row in rows:
+                        row =  utils.convert_to_floats(row, metrics.split(","))
+                        row["ga:site"] = site 
+    
+                    rows = self._remove_ga_names(rows)
+                    rows = utils.change_key_names(rows, {"pv_per_session":"pageviewsPerSession", "avg_session_time":"avgSessionDuration"})
+                                        
+                    totals.extend(rows)
+                else:
+                    print "No data for site " + site + " on " + date.get_start() + " - " + date.get_end()
+                    #logger.debug("No data for site " + site + " on " + date.get_start() + " - " + date.get_end())
                                     
-                totals.extend(rows)
-                
             aggregated = utils.aggregate_data(totals, ["pageviews", "users", "sessions", "pv_per_session", "avg_session_time"], match_key="site")
             sorted = utils.sort_data(aggregated, "users")
             data[count] = sorted
@@ -336,22 +346,31 @@ class AnalyticsData(object):
             
             aggregated = utils.aggregate_data(devices, ["users"], match_key="device_category")
             sorted = utils.sort_data(aggregated, "users", limit=6)
-            data[count] = sorted
+            data[count] = sorted 
             
         added_change = utils.add_change(data[0], data[1], ["users"], "previous", match_key="device_category")
         added_change = utils.add_change(added_change, data[2], ["users"], "yearly", match_key="device_category")
         
         return added_change
-                
-                
-                
-                
-                
-                
-                
         
         
+    def device_chart(self, data):
+        #self.yearly, self.period
+        chart_data = {}
+        x_labels = []
+        for count, row in enumerate(data):
+            for device in row["data"]:
+                try:
+                    chart_data[device["device_category"]].append(utils.percentage(device["users"], row["summary"]["users"]))
+                except KeyError:
+                    chart_data[device["device_category"]] = [utils.percentage(device["users"], row["summary"]["users"])]
+                
+            x_labels.append(row["month"])
+
         
+        chart = utils.chart("Device Chart", x_labels, chart_data, "Month", "Percentage of Users")
+        return chart
+                
         
         
         

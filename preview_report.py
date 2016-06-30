@@ -22,8 +22,8 @@ user_file_name = args.filename
 if(user_file_name == 0):
 	file_name = "%s_preview.html" % report_type
 else:
-	#file_name = "%s.html" % user_file_name
-	file_name = user_file_name
+	file_name = "%s.html" % user_file_name
+	#file_name = user_file_name
 	
 file_src = args.destination + "/" + file_name
 
@@ -37,9 +37,10 @@ if report_type == "YoutubeReport":
     html = yt.generate_html()
     #yt.send_email(transform(html))
 elif report_type == "AnalyticsCoreReport":
-    ac = AnalyticsCoreReport(ga_config.TABLES.keys(), daily_period, ["faye.butler@gamer-network.net"], "WOW_DAILY", "Gamer Network Report for")
-    #ac = AnalyticsCoreReport(["eurogamer.net"], daily_period, ["faye.butler@gamer-network.net"], "DAILY", "Eurogamer.net Report for")
+    #ac = AnalyticsCoreReport(ga_config.TABLES.keys(), daily_period, ["faye.butler@gamer-network.net"], "WOW_DAILY", "Gamer Network Report for")
+    ac = AnalyticsCoreReport(["eurogamer.net"], monthly_period, ["faye.butler@gamer-network.net"], "MONTHLY", "Eurogamer.net Report for")
     html = ac.generate_html()
+    ac.send_email(html)
 elif report_type == "AnalyticsSocialReport":
     #sc = AnalyticsSocialReport(ga_config.TABLES.keys(), monthly_period, ["faye.butler@gamer-network.net"], "MONTHLY", "Gamer Network Social Report for")
     sc = AnalyticsSocialReport(["eurogamer.net"], monthly_period, ["faye.butler@gamer-network.net"], "MONTHLY", "Eurogamer.net Social Report for")
@@ -52,7 +53,6 @@ elif report_type == "AnalyticsSocialExport":
 else:
     raise Exception("Unknown report type")
 
-print html
 with open(file_src, 'w') as file:
 	file.write(html.encode("utf-8"))	
 	#file.write(html)

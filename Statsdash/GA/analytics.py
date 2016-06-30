@@ -91,9 +91,14 @@ class Analytics(object):
         for id in ids:
             results = self.run_report(id, start, end, metrics=metrics, dimensions=dimensions, filters=filters, sort=sort, max_results=max_results)
             rows = utils.format_data_rows(results)
-            for row in rows:
-                row =  utils.convert_to_floats(row, metrics.split(","))
-            main_row.extend(rows)
+            if rows:     
+                for row in rows:
+                    row =  utils.convert_to_floats(row, metrics.split(","))
+                main_row.extend(rows)
+            else:
+                #no data
+                print "No data for id " + id + " " + " on " + start + " - " + end
+                #logger.debug("No data for " + id + " " + " on " + start + " - " + end)
         main_row = utils.aggregate_data(main_row, metrics.split(","), aggregate_key)
         return main_row       
         

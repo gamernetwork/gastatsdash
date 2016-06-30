@@ -5,6 +5,9 @@ from datetime import date, datetime, timedelta
 from render import get_environment
 import smtplib
 from premailer import transform
+import StringIO
+import cStringIO
+import urllib, base64
 from Statsdash.config import LOGGING
 
 import config
@@ -83,23 +86,7 @@ class Report(object):
         sender.sendmail(config.SEND_FROM, self.recipients, msg.as_string())
     
         sender.quit()
-    
-    def send_email_attachment(self, csv):
-        msg = MIMEMultipart('alternative')
-        #msg.set_charset('utf8')
-        msg['Subject'] = self.get_subject()
-        msg['From'] = config.SEND_FROM
-        msg['To'] = ', '.join(self.recipients)
-        
-        attachment= MIMEText(csv)
-        
-        attachment.add_header("Content-Disposition", "attachment", filename="test.csv")
-        msg.attach(attachment)
-        
-        sender = smtplib.SMTP(config.SMTP_ADDRESS)
-        sender.sendmail(config.SEND_FROM, self.recipients, msg.as_string())
-    
-        sender.quit()       
+     
     
 
 
@@ -173,6 +160,7 @@ class AnalyticsCoreReport(Report):
         self.data = AnalyticsData(self.sites, self.period, self.frequency)
         self.warning_sites = []
         self.template = self.env.get_template("GA/base.html")
+        self.imgdata = None
         
         logger.debug("Running analytics core report")
 
@@ -208,15 +196,46 @@ class AnalyticsCoreReport(Report):
         to_month_table = None
         network_summary_table = None
         network_month_summary_table = None
+        device_img = None
         num_social_articles = 5
+        today = self.period.end_date
+        
 
         if self.frequency != "MONTHLY":
             num_social_articles = 1
-            today = self.period.end_date
+            #today = self.period.end_date
             first = datetime(today.year, today.month, 1).date()
             month_range = utils.StatsRange("Month to date Aggregate", first, today)            
             to_month_data = AnalyticsData(self.sites, month_range, self.frequency)
             to_month_table = to_month_data.summary_table()
+        elif self.frequency == "MONTHLY":
+            start_month = date(today.year-1, today.month, 1)
+            end_month = date(today.year, today.month, 1)
+            current = start_month
+            month_stats_range = []
+            months = []
+            while current != end_month:
+                start_date = current
+                end_date = utils.add_one_month((current - timedelta(days=1)))
+                name =  start_date.strftime("%b-%Y")
+                month_stats_range.append(utils.StatsRange(name, start_date, end_date))
+                months.append(name)
+                current = utils.add_one_month(start_date)     
+                
+        
+            device = []  
+            for month in month_stats_range:
+                new_row = {}
+                new_row["month"] = month.get_start()
+                print month.get_start(), month.get_end()
+                data = AnalyticsData(self.sites, month, "MONTHLY")
+                new_row["data"] = data.device_table()
+                new_row["summary"] = data.summary_table()
+                device.append(new_row)
+                
+            self.imgdata = self.data.device_chart(device)
+
+
         if self.get_site() != "Gamer Network":
             network_data = AnalyticsData(ga_config.TABLES.keys(), self.period, self.frequency)
             network_summary_table = network_data.summary_table()
@@ -253,6 +272,38 @@ class AnalyticsCoreReport(Report):
             social_table=social_table, 		
         )
         return html		
+        
+        
+    def send_email(self, html):
+        """
+        Send html email using config parameters
+        """
+        html = transform(html) #inline css using premailer
+        msg = MIMEMultipart('alternative')
+        msg.set_charset('utf8')
+        msg['Subject'] = self.get_subject()
+        msg['From'] = config.SEND_FROM
+        msg['To'] = ', '.join(self.recipients)
+        text_part = MIMEText("Please open with an HTML-enabled Email client.", 'plain')
+        html_part = MIMEText(html.encode("utf-8"), 'html')
+
+
+        if self.imgdata:
+            img_part = MIMEImage(self.imgdata, 'png')
+            img_part.add_header('Content-ID', '<graph>')
+            msg.attach(img_part)
+            print img_part
+                    
+        msg.attach(text_part)
+        msg.attach(html_part)
+        
+        sender = smtplib.SMTP(config.SMTP_ADDRESS)
+        sender.sendmail(config.SEND_FROM, self.recipients, msg.as_string())
+    
+        sender.quit()
+        
+        
+        
 			
 class AnalyticsSocialReport(Report):
     
@@ -316,6 +367,7 @@ class AnalyticsSocialReport(Report):
             social_table=social_table, 		
         )
         return html		
+        
 
 class AnalyticsSocialExport(Report):
     def __init__(self, sites, period, recipients, frequency, subject):
@@ -386,5 +438,20 @@ class AnalyticsSocialExport(Report):
             social_export = social_export	
         )
         return csv		
-		
+        
+    def send_email(self, csv):
+        msg = MIMEMultipart('alternative')
+        msg['Subject'] = self.get_subject()
+        msg['From'] = config.SEND_FROM
+        msg['To'] = ', '.join(self.recipients)
+        
+        attachment= MIMEText(csv)
+        
+        attachment.add_header("Content-Disposition", "attachment", filename="test.csv")
+        msg.attach(attachment)
+        
+        sender = smtplib.SMTP(config.SMTP_ADDRESS)
+        sender.sendmail(config.SEND_FROM, self.recipients, msg.as_string())
+    
+        sender.quit()      		
 		

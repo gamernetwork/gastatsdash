@@ -20,3 +20,8 @@
         {% endfor %}
     </tbody>    
 </table>
+
+{% if report_span == 'MONTHLY' %}
+  <h3> Monthly device trend </h3>
+  <img alt="embedded image" src ="cid:graph" />
+{% endif %}

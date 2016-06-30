@@ -90,14 +90,17 @@ class YoutubeData(object):
                 #results = analytics.run_analytics_report(start_date=date.get_start(), end_date=date.get_end(), metrics=metrics, dimensions=None, filters="channel==%s" % id)	             
                 #rows = utils.format_data_rows(results)
                 rows = [analytics.rollup_ids(ids, date.get_start(), date.get_end(), metrics, dimensions=None, filters=None, sort=None, max_results=None, aggregate_key=None)]
-                
-                for row in rows:
-                    row = utils.convert_to_floats(row, metrics.split(","))
-                    row["channel"] = channel
-                    row["subscriberChange"] = row["subscribersGained"] - row["subscribersLost"]
-                    row["subscriberCount"] = float(subscriber_count)
-                    
-                table.extend(rows)
+                if rows[0]:
+                    for row in rows:
+                        row = utils.convert_to_floats(row, metrics.split(","))
+                        row["channel"] = channel
+                        row["subscriberChange"] = row["subscribersGained"] - row["subscribersLost"]
+                        row["subscriberCount"] = float(subscriber_count)
+                        
+                    table.extend(rows)
+                else:
+                    print "No data for channel " + channel + " on " + date.get_start() + " - " + date.get_end()
+                    #logger.debug("No data for site " + site + " on " + date.get_start() + " - " + date.get_end())                    
                 
             aggregated = utils.aggregate_data(table, ["subscriberChange", "subscriberCount", "estimatedMinutesWatched"], match_key= "channel")
             sorted = utils.sort_data(aggregated, "estimatedMinutesWatched")
@@ -121,25 +124,28 @@ class YoutubeData(object):
                 #rows = utils.format_data_rows(results)
                 
                 rows = [analytics.rollup_ids(ids, date.get_start(), date.get_end(), metrics=metrics, dimensions=None)]
-                
-                for row in rows:
-                    row = utils.convert_to_floats(row, metrics.split(","))
-                    row["channel"] = channel
-                    row["likeRate"] = utils.rate_per_1000(row["likes"], row['views'])
-                    row["commentRate"] = utils.rate_per_1000(row["comments"], row['views'])
-                    row["sharesRate"] = utils.rate_per_1000(row["shares"], row['views'])
-                    row["subsRate"] = utils.rate_per_1000(row["subscribersGained"], row['views']) 
-                    try:
-                        row["likeRatio"] = utils.sig_fig(2, row["likes"] / row["dislikes"])
-                    except ZeroDivisionError:
-                        row["likeRatio"] = 0
-                    try:
-                        row["dislikeRatio"] = utils.sig_fig(2, row["dislikes"] / row["dislikes"])
-                    except ZeroDivisionError:
-                        row["dislikeRatio"] = 0                        
-                
-                table.extend(rows)
-                           
+                if rows[0]:
+                    for row in rows:
+                        row = utils.convert_to_floats(row, metrics.split(","))
+                        row["channel"] = channel
+                        row["likeRate"] = utils.rate_per_1000(row["likes"], row['views'])
+                        row["commentRate"] = utils.rate_per_1000(row["comments"], row['views'])
+                        row["sharesRate"] = utils.rate_per_1000(row["shares"], row['views'])
+                        row["subsRate"] = utils.rate_per_1000(row["subscribersGained"], row['views']) 
+                        try:
+                            row["likeRatio"] = utils.sig_fig(2, row["likes"] / row["dislikes"])
+                        except ZeroDivisionError:
+                            row["likeRatio"] = 0
+                        try:
+                            row["dislikeRatio"] = utils.sig_fig(2, row["dislikes"] / row["dislikes"])
+                        except ZeroDivisionError:
+                            row["dislikeRatio"] = 0                        
+                    
+                    table.extend(rows)
+                else:
+                    print "No data for channel " + channel + " on " + date.get_start() + " - " + date.get_end()
+                    #logger.debug("No data for site " + site + " on " + date.get_start() + " - " + date.get_end())     
+                                               
             #aggregated = utils.aggregate_data(table, "channel", )
             sorted = utils.sort_data(table, "views")
             data[count] = sorted
