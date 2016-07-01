@@ -35,10 +35,10 @@ daily_period = utils.StatsRange("period", date(2016, 06, 05), date(2016, 06, 05)
 if report_type == "YoutubeReport":
     yt = YoutubeReport(yt_config.CHANNELS.keys(), monthly_period, ["faye.butler@gamer-network.net"], "MONTHLY", "Gamer Network Video Report for")
     html = yt.generate_html()
-    #yt.send_email(transform(html))
+    yt.send_email(html)
 elif report_type == "AnalyticsCoreReport":
-    #ac = AnalyticsCoreReport(ga_config.TABLES.keys(), daily_period, ["faye.butler@gamer-network.net"], "WOW_DAILY", "Gamer Network Report for")
-    ac = AnalyticsCoreReport(["eurogamer.net"], monthly_period, ["faye.butler@gamer-network.net"], "MONTHLY", "Eurogamer.net Report for")
+    ac = AnalyticsCoreReport(ga_config.TABLES.keys(), daily_period, ["faye.butler@gamer-network.net"], "WOW_DAILY", "Gamer Network Report for")
+    #ac = AnalyticsCoreReport(["eurogamer.net"], monthly_period, ["faye.butler@gamer-network.net"], "MONTHLY", "Eurogamer.net Report for")
     html = ac.generate_html()
     ac.send_email(html)
 elif report_type == "AnalyticsSocialReport":
@@ -49,7 +49,7 @@ elif report_type == "AnalyticsSocialReport":
 elif report_type == "AnalyticsSocialExport":
     sc = AnalyticsSocialExport(["eurogamer.net"], monthly_period, ["faye.butler@gamer-network.net"], "MONTHLY", "Eurogamer.net Social Export for")
     html = sc.generate_html()   
-    sc.send_email_attachment(html) 
+    sc.send_email(html) 
 else:
     raise Exception("Unknown report type")
 

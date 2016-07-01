@@ -11,6 +11,7 @@ import Statsdash.utilities as utils
 analytics = Analytics()
 channel_ids = config.CHANNELS
 
+from Statsdash.config import LOGGING
 import logging, logging.config, logging.handlers
 
 logging.config.dictConfig(LOGGING)
@@ -38,7 +39,7 @@ class YoutubeData(object):
         for channel in self.channels:
         	ids = self.channel_ids[channel]
         	for id in ids:
-        	    data_available = analytics.data_available(id, self.end.strftime("%Y-%m-%d"))
+        	    data_available = analytics.data_available(id, self.period.get_end())
                 if not data_available:
                     run_report['result'] = False
                     run_report['channel'] += channel			

@@ -6,10 +6,11 @@ from datetime import date, datetime, timedelta
 
 import Statsdash.config as config
 from Statsdash.report_schedule import reports
-from Statsdash.report import AnalyticsCoreReport, AnalyticsSocialReport, YoutubeReport
+from Statsdash.report import AnalyticsCoreReport, AnalyticsSocialReport, YoutubeReport, AnalyticsSocialExport
 import Statsdash.utilities as utils
 from Statsdash.utilities import find_last_weekday, add_one_month, find_next_weekday
 
+from Statsdash.config import LOGGING
 import logging, logging.config, logging.handlers
 
 class RunLogger(object):
@@ -131,8 +132,8 @@ def _run():
             run_logger.override_data = False
             print "%s next run: %s.  Data available: %s" % (identifier, next_run_date, data_available)
             if data_available:
-                #html = report.generate_html()
-                #report.send_email(html)
+                html = report.generate_html()
+                report.send_email(html)
                 run_datetime = datetime(year=report.period.end_date.year, 
                     month=report.period.end_date.month, 
                     day=report.period.end_date.day,
@@ -141,7 +142,7 @@ def _run():
                     second=0,
                     microsecond=1
                 )           
-                #run_logger.record_run(identifier, run_datetime)
+                run_logger.record_run(identifier, run_datetime)
 
 
 """

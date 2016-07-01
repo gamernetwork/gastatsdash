@@ -407,10 +407,11 @@ class AnalyticsSocialExport(Report):
         self.recipients = recipients
         self.frequency = frequency
         self.subject = subject		 
+        self.data = AnalyticsData(self.sites, self.period, self.frequency)    
         self.warning_sites = []
-        self.template = self.env.get_template("test.csv")
+        self.template = self.env.get_template("social.csv")
         
-        #logger.debug("Running analytics social report")   	
+        logger.debug("Running analytics social export")   	
 
     def check_data_availability(self, override=False):
         """
@@ -432,12 +433,7 @@ class AnalyticsSocialExport(Report):
         
     	
     def generate_html(self):
-        #TO DO 
-        
-        #summary_table = self.data.summary_table()
-        #network_data = AnalyticsData(ga_config.TABLES.keys(), self.period, self.frequency)
-        #network_summary_table = network_data.summary_table()
-        #social_table = self.data.social_network_table(10)
+
         start_month = date(self.period.start_date.year - 1, self.period.start_date.month, 01)
         end_month = date(self.period.start_date.year, self.period.start_date.month, 01)
         current = start_month

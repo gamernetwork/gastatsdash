@@ -44,7 +44,7 @@ class Analytics(object):
                     raise
             except Exception, e:
                 logger.warning("Unknown error from GA")
-                logger.warning("Type: ", type(e), e)
+                logger.warning("Type: " + type(e) + "  " + e)
         return None
 
         

@@ -148,7 +148,6 @@ def chart(title, x_labels, data, x_title, y_title):
     line_chart.x_labels =x_labels
     for line in data:
         line_chart.add(line, data[line]) 
-        print line, data[line]
     
     imgdata = StringIO.StringIO()
     image = line_chart.render_to_png(imgdata)

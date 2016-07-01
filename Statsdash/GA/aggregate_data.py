@@ -10,6 +10,7 @@ import Statsdash.utilities as utils
 site_ids = config.TABLES
 analytics = Analytics()
 
+from Statsdash.config import LOGGING
 import logging, logging.config, logging.handlers
 
 logging.config.dictConfig(LOGGING)
@@ -61,8 +62,8 @@ class AnalyticsData(object):
                 
                     totals.extend(rows)
                 else:
-                    print "No data for site " + site + " on " + date.get_start() + " - " + date.get_end()
-                    #logger.debug("No data for site " + site + " on " + date.get_start() + " - " + date.get_end())
+                    #print "No data for site " + site + " on " + date.get_start() + " - " + date.get_end()
+                    logger.debug("No data for site " + site + " on " + date.get_start() + " - " + date.get_end())
 
             
             aggregate  = utils.aggregate_data(totals, ["pageviews", "users", "sessions", "pv_per_session", "avg_session_time"])
