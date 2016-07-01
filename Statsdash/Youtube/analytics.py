@@ -136,8 +136,7 @@ class Analytics(object):
     		part = "statistics",
     		id=id,
     	)
-    	
-    	#return self.execute_query(subs)['items'][0]['statistics']
+
     	return self.execute_query(subs)['items']
     	
     def rollup_stats(self, ids):
@@ -191,8 +190,8 @@ class Analytics(object):
                     row =  utils.convert_to_floats(row, metrics.split(","))
                 main_row.extend(rows)
             else:
-                print "No data for id " + id + " " + " on " + start + " - " + end
-                #logger.debug("No data for " + id + " " + " on " + start + " - " + end)                
+                #print "No data for id " + id + " " + " on " + start + " - " + end
+                logger.debug("No data for " + id + " " + " on " + start + " - " + end)                
         main_row = utils.aggregate_data(main_row, metrics.split(","), aggregate_key)
         return main_row       
         

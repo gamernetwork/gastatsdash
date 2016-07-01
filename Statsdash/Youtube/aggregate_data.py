@@ -52,10 +52,6 @@ class YoutubeData(object):
             metrics = "views,estimatedMinutesWatched,subscribersGained,subscribersLost"
             for channel in self.channels:
                 ids = self.channel_ids[channel]
-                #results = analytics.run_analytics_report(start_date=date.get_start(), end_date=date.get_end(), metrics=metrics, dimensions="country", 
-                #												filters="channel==%s" % id, max_results=None, sort="-estimatedMinutesWatched")		                									
-                #rows = utils.format_data_rows(results)
-                
                 rows = analytics.rollup_ids(ids, date.get_start(), date.get_end(), metrics=metrics, dimensions="country", 
                 												filters=None, max_results=None, sort="-estimatedMinutesWatched", aggregate_key="country")	
                 for row in rows:
@@ -90,9 +86,7 @@ class YoutubeData(object):
                 else:
                     #don't need to work out yearly sub change 
                     subscriber_count = 0.0
-                    
-                #results = analytics.run_analytics_report(start_date=date.get_start(), end_date=date.get_end(), metrics=metrics, dimensions=None, filters="channel==%s" % id)	             
-                #rows = utils.format_data_rows(results)
+  
                 rows = [analytics.rollup_ids(ids, date.get_start(), date.get_end(), metrics, dimensions=None, filters=None, sort=None, max_results=None, aggregate_key=None)]
                 if rows[0]:
                     for row in rows:
@@ -124,9 +118,6 @@ class YoutubeData(object):
             metrics="views,likes,dislikes,comments,shares,subscribersGained"
             for channel_num, channel in enumerate(self.channels):
                 ids = self.channel_ids[channel]
-                #results = analytics.run_analytics_report(start_date=date.get_start(), end_date=date.get_end(), metrics=metrics, dimensions=None, filters="channel==%s" % id)	
-                #rows = utils.format_data_rows(results)
-                
                 rows = [analytics.rollup_ids(ids, date.get_start(), date.get_end(), metrics=metrics, dimensions=None)]
                 if rows[0]:
                     for row in rows:
@@ -150,7 +141,6 @@ class YoutubeData(object):
                     #print "No data for channel " + channel + " on " + date.get_start() + " - " + date.get_end()
                     logger.debug("No data for site " + site + " on " + date.get_start() + " - " + date.get_end())     
                                                
-            #aggregated = utils.aggregate_data(table, "channel", )
             sorted = utils.sort_data(table, "views")
             data[count] = sorted
             
@@ -165,10 +155,6 @@ class YoutubeData(object):
             table = []        
             for channel_num, channel in enumerate(self.channels):
                 ids = self.channel_ids[channel]
-                #results = analytics.run_analytics_report(start_date=date.get_start(), end_date=date.get_end(), metrics="estimatedMinutesWatched,views", dimensions="video", 
-        		#									filters="channel==%s" % id, max_results="20", sort="-estimatedMinutesWatched")
-                #rows = utils.format_data_rows(results)
-                
                 rows = analytics.rollup_ids(ids, date.get_start(), date.get_end(), metrics="estimatedMinutesWatched,views", dimensions="video", filters=None, max_results="20", 
                                                 sort="-estimatedMinutesWatched", aggregate_key="video")
                 for row in rows:
@@ -187,13 +173,8 @@ class YoutubeData(object):
             data[count] = sorted
             #group
 
-        
-        #added_change = utils.add_change(data[0], data[1], "video", ["estimatedMinutesWatched", "views"], "DAILY")     
-        
         return data[0]       			
-        
-
-    #TODO the traffic source breakdown epic    
+         
     def traffic_source_table(self):
         data = {}
         source_types= ['ANNOTATION', 'EXT_URL', 'NO_LINK_OTHER', 'NOTIFICATION', 'PLAYLIST', 'RELATED_VIDEO', 'SUBSCRIBER', 'YT_CHANNEL', 'YT_OTHER_PAGE', 'YT_PLAYLIST_PAGE', 'YT_SEARCH']
@@ -206,10 +187,6 @@ class YoutubeData(object):
             table = []
             for channel in self.channels:
                 ids = self.channel_ids[channel]
-                #results = analytics.run_analytics_report(start_date=date.get_start(), end_date=date.get_end(), metrics="estimatedMinutesWatched",
-                #                                            dimensions="insightTrafficSourceType", filters="channel==%s" % id, sort="-estimatedMinutesWatched")	
-                #rows = utils.format_data_rows(results)
-                
                 rows = analytics.rollup_ids(ids, date.get_start(), date.get_end(), metrics="estimatedMinutesWatched", dimensions="insightTrafficSourceType", filters=None, 
                                                 sort="-estimatedMinutesWatched", aggregate_key="insightTrafficSourceType")
                 
@@ -229,11 +206,9 @@ class YoutubeData(object):
                     except KeyError:
                         new_rows.append({"insightTrafficSourceType":source_type["insightTrafficSourceType"], "channel":channel, "channel_total":channel_total, "estimatedMinutesWatched":0.0})
 
-                 
-                #table is list of lists, list for each channel
+
                 table.append(new_rows)
-            
-            #table = utils.sort_data(table, "channel_total")  
+
             
             new_table = []
             for channel in table:
@@ -248,7 +223,6 @@ class YoutubeData(object):
                 new_table.append(sort_row)
             
             #sort the new table of dictionaries by total channel watch time 
-            #sorted = utils.sort_data(new_table, "channel_total")   
 
             sorted_list = sorted(new_table, key = lambda k: k[0]["channel_total"], reverse = True)
             data[count] = sorted_list       

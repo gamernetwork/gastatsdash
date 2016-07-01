@@ -54,10 +54,6 @@ class AnalyticsData(object):
             metrics="ga:pageviews,ga:users,ga:sessions,ga:pageviewsPerSession,ga:avgSessionDuration"
             for site in self.sites:
                 rows = [analytics.rollup_ids(self.site_ids[site], date.get_start(), date.get_end(), metrics=metrics)]
-                #results = analytics.run_report(site_ids[site], date.get_start(), date.get_end(), metrics=metrics)
-                #rows = utils.format_data_rows(results)
-                #for row in rows:
-                    #row =  utils.convert_to_floats(row, metrics.split(","))
 
                 if rows[0]:
                     rows = self._remove_ga_names(rows)
@@ -91,9 +87,7 @@ class AnalyticsData(object):
             totals = []
             metrics="ga:pageviews,ga:users,ga:sessions,ga:pageviewsPerSession,ga:avgSessionDuration"
             for site in self.sites:
-                #results = analytics.run_report(site_ids[site], date.get_start(), date.get_end(), metrics=metrics)
                 rows = [analytics.rollup_ids(self.site_ids[site], date.get_start(), date.get_end(), metrics=metrics)]
-                #rows = utils.format_data_rows(results)
                 if rows[0]:
                     for row in rows:
                         row =  utils.convert_to_floats(row, metrics.split(","))
@@ -142,11 +136,8 @@ class AnalyticsData(object):
         for count, date in enumerate([self.period, article_previous]):
             articles = []
             for site in self.sites:
-                #results = analytics.run_report(site_ids[site], date.get_start(), date.get_end(), metrics="ga:pageviews", dimensions="ga:pageTitle,ga:pagePath,ga:hostname", 
-                                               # filters= config.ARTICLE_FILTER, sort="-ga:pageviews")
                 rows = analytics.rollup_ids(self.site_ids[site], date.get_start(), date.get_end(), metrics="ga:pageviews", dimensions="ga:pageTitle,ga:pagePath,ga:hostname", 
                                                 filters= config.ARTICLE_FILTER, sort="-ga:pageviews", aggregate_key="ga:pagePath")
-                #rows = utils.format_data_rows(results)
                 rows = self._remove_ga_names(rows)
                 rows = utils.change_key_names(rows, {"title":"pageTitle", "path":"pagePath", "host":"hostname"})
                 for row in rows:
@@ -180,11 +171,6 @@ class AnalyticsData(object):
             breakdown = []
             metrics = "ga:pageviews,ga:users"
             for site in self.sites:
-                #results = analytics.run_report(site_ids[site], date.get_start(), date.get_end(), metrics=metrics, dimensions="ga:country", filters=filters, sort="-ga:pageviews")
-                #world_results = analytics.run_report(site_ids[site], date.get_start(), date.get_end(), metrics="ga:pageviews,ga:users", filters=row_filters, sort="-ga:pageviews")
-                #rows = utils.format_data_rows(results)
-                #world_rows = utils.format_data_rows(world_results)
-                
                 rows = analytics.rollup_ids(self.site_ids[site], date.get_start(), date.get_end(), metrics=metrics, dimensions="ga:country", filters=filters, 
                                                 sort="-ga:pageviews", aggregate_key="ga:country")
                 world_rows = [analytics.rollup_ids(self.site_ids[site], date.get_start(), date.get_end(), metrics=metrics, dimensions=None, filters=row_filters, 
@@ -216,8 +202,6 @@ class AnalyticsData(object):
             traffic_sources = []
             metrics = "ga:pageviews,ga:users"
             for site in self.sites:       
-                #results = analytics.run_report(site_ids[site], date.get_start(), date.get_end(), metrics=metrics, dimensions="ga:sourceMedium", sort="-ga:users")
-                #rows = utils.format_data_rows(results)
                 rows = analytics.rollup_ids(self.site_ids[site], date.get_start(), date.get_end(), metrics=metrics, dimensions="ga:sourceMedium", sort="-ga:users", aggregate_key="ga:sourceMedium")
                 rows = self._remove_ga_names(rows)
                 rows = utils.change_key_names(rows, {"source_medium":"sourceMedium"})
@@ -274,9 +258,6 @@ class AnalyticsData(object):
             social = []
             metrics = "ga:pageviews,ga:users,ga:sessions"
             for site in self.sites:
-                #results = analytics.run_report(site_ids[site], date.get_start(), date.get_end(), metrics=metrics, dimensions="ga:socialNetwork", 
-                                                #filters = "ga:socialNetwork!=(not set)", sort="-ga:users")
-                #rows = utils.format_data_rows(results)
                 rows = analytics.rollup_ids(self.site_ids[site], date.get_start(), date.get_end(), metrics=metrics, dimensions="ga:socialNetwork", filters="ga:socialNetwork!=(not set)", 
                                                 sort="-ga:users", aggregate_key="ga:socialNetwork")
                 rows = self._remove_ga_names(rows)
@@ -302,16 +283,12 @@ class AnalyticsData(object):
         
         
     def referral_articles(self, filter, limit):
-        #pass in a social network and get the top articles?
         filters = config.ARTICLE_FILTER + ";" + filter
         article_previous = utils.StatsRange.get_previous_period(self.period, "DAILY")#how to do this
         data = {}
         for count, date in enumerate([self.period, article_previous]):
             articles = []
             for site in self.sites:
-                #results = analytics.run_report(site_ids[site], date.get_start(), date.get_end(), metrics="ga:pageviews", dimensions="ga:pageTitle,ga:pagePath,ga:hostname", 
-                                               # filters= filters, sort="-ga:pageviews")
-                #rows = utils.format_data_rows(results)
                 rows = analytics.rollup_ids(self.site_ids[site], date.get_start(), date.get_end(), metrics="ga:pageviews", dimensions="ga:pageTitle,ga:pagePath,ga:hostname", filters=filters, 
                                                 sort="-ga:pageviews", aggregate_key="ga:pagePath")
                 rows = self._remove_ga_names(rows)
@@ -338,8 +315,6 @@ class AnalyticsData(object):
         for count, date in enumerate(self.date_list):
             devices = []
             for site in self.sites:
-                #results = analytics.run_report(site_ids[site], date.get_start(), date.get_end(), metrics="ga:users", dimensions="ga:deviceCategory", sort="-ga:users")
-                #rows = utils.format_data_rows(results)
                 rows = analytics.rollup_ids(self.site_ids[site], date.get_start(), date.get_end(), metrics="ga:users", dimensions="ga:deviceCategory", sort="-ga:users", aggregate_key="ga:deviceCategory")
                 rows = self._remove_ga_names(rows)
                 rows = utils.change_key_names(rows, {"device_category":"deviceCategory"})
@@ -359,8 +334,6 @@ class AnalyticsData(object):
         
         
     def device_chart(self, data):
-        #self.yearly, self.period
-        
         chart_data = {}
         x_labels = []
         for count, row in enumerate(data):

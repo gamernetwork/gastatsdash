@@ -62,12 +62,12 @@ class Analytics(object):
         try:
             data_available = len(results['rows']) == 24
         except KeyError:
-            print "no data"
-            #logger.info("site_id %s returned no rows for data_available check on %s" % (site_id, stats_date))
+            #print "no data"
+            logger.info("site_id %s returned no rows for data_available check on %s" % (site_id, stats_date))
             return False
         if not data_available:
-            print "no data"
-            #logger.info("site_id %s data_available check on %s returned rows: %s" % (site_id, stats_date, results['rows']))
+            #print "no data"
+            logger.info("site_id %s data_available check on %s returned rows: %s" % (site_id, stats_date, results['rows']))
         return data_available
         
     def run_report(self, site_id, start, end, metrics=None, dimensions=None, filters=None, sort=None, max_results=None):
@@ -97,8 +97,8 @@ class Analytics(object):
                 main_row.extend(rows)
             else:
                 #no data
-                print "No data for id " + id + " " + " on " + start + " - " + end
-                #logger.debug("No data for " + id + " " + " on " + start + " - " + end)
+                #print "No data for id " + id + " " + " on " + start + " - " + end
+                logger.debug("No data for " + id + " " + " on " + start + " - " + end)
         main_row = utils.aggregate_data(main_row, metrics.split(","), aggregate_key)
         return main_row       
         
