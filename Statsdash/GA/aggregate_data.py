@@ -10,6 +10,10 @@ import Statsdash.utilities as utils
 site_ids = config.TABLES
 analytics = Analytics()
 
+import logging, logging.config, logging.handlers
+
+logging.config.dictConfig(LOGGING)
+logger = logging.getLogger('report')
 
 class AnalyticsData(object):
     
@@ -100,8 +104,8 @@ class AnalyticsData(object):
                                         
                     totals.extend(rows)
                 else:
-                    print "No data for site " + site + " on " + date.get_start() + " - " + date.get_end()
-                    #logger.debug("No data for site " + site + " on " + date.get_start() + " - " + date.get_end())
+                    #print "No data for site " + site + " on " + date.get_start() + " - " + date.get_end()
+                    logger.debug("No data for site " + site + " on " + date.get_start() + " - " + date.get_end())
                                     
             aggregated = utils.aggregate_data(totals, ["pageviews", "users", "sessions", "pv_per_session", "avg_session_time"], match_key="site")
             sorted = utils.sort_data(aggregated, "users")
@@ -356,6 +360,7 @@ class AnalyticsData(object):
         
     def device_chart(self, data):
         #self.yearly, self.period
+        
         chart_data = {}
         x_labels = []
         for count, row in enumerate(data):
@@ -370,6 +375,67 @@ class AnalyticsData(object):
         
         chart = utils.chart("Device Chart", x_labels, chart_data, "Month", "Percentage of Users")
         return chart
+        
+    
+    def social_chart(self):
+
+        current = self.period.start_date
+        end = self.period.end_date
+        dates = []
+        while current <= end:
+            current_range = utils.StatsRange("day", current, current)
+            dates.append(current_range)
+            current = current + timedelta(days=1)   
+        
+
+        data = {}
+        network_data = {}
+        for count, date in enumerate(dates):
+            social = []
+            network_social = []
+            metrics = "ga:pageviews,ga:users,ga:sessions"
+            for site in config.TABLES.keys():
+                rows = [analytics.rollup_ids(self.site_ids[site], date.get_start(), date.get_end(), metrics=metrics, dimensions=None, filters="ga:socialNetwork!=(not set)", 
+                                                sort="-ga:users")]
+                if rows[0]:
+                    rows = self._remove_ga_names(rows)
+                    for row in rows:
+                        row =  utils.convert_to_floats(row, ["pageviews", "users", "sessions"])
+                        
+                    if site in self.sites:    
+                        social.extend(rows)
+                        
+                    network_social.extend(rows)
+                else:
+                    #print "No data for site " + site + " on " + date.get_start() + " - " + date.get_end()
+                    logger.debug("No data for site " + site + " on " + date.get_start() + " - " + date.get_end())
+
+            
+            aggregate  = utils.aggregate_data(social, ["pageviews", "users", "sessions"])
+            network_aggregate  = utils.aggregate_data(network_social, ["pageviews", "users", "sessions"])
+            
+            data[date.get_start()] = aggregate  
+            network_data[date.get_start()] = network_aggregate  
+            
+
+        x_labels = []
+        graph_data = {"users":[], "pageviews":[], "network_pageviews":[], "network_users":[]}
+        for range in dates:
+            x_labels.append(range.get_start())
+            graph_data["users"].append(data[range.get_start()]["users"])
+            graph_data["pageviews"].append(data[range.get_start()]["pageviews"])
+            graph_data["network_users"].append(network_data[range.get_start()]["users"])
+            graph_data["network_pageviews"].append(network_data[range.get_start()]["pageviews"])
+
+        
+        chart = utils.chart("Social Data", x_labels, graph_data, "Day", "Number")
+        return chart
+            
+        
+        
+        
+        
+            
                 
         
         

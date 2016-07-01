@@ -141,18 +141,21 @@ def convert_values_list(id_dict):
 
 
 def chart(title, x_labels, data, x_title, y_title):
-    line_chart = pygal.Line(height=500, range=(0, 100), interpolate='cubic', x_label_rotation=20, stroke_style={"width":2})
+    line_chart = pygal.Line(height=500, interpolate='cubic', x_label_rotation=30, stroke_style={"width":2})
     line_chart.title = title
     line_chart.x_title = x_title
     line_chart.y_title = y_title
     line_chart.x_labels =x_labels
     for line in data:
         line_chart.add(line, data[line]) 
+        print line, data[line]
     
     imgdata = StringIO.StringIO()
     image = line_chart.render_to_png(imgdata)
     imgdata.seek(0)                   
     return imgdata.buf
+    
+    #line_chart.render_to_png("/var/www/dev/faye/statsdash_reports/social.png")
     
     
 

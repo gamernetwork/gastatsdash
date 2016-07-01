@@ -227,7 +227,6 @@ class AnalyticsCoreReport(Report):
             for month in month_stats_range:
                 new_row = {}
                 new_row["month"] = month.get_start()
-                print month.get_start(), month.get_end()
                 data = AnalyticsData(self.sites, month, "MONTHLY")
                 new_row["data"] = data.device_table()
                 new_row["summary"] = data.summary_table()
@@ -292,7 +291,6 @@ class AnalyticsCoreReport(Report):
             img_part = MIMEImage(self.imgdata, 'png')
             img_part.add_header('Content-ID', '<graph>')
             msg.attach(img_part)
-            print img_part
                     
         msg.attach(text_part)
         msg.attach(html_part)
@@ -317,6 +315,7 @@ class AnalyticsSocialReport(Report):
         self.data = AnalyticsData(self.sites, self.period, self.frequency)    
         self.warning_sites = []
         self.template = self.env.get_template("GA/social_report.html")
+        self.imgdata = None
         
         logger.debug("Running analytics social report")
 		
@@ -354,6 +353,7 @@ class AnalyticsSocialReport(Report):
         network_summary_table = network_data.summary_table()
         
         social_table = self.data.social_network_table(10)
+        self.imgdata = self.data.social_chart()
 
         html = self.template.render(
             subject=self.get_subject(),
@@ -367,6 +367,36 @@ class AnalyticsSocialReport(Report):
             social_table=social_table, 		
         )
         return html		
+
+    def send_email(self, html):
+        """
+        Send html email using config parameters
+        """
+        html = transform(html) #inline css using premailer
+        msg = MIMEMultipart('alternative')
+        msg.set_charset('utf8')
+        msg['Subject'] = self.get_subject()
+        msg['From'] = config.SEND_FROM
+        msg['To'] = ', '.join(self.recipients)
+        text_part = MIMEText("Please open with an HTML-enabled Email client.", 'plain')
+        html_part = MIMEText(html.encode("utf-8"), 'html')
+
+
+        if self.imgdata:
+            img_part = MIMEImage(self.imgdata, 'png')
+            img_part.add_header('Content-ID', '<graph>')
+            msg.attach(img_part)
+                    
+        msg.attach(text_part)
+        msg.attach(html_part)
+        
+        sender = smtplib.SMTP(config.SMTP_ADDRESS)
+        sender.sendmail(config.SEND_FROM, self.recipients, msg.as_string())
+    
+        sender.quit()
+
+
+
         
 
 class AnalyticsSocialExport(Report):

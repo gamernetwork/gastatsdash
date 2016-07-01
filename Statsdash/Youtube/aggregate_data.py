@@ -11,6 +11,10 @@ import Statsdash.utilities as utils
 analytics = Analytics()
 channel_ids = config.CHANNELS
 
+import logging, logging.config, logging.handlers
+
+logging.config.dictConfig(LOGGING)
+logger = logging.getLogger('report')
 
 class YoutubeData(object):
 
@@ -143,8 +147,8 @@ class YoutubeData(object):
                     
                     table.extend(rows)
                 else:
-                    print "No data for channel " + channel + " on " + date.get_start() + " - " + date.get_end()
-                    #logger.debug("No data for site " + site + " on " + date.get_start() + " - " + date.get_end())     
+                    #print "No data for channel " + channel + " on " + date.get_start() + " - " + date.get_end()
+                    logger.debug("No data for site " + site + " on " + date.get_start() + " - " + date.get_end())     
                                                
             #aggregated = utils.aggregate_data(table, "channel", )
             sorted = utils.sort_data(table, "views")

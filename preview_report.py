@@ -45,7 +45,7 @@ elif report_type == "AnalyticsSocialReport":
     #sc = AnalyticsSocialReport(ga_config.TABLES.keys(), monthly_period, ["faye.butler@gamer-network.net"], "MONTHLY", "Gamer Network Social Report for")
     sc = AnalyticsSocialReport(["eurogamer.net"], monthly_period, ["faye.butler@gamer-network.net"], "MONTHLY", "Eurogamer.net Social Report for")
     html = sc.generate_html()
-    sc.send_email(transform(html))
+    sc.send_email(html)
 elif report_type == "AnalyticsSocialExport":
     sc = AnalyticsSocialExport(["eurogamer.net"], monthly_period, ["faye.butler@gamer-network.net"], "MONTHLY", "Eurogamer.net Social Export for")
     html = sc.generate_html()   
