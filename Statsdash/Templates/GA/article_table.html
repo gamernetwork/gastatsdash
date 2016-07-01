@@ -5,7 +5,7 @@
             <th>Site</th>
             <th class="article-title">Article Title</th>
             <th>PV</th>
-            {% if report_span == 'DAILY' %}
+            {% if report_span == 'WOW_DAILY' %}
               <th>DoD Change<th>
             {% endif %}
         </tr>
@@ -16,7 +16,7 @@
             <th>{{row.host|cut("www.")|capitalize}}</th>
             <td class="src"><a href="http://{{row.host}}{{row.path}}">{{row.title}}</a></td>
             <td class="num">{{row.pageviews|int|intcomma}}</td>
-            {% if report_span == 'DAILY' %}
+            {% if report_span == 'WOW_DAILY' %}
               <td class="num">{% if row.previous_percentage_pageviews == 0 %}New{% else %}<span style="color: {% if row.previous_percentage_pageviews > 0 %}green{% else %}red{% endif %};">{{row.previous_percentage_pageviews|round(1)}}</span>{% endif %}</td>
             {% endif %}
         </tr>

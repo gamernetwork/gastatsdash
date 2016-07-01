@@ -306,9 +306,22 @@ class StatsRange(object):
             return cls("Previous Month", previous_start, previous_end)
         if frequency == "YEARLY":
             #should it be year-1 or -timedelta(days=365)
-            previous_start = date(current_period.start_date.year-1, current_period.start_date.month, current_period.start_date.day)
-            previous_end = add_one_month((previous_start - timedelta(days=1)))
+            #previous_start = date(current_period.start_date.year-1, current_period.start_date.month, current_period.start_date.day)
+            #previous_end = add_one_month((previous_start - timedelta(days=1)))
             #previous_end = date(current_period.end_date.year-1, current_period.end_date.month, current_period.end_date.day)
+            #TO DO : fix this issue properly
+            try: 
+                previous_start = date(current_period.start_date.year-1, current_period.start_date.month, current_period.start_date.day)
+            except ValueError:
+                #leap year!
+                previous_start = date(current_period.start_date.year-1, current_period.start_date.month, current_period.start_date.day-1)         
+                
+            try: 
+                previous_end = date(current_period.end_date.year-1, current_period.end_date.month, current_period.end_date.day)
+            except ValueError:
+                #leap year!
+                previous_end = date(current_period.end_date.year-1, current_period.end_date.month, current_period.end_date.day-1)
+                       
             return cls("Period Last Year", previous_start, previous_end)
 
     @classmethod
