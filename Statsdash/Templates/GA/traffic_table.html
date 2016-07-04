@@ -20,11 +20,11 @@
                 <th> {{row.source_medium}} </th>
 
                 <td class = 'num'> {{row.pageviews|int|intcomma}} </td>
-                <td class = 'num' style="color: {% if row.previous_percentage_pageviews > 0 %}green{% else %}red{% endif %};"> {{row.previous_percentage_pageviews|round(1)}} </td>
+                <td class = 'num' style="color: {% if row.previous_percentage_pageviews > 0 %}green{% else %}red{% endif %};">{{row.previous_percentage_pageviews|round(1)}}%</td>
                 <td class = 'num'> {{ ((row.pageviews / summary_table.pageviews) * 100)|round(1)}}% </td>
                 
                 <td class = 'num'> {{row.users|int|intcomma}} </td>
-                <td class = 'num' style="color: {% if row.previous_percentage_users > 0 %}green{% else %}red{% endif %};"> {{row.previous_percentage_users|round(1)}} </td>
+                <td class = 'num' style="color: {% if row.previous_percentage_users > 0 %}green{% else %}red{% endif %};">{{row.previous_percentage_users|round(1)}}%</td>
                 <td class = 'num'> {{((row.users / summary_table.users) * 100)|round(1)}}%</td>
             </tr>
         {% endfor %}

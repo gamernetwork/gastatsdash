@@ -21,6 +21,7 @@
     </thead>
     <tbody>
         {% for row in social_table %}
+            {% if loop.index <= 5 %}
             <tr class="{{ loop.cycle('odd', 'even') }}">
                 <th> {{row.social_network}} </th>
                 
@@ -31,10 +32,12 @@
                 <td class = 'num'> {{row.users|int|intcomma}} </td>
                 <td class = 'num' style="color: {% if row.previous_percentage_users > 0 %}green{% else %}red{% endif %};"> {{row.previous_percentage_users|round(1)}}%</td>     
                 {% if report_span == 'MONTHLY' %}<td class = 'num' style="color: {% if row.yearly_percentage_users > 0 %}green{% else %}red{% endif %};"> {{row.yearly_percentage_users|round(1)}}%</td>{% endif %} 
-                <td class = 'num'> {{((row.users / summary_table.users) * 100)|round(1)}}% </td> 
+                <td class = 'num'> {{((row.users / social_table|sum(attribute="users")) * 100)|round(1)}}% </td> 
                 
                 <td class = "src">{% for article in row.articles %}<span style="display:list-item;list-style:none;"><a href="http://{{article.host}}{{article.path}}">{{article.title}}</a></span> {% endfor %}</td>
             </tr>
+            {% else %}
+            {% endif %}
         {% endfor %}
     </tbody>       
 </table>

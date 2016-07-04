@@ -9,7 +9,7 @@
         </tr>
     </thead>
     <tbody>
-        {% for row in referrals %}
+        {% for row in referrals|sort(reverse=True, attribute="pageviews") %}
         <tr class="{{ loop.cycle('odd', 'even') }}">
             <th> {{row.source|capitalize}} </th>
             <td class="num">{{row.pageviews|int|intcomma}}</td>

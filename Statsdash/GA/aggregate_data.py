@@ -24,6 +24,7 @@ class AnalyticsData(object):
         self.frequency = frequency
         self.previous = utils.StatsRange.get_previous_period(self.period, self.frequency)
         self.yearly = utils.StatsRange.get_previous_period(self.period, "YEARLY")
+        
         self.date_list = [self.period, self.previous, self.yearly]
         
         self.site_ids = utils.convert_values_list(site_ids)

@@ -194,6 +194,8 @@ class AnalyticsCoreReport(Report):
     def generate_html(self):
         
         to_month_table = None
+        num_days = None
+        full_month_table = None
         network_summary_table = None
         network_month_summary_table = None
         device_img = None
@@ -208,6 +210,13 @@ class AnalyticsCoreReport(Report):
             month_range = utils.StatsRange("Month to date Aggregate", first, today)            
             to_month_data = AnalyticsData(self.sites, month_range, self.frequency)
             to_month_table = to_month_data.summary_table()
+            
+            last = utils.add_one_month((first-timedelta(days=1)))
+            num_days = (last - self.period.end_date).days
+            month_range = utils.StatsRange("Month to date Aggregate", first, last)           
+            full_month_data = AnalyticsData(self.sites, month_range, self.frequency)
+            full_month_table = full_month_data.summary_table()            
+            
         elif self.frequency == "MONTHLY":
             start_month = date(today.year-1, today.month, 1)
             end_month = date(today.year, today.month, 1)
@@ -259,6 +268,8 @@ class AnalyticsCoreReport(Report):
             report_span = self.frequency,
             warning_sites = self.warning_sites,
             month_summary_table = to_month_table,
+            num_days = num_days,
+            full_month_summary_table = full_month_table,
             network_summary_table = network_summary_table,
             network_month_summary_table = network_month_summary_table,
             summary_table=summary_table,
