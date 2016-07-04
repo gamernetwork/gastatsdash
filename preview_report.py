@@ -37,7 +37,8 @@ if report_type == "YoutubeReport":
     html = yt.generate_html()
     yt.send_email(html)
 elif report_type == "AnalyticsCoreReport":
-    ac = AnalyticsCoreReport(ga_config.TABLES.keys(), daily_period, ["faye.butler@gamer-network.net"], "WOW_DAILY", "Gamer Network Report for")
+    #ac = AnalyticsCoreReport(ga_config.TABLES.keys(), daily_period, ["faye.butler@gamer-network.net"], "WOW_DAILY", "Gamer Network Report for")
+    ac = AnalyticsCoreReport(ga_config.TABLES.keys(), monthly_period, ["faye.butler@gamer-network.net"], "MONTHLY", "Gamer Network Report for")
     #ac = AnalyticsCoreReport(["eurogamer.net"], monthly_period, ["faye.butler@gamer-network.net"], "MONTHLY", "Eurogamer.net Report for")
     html = ac.generate_html()
     ac.send_email(html)
