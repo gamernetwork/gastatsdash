@@ -1,0 +1,27 @@
+<h2>Devices</h2>
+<p>Shows the number of visitors using each device.</p>
+<table border="0" cellspacing="0">
+    <thead>
+        <tr class = 'column_header'>
+            <th> Device Category </th>
+            <th> Visitors </th>
+            {% if report_span == 'MONTHLY' %}<th> YoY Change </th>{% endif %}
+            <th> Percentage of Visitors </th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in device_table %}
+            <tr class="{{ loop.cycle('odd', 'even') }}">
+                <th> {{row.device_category|capitalize}} </th>
+                <td class = 'num'> {{row.users|int|intcomma}} </td>
+                {% if report_span == 'MONTHLY' %}<td class = 'num' style="color: {% if row.yearly_percentage_users > 0 %}green{% else %}red{% endif %};"> {{row.yearly_percentage_users|round(1)}}%</td>{% endif %}
+                <td class = 'num'> {{((row.users / summary_table.users) * 100)|round(1)}}% </td>
+            </tr>
+        {% endfor %}
+    </tbody>    
+</table>
+
+{% if report_span == 'MONTHLY' %}
+  <h3> Monthly device trend </h3>
+  <img alt="embedded image" src ="cid:graph" />
+{% endif %}

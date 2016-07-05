@@ -1,0 +1,31 @@
+
+from report import AnalyticsCoreReport, AnalyticsSocialReport, YoutubeReport
+from Statsdash.GA.config import TABLES, EMAILS
+from Statsdash.Youtube.config import CHANNELS
+
+recipients = ["me@example.net", "bob@example.net"]
+
+# EXAMPLE reports configuration - adjust this for your sites
+
+
+reports = [
+  # full combined reports from Traffic Source Breakdown 
+    {
+        "report": AnalyticsCoreReport,
+        'recipients': recipients,
+        'subject': #subject as string ,
+        'sites': #site key for config to look up ga_id, from GA.config.TABLES
+        "frequency": "DAILY",
+        "identifier": "network-daily-report"  
+    },
+    
+    {
+        "report": YoutubeReport,
+        'recipients': all_recipients,
+        'subject': #subject as string,
+        'sites': #site key for config to look up ga_id, from Youtube.config.CHANNELS
+        "frequency": "MONTHLY",
+        "frequency_options": {"day": 1},
+        "identifier": "network-youtube-report"  
+    }
+]

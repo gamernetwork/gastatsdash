@@ -1,17 +1,21 @@
-import reporting
+from Statsdash.report import YoutubeReport, AnalyticsCoreReport, AnalyticsSocialReport, AnalyticsSocialExport
 import argparse
-import report_schedule
-from slimmer import html_slimmer
+#import report_schedule
 
 from datetime import date, timedelta
-from dateutils import subtract_one_month
-import config
-from analytics import get_analytics, StatsRange
+#from Statdateutils import subtract_one_month
 
-import logging, logging.config, logging.handlers
+import Statsdash.Youtube.config as yt_config
+import Statsdash.GA.config as ga_config
+import Statsdash.utilities as utils
+import Statsdash.report_schedule as config
+
+from premailer import transform
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument("reporttype", help="the type of report you wish to generate")
+parser.add_argument("-s", "--sitename", help="name of site", default ="all_sites")
 parser.add_argument("-d", "--destination", help="destination for return file", default =".")
 parser.add_argument("-n", "--filename", help="name of file", default =0)
 args = parser.parse_args()
@@ -21,73 +25,43 @@ if(user_file_name == 0):
 	file_name = "%s_preview.html" % report_type
 else:
 	file_name = "%s.html" % user_file_name
+	#file_name = user_file_name
+	
+if args.sitename == "all_sites":
+    sites = ga_config.TABLES.keys()
+else:
+    sites = [args.sitename]
 	
 file_src = args.destination + "/" + file_name
 
-all_sites = config.TABLES.keys()
-today = date.today() - timedelta(days=2)
-day_before = date.today() - timedelta(days=3)
-week_before = date.today() - timedelta(days = 9)
-last_week = week_before  - timedelta(days = 7)
-yesterday_stats_range = StatsRange("Yesterday", today, today)
-day_before_stats_range = StatsRange("Day Before", day_before, day_before)
-week_before_stats_range = StatsRange("Week Before", week_before, week_before)
-this_week_stats_range = StatsRange("This Week", week_before, today)
-last_week_stats_range = StatsRange("Week Before", last_week, week_before)
+monthly_period = utils.StatsRange("period", date(2016, 05, 01), date(2016, 05, 31))
+daily_period = utils.StatsRange("period", date(2016, 06, 05), date(2016, 06, 05))
 
-first_feb = date(2016, 02, 01)
-last_feb = date(2016, 02, 29)
-first_mar = date(2016, 03, 01)
-last_mar = date(2016, 03, 31)
+if report_type == "YoutubeReport":
+    sites =yt_config.CHANNELS.keys()
+    yt = YoutubeReport(sites, monthly_period, config.all_recipients, "MONTHLY", "Video Report for")
+    html = yt.generate_html()
+    yt.send_email(html)
+elif report_type == "AnalyticsCoreReport":
+    ac = AnalyticsCoreReport(sites, daily_period, config.all_recipients, "WOW_DAILY", "Report for")
+    #ac = AnalyticsCoreReport(sites, monthly_period, config.all_recipients, "MONTHLY", "Report for")
+    #ac = AnalyticsCoreReport(sites, monthly_period, config.all_recipients, "MONTHLY", "Report for")
+    html = ac.generate_html()
+    ac.send_email(html)
+elif report_type == "AnalyticsSocialReport":
+    sc = AnalyticsSocialReport(sites, monthly_period, config.all_recipients, "MONTHLY", "Social Report for")
+    #sc = AnalyticsSocialReport(sites, monthly_period, config.all_recipients, "MONTHLY", "Social Report for")
+    html = sc.generate_html()
+    sc.send_email(html)
+elif report_type == "AnalyticsSocialExport":
+    sc = AnalyticsSocialExport(sites, monthly_period, config.all_recipients, "MONTHLY", "Social Export for")
+    html = sc.generate_html()   
+    sc.send_email(html) 
 
-feb_stats_range = StatsRange("FEb", first_feb, last_feb)
-mar_stats_range = StatsRange("Mar", first_mar, last_mar)
-
-sat = date(2016, 03, 12)
-sun = date(2016, 03, 13)
-sat_range = StatsRange("sat", sat, sat)
-sun_range = StatsRange("sun", sun, sun)
-
-
-previous_months = 3
-end_date = today
-month_stats_range = []
-for i in range(0, previous_months):
-    start_date = subtract_one_month(end_date)
-    month_stats_range.append(StatsRange("month_%d" % i, start_date, end_date))
-    end_date = start_date
-
-black_list = report_schedule.black_list
-
-logging.config.dictConfig(config.LOGGING)
-logger = logging.getLogger('report')
-   
-if report_type == "NetworkArticleBreakdown":
-    network_breakdown = reporting.NetworkArticleBreakdown(['foo@example.net'], 'Network Article Breakdown', all_sites, 
-        yesterday_stats_range, day_before_stats_range, "Daily Summary", article_limit=25)  
-    
-elif report_type == "NetworkBreakdown":
-    network_breakdown = reporting.NetworkBreakdown(['foo@example.net'], 'Network Breakdown', all_sites, 
-        yesterday_stats_range, day_before_stats_range)
-    
-elif report_type == "ArticleBreakdown":
-    network_breakdown = reporting.ArticleBreakdown(['foo@example.net'], 'Article Breakdown', all_sites, 
-        yesterday_stats_range, day_before_stats_range, "Daily Summary")
-    
-elif report_type == "TrafficSourceBreakdown":
-    network_breakdown = reporting.TrafficSourceBreakdown(['foo@example.net'], 'Eurogamer.net daily statsdash for', ['eurogamer.net'], 
-        sun_range, sat_range, 'daily', black_list)
-        
-elif report_type == "SocialReport":
-    network_breakdown = reporting.SocialReport(['foo@example.net'], 'Vg247.com Social Referral Report for', ['vg247.com'], 
-        mar_stats_range, feb_stats_range, 'monthly')
-        
 else:
-	print "unknown report type"	
+    raise Exception("Unknown report type")
 
-if network_breakdown.data_available(override=True):
-  generated_html = network_breakdown.generate_report()['html'] 
-  generated_html = html_slimmer(generated_html)
-    
 with open(file_src, 'w') as file:
-	file.write(generated_html.encode("utf-8"))	
+	file.write(html.encode("utf-8"))	
+	#file.write(html)
+

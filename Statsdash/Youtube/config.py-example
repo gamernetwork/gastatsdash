@@ -1,0 +1,13 @@
+#Youtube path to client secrets json file
+
+CLIENT_SECRETS_FILE = client_secrets.json
+
+# Youtube channel ids 
+CHANNELS = {'site.com':'U12345678',
+          'zite.de' :'U87654321',
+          'sait.fr' :'U87655678',
+          }
+       
+       
+#Youtube content owner id for channel group ids   
+CONTENT_OWNER_ID = "454434532"

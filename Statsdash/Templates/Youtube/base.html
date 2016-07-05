@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+
+{% block body %}
+
+{% if summary_table %}{% include "Youtube/summary_table.html" %}{% endif %}
+{% if stats_table %}{% include "Youtube/stats_table.html" %}{% endif %}		
+{% if geo_table %}{% include "Youtube/geo_table.html" %}{% endif %}	
+{% if top_vids %}{% include "Youtube/video_table.html" %}{% endif %}	
+{% if traffic %}{% include "Youtube/traffic_source_table.html" %}{% endif %}				
+						
+{% endblock %}

@@ -1,0 +1,43 @@
+<h2>Overall Performance</h2>
+	<p>Channels ranked by total watch time for this period</p>
+	<table border="0" cellspacing="0">
+		<thead>
+			<tr>
+				<th>Channel</th>
+				<th colspan="3">Watch Time</th>	
+				<th colspan="3">Subscriber Gain</th>	
+				<th colspan="3">Total Subscribers</th>
+			</tr>
+			<tr>
+				<th></th>
+				
+				<th>Figure</th>
+				<th>{{ change }}</th>
+				<th>YoY</th>
+				
+				<th>Figure</th>
+				<th>{{ change }}</th>
+				<th>YoY</th>
+				
+				<th>Figure</th>
+				<th>{{ change }}</th>					
+			</tr>
+		</thead>
+		<tbody>
+			{% for row in summary_table %}
+			<tr class="{{ loop.cycle('odd', 'even') }}">
+				<td>{{row.channel}}</td>
+				<td class="num">{{row.estimatedMinutesWatched|int|intcomma}}</td>
+				<td class="num" style="{% if row.previous_percentage_estimatedMinutesWatched > 0 %}color:green;{% else %}color:red;{% endif %}">{{row.previous_percentage_estimatedMinutesWatched|round(1)}}%</td>
+				<td class="num" style="{% if row.yearly_percentage_estimatedMinutesWatched > 0 %}color:green;{% else %}color:red;{% endif %}">{{row.yearly_percentage_estimatedMinutesWatched|round(1)}}%</td>
+									
+				<td class="num">{{row.subscriberChange|int|intcomma}}</td>
+				<td class="num" style="{% if row.previous_percentage_subscriberChange > 0 %}color:green;{% else %}color:red;{% endif %}">{{row.previous_percentage_subscriberChange|round(1)}}%</td>
+				<td class="num" style="{% if row.yearly_percentage_subscriberChange > 0 %}color:green;{% else %}color:red;{% endif %}">{{row.yearly_percentage_subscriberChange|round(1)}}%</td>
+				
+				<td class="num">{{row.subscriberCount|int|intcomma}}</td>
+				<td class="num" style="{% if row.previous_percentage_subscriberCount > 0 %}color:green;{% else %}color:red;{% endif %}">{{row.previous_percentage_subscriberCount|round(1)}}%</td>
+			</tr>
+			{% endfor %}
+		</tbody>
+	</table>
