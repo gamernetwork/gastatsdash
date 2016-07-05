@@ -34,10 +34,8 @@ else:
 	
 file_src = args.destination + "/" + file_name
 
-
 monthly_period = utils.StatsRange("period", date(2016, 05, 01), date(2016, 05, 31))
 daily_period = utils.StatsRange("period", date(2016, 06, 05), date(2016, 06, 05))
-
 
 if report_type == "YoutubeReport":
     sites =yt_config.CHANNELS.keys()
@@ -59,6 +57,7 @@ elif report_type == "AnalyticsSocialExport":
     sc = AnalyticsSocialExport(sites, monthly_period, config.all_recipients, "MONTHLY", "Social Export for")
     html = sc.generate_html()   
     sc.send_email(html) 
+
 else:
     raise Exception("Unknown report type")
 
