@@ -162,6 +162,11 @@ class AnalyticsCoreReport(Report):
         self.template = self.env.get_template("GA/base.html")
         self.imgdata = None
         
+        if len(self.sites) == len(ga_config.TABLES.keys()):
+            self.all_sites = True
+        else:
+            self.all_sites = False
+        
         logger.debug("Running analytics core report")
 
     def check_data_availability(self, override=False):
@@ -186,9 +191,8 @@ class AnalyticsCoreReport(Report):
     def get_site(self):
         if len(self.sites) == 1:
             return self.sites[0]
-        #TO DO: make this a check against total number of sites 
         elif len(self.sites) == len(ga_config.TABLES.keys()):
-            return "Gamer Network"
+            return ga_config.ALL_SITES_NAME
     
 
     def generate_html(self):
@@ -199,12 +203,12 @@ class AnalyticsCoreReport(Report):
         network_summary_table = None
         network_month_summary_table = None
         device_img = None
-        num_social_articles = 5
+        num_articles = 5
         today = self.period.end_date
         
 
         if self.frequency != "MONTHLY":
-            num_social_articles = 1
+            num_articles = 1
             #today = self.period.end_date
             first = datetime(today.year, today.month, 1).date()
             month_range = utils.StatsRange("Month to date Aggregate", first, today)            
@@ -244,7 +248,7 @@ class AnalyticsCoreReport(Report):
             self.imgdata = self.data.device_chart(device)
 
 
-        if self.get_site() != "Gamer Network":
+        if not self.all_sites:
             network_data = AnalyticsData(ga_config.TABLES.keys(), self.period, self.frequency)
             network_summary_table = network_data.summary_table()
             if self.frequency != "MONTHLY":
@@ -256,15 +260,16 @@ class AnalyticsCoreReport(Report):
         country_table = self.data.country_table()
         article_table = self.data.article_table()
         traffic_table = self.data.traffic_source_table()
-        referring_site_table = self.data.referring_sites_table()
+        referring_site_table = self.data.referring_sites_table(num_articles)
         device_table = self.data.device_table()
-        social_table = self.data.social_network_table(num_social_articles)
+        social_table = self.data.social_network_table(num_articles)
 
         
         html = self.template.render(
             subject=self.get_subject(),
             change=self.get_freq_label(),
             site = self.get_site(),
+            all_sites = self.all_sites,
             report_span = self.frequency,
             warning_sites = self.warning_sites,
             month_summary_table = to_month_table,
@@ -329,6 +334,11 @@ class AnalyticsSocialReport(Report):
         self.imgdata = None
         
         logger.debug("Running analytics social report")
+        
+        if len(self.sites) == len(ga_config.TABLES.keys()):
+            self.all_sites = True
+        else:
+            self.all_sites = False
 		
     def check_data_availability(self, override=False):
         """
@@ -351,9 +361,8 @@ class AnalyticsSocialReport(Report):
     def get_site(self):
         if len(self.sites) == 1:
             return self.sites[0]
-        #TO DO: make this a check against total number of sites 
         elif len(self.sites) == len(ga_config.TABLES.keys()):
-            return "Gamer Network"
+            return ga_config.ALL_SITES_NAME
     	
                 
     def generate_html(self):
@@ -370,6 +379,7 @@ class AnalyticsSocialReport(Report):
             subject=self.get_subject(),
             change=self.get_freq_label(),
             site = self.get_site(),
+            all_sites = self.all_sites,
             report_span = self.frequency,
             warning_sites = self.warning_sites,
             network_summary_table = network_summary_table,

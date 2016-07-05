@@ -2,9 +2,9 @@
 
 {% block body %}
 
-{% if site != "Gamer Network" %}<p>Site Total Visitors: <b>{{summary_table.users|int|intcomma}}</b></p>{% endif %}
+{% if all_sites == false %}<p>Site Total Visitors: <b>{{summary_table.users|int|intcomma}}</b></p>{% endif %}
 <p>Network Total Visitors: <b>{{network_summary_table.users|int|intcomma}}</b></p>
-{% if site != "Gamer Network" %}<p>Site Total PVs: <b>{{summary_table.pageviews|int|intcomma}}</b></p>{% endif %}
+{% if all_sites == false %}<p>Site Total PVs: <b>{{summary_table.pageviews|int|intcomma}}</b></p>{% endif %}
 <p>Network Total PVs: <b>{{network_summary_table.pageviews|int|intcomma}}</b></p>
 <h2> Totals </h2>
 <table border="0" cellspacing="0">
@@ -18,12 +18,12 @@
   	<th>Social Network Totals</th>
   	<th>+/- MoM</th>
   	<th>+/- YoY</th>
-  	{% if site != "Gamer Network" %}<th>% Site Total</th>{% endif %}
+  	{% if all_sites == false %}<th>% Site Total</th>{% endif %}
   	<th>% Network Total</th>
   	<th>Total</th>
   	<th>+/- MoM</th>
   	<th>+/- YoY</th>
-  	{% if site != "Gamer Network" %}<th>% Site Total</th>{% endif %}
+  	{% if all_sites == false %}<th>% Site Total</th>{% endif %}
   	<th>% Network Total</th>      	
 	</tr>
 	</thead>
@@ -34,13 +34,13 @@
     	<td class = 'num' >{{row.users|int|intcomma}}</td>
     	<td class = 'num' style="color: {% if row.previous_percentage_users > 0 %}green{% else %}red{% endif %};">{{row.previous_percentage_users|round(1)}}%</td>
     	<td class = 'num' style="color: {% if row.yearly_percentage_users > 0 %}green{% else %}red{% endif %};">{{row.yearly_percentage_users|round(1)}}%</td>
-    	{% if site != "Gamer Network" %}<td class = 'num' >{{((row.users / summary_table.users) * 100)|round(1)}}</td>{% endif %}
+    	{% if all_sites == false %}<td class = 'num' >{{((row.users / summary_table.users) * 100)|round(1)}}</td>{% endif %}
     	<td class = 'num' >{{((row.users / network_summary_table.users) * 100)|round(1)}}</td>
     	
     	<td class = 'num' >{{row.pageviews|int|intcomma}}</th>
     	<td class = 'num' style="color: {% if row.previous_percentage_pageviews > 0 %}green{% else %}red{% endif %};">{{row.previous_percentage_pageviews|round(1)}}%</td>
     	<td class = 'num' style="color: {% if row.yearly_percentage_pageviews > 0 %}green{% else %}red{% endif %};">{{row.yearly_percentage_pageviews|round(1)}}%</td>
-    	{% if site != "Gamer Network" %}<td class = 'num' >{{((row.pageviews / summary_table.pageviews) * 100)|round(1)}}</td>{% endif %}
+    	{% if all_sites == false %}<td class = 'num' >{{((row.pageviews / summary_table.pageviews) * 100)|round(1)}}</td>{% endif %}
     	<td class = 'num' >{{((row.pageviews / network_summary_table.pageviews) * 100)|round(1)}}</td>        	        
                          	
   	</tr>

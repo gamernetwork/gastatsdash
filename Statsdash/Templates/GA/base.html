@@ -4,7 +4,7 @@
 {% block body %}
 
 {% if summary_table %}{% include "GA/summary_table.html" with context %}{% endif %}
-{% if site == "Gamer Network" %}
+{% if all_sites == true %}
     {% if geo_table %}{% include "GA/geo_table.html" %}{% endif %}
     {% if site_summary %}{% include "GA/site_summary_table.html" %}{% endif %}
 {% endif %}

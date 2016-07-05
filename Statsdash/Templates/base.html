@@ -70,7 +70,7 @@
 	<p>This data is confidential and for employees of {{ site }} only. Do not transmit outside the company. </p>
 	{% if warning_sites|length > 0 %}<p>We are missing some data for the following sites: {% for site in warning %}{{site|capitalize}}, {% endfor %}</p>{% endif %}
 
-    {% if site != "Gamer Network" and site in warning %}<p>We are missing some data for this site.</p>{% endif %}
+    {% if all_sites == false and site in warning %}<p>We are missing some data for this site.</p>{% endif %}
 	
 	{% block body %}
 	{% endblock %}

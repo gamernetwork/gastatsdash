@@ -228,7 +228,7 @@ class AnalyticsData(object):
         return table    
         
         
-    def referring_sites_table(self):
+    def referring_sites_table(self, num_articles):
         sources = self._get_source_list()
         count = 0
         referrals = []
@@ -246,7 +246,7 @@ class AnalyticsData(object):
                 else:
                     count += 1
                     filter = "ga:source==%s" % source
-                    article = self.referral_articles(filter, 1)
+                    article = self.referral_articles(filter, num_articles)
                     row["source"] = source
                     row["articles"] = article   
                     referrals.append(row)    

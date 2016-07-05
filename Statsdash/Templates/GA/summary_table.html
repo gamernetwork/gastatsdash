@@ -42,7 +42,7 @@
         {% endif %}
     </tbody>
 </table>           
-{% if site != "Gamer Network" %}
+{% if all_sites == false %}
 <h2>Network Overview</h2>
 <table border="0" cellspacing="0">
     <thead>
@@ -114,9 +114,9 @@
               <td class="num" style="color: {% if month_summary_table.yearly_percentage_pageviews > 0 %}green{% else %}red{% endif %};"> {{month_summary_table.yearly_percentage_pageviews|round(1)}}%</td>                  
               <td class="num" style="color: {% if month_summary_table.yearly_percentage_users > 0 %}green{% else %}red{% endif %};"> {{month_summary_table.yearly_percentage_users|round(1)}}%</td>
               <td class="num" style="color: {% if month_summary_table.yearly_percentage_sessions > 0 %}green{% else %}red{% endif %};"> {{month_summary_table.yearly_percentage_sessions|round(1)}}%</td>   
-          {% if site != "Gamer Network" %}
+          {% if all_sites == false %}
               <tr class="odd">
-                  <th> All of Gamer Network</th>
+                  <th> {{ site|capitalize }}</th>
                   <td class="num"> {{network_month_summary_table.pageviews|int|intcomma}} </td>                      
                   <td class="num"> {{network_month_summary_table.users|int|intcomma}} </td>
                   <td class="num"> {{network_month_summary_table.sessions|int|intcomma}} </td>

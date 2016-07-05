@@ -8,12 +8,14 @@ from datetime import date, timedelta
 import Statsdash.Youtube.config as yt_config
 import Statsdash.GA.config as ga_config
 import Statsdash.utilities as utils
+import Statsdash.report_schedule as config
 
 from premailer import transform
 
 
 parser = argparse.ArgumentParser()
 parser.add_argument("reporttype", help="the type of report you wish to generate")
+parser.add_argument("-s", "--sitename", help="name of site", default ="all_sites")
 parser.add_argument("-d", "--destination", help="destination for return file", default =".")
 parser.add_argument("-n", "--filename", help="name of file", default =0)
 args = parser.parse_args()
@@ -25,30 +27,36 @@ else:
 	file_name = "%s.html" % user_file_name
 	#file_name = user_file_name
 	
+if args.sitename == "all_sites":
+    sites = ga_config.TABLES.keys()
+else:
+    sites = [args.sitename]
+	
 file_src = args.destination + "/" + file_name
 
 
-monthly_period = utils.StatsRange("period", date(2016, 05, 01), date(2016, 05, 30))
+monthly_period = utils.StatsRange("period", date(2016, 05, 01), date(2016, 05, 31))
 daily_period = utils.StatsRange("period", date(2016, 06, 05), date(2016, 06, 05))
 
 
 if report_type == "YoutubeReport":
-    yt = YoutubeReport(yt_config.CHANNELS.keys(), monthly_period, ["faye.butler@gamer-network.net"], "MONTHLY", "Gamer Network Video Report for")
+    sites =yt_config.CHANNELS.keys()
+    yt = YoutubeReport(sites, monthly_period, config.all_recipients, "MONTHLY", "Video Report for")
     html = yt.generate_html()
     yt.send_email(html)
 elif report_type == "AnalyticsCoreReport":
-    #ac = AnalyticsCoreReport(ga_config.TABLES.keys(), daily_period, ["faye.butler@gamer-network.net"], "WOW_DAILY", "Gamer Network Report for")
-    ac = AnalyticsCoreReport(ga_config.TABLES.keys(), monthly_period, ["faye.butler@gamer-network.net"], "MONTHLY", "Gamer Network Report for")
-    #ac = AnalyticsCoreReport(["eurogamer.net"], monthly_period, ["faye.butler@gamer-network.net"], "MONTHLY", "Eurogamer.net Report for")
+    ac = AnalyticsCoreReport(sites, daily_period, config.all_recipients, "WOW_DAILY", "Report for")
+    #ac = AnalyticsCoreReport(sites, monthly_period, config.all_recipients, "MONTHLY", "Report for")
+    #ac = AnalyticsCoreReport(sites, monthly_period, config.all_recipients, "MONTHLY", "Report for")
     html = ac.generate_html()
     ac.send_email(html)
 elif report_type == "AnalyticsSocialReport":
-    sc = AnalyticsSocialReport(ga_config.TABLES.keys(), monthly_period, ["faye.butler@gamer-network.net"], "MONTHLY", "Gamer Network Social Report for")
-    #sc = AnalyticsSocialReport(["eurogamer.net"], monthly_period, ["faye.butler@gamer-network.net"], "MONTHLY", "Eurogamer.net Social Report for")
+    sc = AnalyticsSocialReport(sites, monthly_period, config.all_recipients, "MONTHLY", "Social Report for")
+    #sc = AnalyticsSocialReport(sites, monthly_period, config.all_recipients, "MONTHLY", "Social Report for")
     html = sc.generate_html()
     sc.send_email(html)
 elif report_type == "AnalyticsSocialExport":
-    sc = AnalyticsSocialExport(["eurogamer.net"], monthly_period, ["faye.butler@gamer-network.net"], "MONTHLY", "Eurogamer.net Social Export for")
+    sc = AnalyticsSocialExport(sites, monthly_period, config.all_recipients, "MONTHLY", "Social Export for")
     html = sc.generate_html()   
     sc.send_email(html) 
 else:
