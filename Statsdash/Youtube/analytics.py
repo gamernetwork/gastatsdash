@@ -110,6 +110,7 @@ class Analytics(object):
     def get_content_owner(self):
     	"""
     	returns info on the content owner 
+    	returns a dictionary, use ["items"][0]["id"] to get the content owner id 
     	"""
     	contentOwnersService = self.youtube_partner.contentOwners()	
     	request = contentOwnersService.list(fetchMine=True)

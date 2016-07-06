@@ -1,6 +1,6 @@
 
-from report import AnalyticsCoreReport, AnalyticsSocialReport, YoutubeReport
-from Statsdash.GA.config import TABLES, EMAILS
+from report import YoutubeReport, AnalyticsCoreReport, AnalyticsSocialReport, AnalyticsSocialExport
+from Statsdash.GA.config import TABLES
 from Statsdash.Youtube.config import CHANNELS
 
 recipients = ["me@example.net", "bob@example.net"]
@@ -9,21 +9,37 @@ recipients = ["me@example.net", "bob@example.net"]
 
 
 reports = [
-  # full combined reports from Traffic Source Breakdown 
     {
         "report": AnalyticsCoreReport,
         'recipients': recipients,
         'subject': #subject as string ,
-        'sites': #site key for config to look up ga_id, from GA.config.TABLES
+        'sites': ["site.com", "zite.de", "sait.fr"]
         "frequency": "DAILY",
         "identifier": "network-daily-report"  
+    },
+    {
+        "report": AnalyticsSocialReport,
+        'recipients': recipients,
+        'subject': #subject as string ,
+        'sites': ["site.com", "zite.de", "sait.fr"]
+        "frequency": "DAILY",
+        "identifier": "network-social-report"  
+    },
+    {
+        "report": AnalyticsSocialExport,
+        'recipients': recipients,
+        'subject': #subject as string ,
+        'sites': ["site.com", "zite.de", "sait.fr"]
+        "frequency": "MONTHLY",
+        "frequency_options": {"day": 1},
+        "identifier": "network-social-export"  
     },
     
     {
         "report": YoutubeReport,
-        'recipients': all_recipients,
+        'recipients': recipients,
         'subject': #subject as string,
-        'sites': #site key for config to look up ga_id, from Youtube.config.CHANNELS
+        'sites': ["channelname1", "channelname2", "channelname3"]
         "frequency": "MONTHLY",
         "frequency_options": {"day": 1},
         "identifier": "network-youtube-report"  
