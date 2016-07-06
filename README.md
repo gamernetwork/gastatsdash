@@ -20,9 +20,13 @@ env/bin/pip install -r requirements.txt
 Copy ```report_schedule.py-example``` to ```report_schedule.py``` and change the reports config to be appropriate to you.
 
 Copy ```config.py-example``` to ```config.py``` for Statsdash/config.py and change values to those appropriate to you. 
+
 Do the same for each API config.py - ```Statsdash/GA/config.py``` and/or ```Statsdash/Youtube/config.py``` and change values to those appropriate to you. 
+
 Get your tables IDs from the Google Analytics backends - look for the view IDs.
+
 Get your channel IDs as a content owner from here: https://www.youtube.com/analytics or from a channels individual settings page here: https://www.youtube.com/account_advanced.
+
 To get your content owner ID see below.
 
 Generating service account
@@ -69,7 +73,7 @@ Get your content owner ID
 ```
   - You can then run ``` python analytics.py --noauth_local_webserver ```
   - Follow the instructions. Copy the link into your browser, click "allow" and copy and paste the code back into the shell. 
-  - Your content owner id will be printed out
+  - Your content owner id will be printed out, put it into the Youtube/config.py 
   - Remember to remove these bits of code after! 
 
   
@@ -85,7 +89,9 @@ If you are using the Youtube API you must first set up the OAuth connection by r
 python scheduler.py --noauth_local_webserver
 ```
 Then copy the link into your browser, click "allow" and copy and paste the key given into the shell. 
-This should now have set up your scheduler with an oauth connection and created a file "scheduler.py-oauth2.json"
+
+This should now have set up your scheduler with an oauth connection and created a file "scheduler.py-oauth2.json".
+
 You will have to do this for every file you want to run the Youtube API from. 
 
 You can now run the scheduler as normal:
