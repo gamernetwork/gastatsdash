@@ -63,7 +63,7 @@ Get your content owner ID
   - Add this code at the very top of analytics.py:
 ```  
   import sys
-    sys.path.append("/home/faye/src/gastatsdash")
+    sys.path.append("/path/to/gastatsdash")
 ```
   - Add this code at the bottom of the analytics.py:
 ```  
