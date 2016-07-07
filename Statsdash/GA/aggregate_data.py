@@ -173,16 +173,19 @@ class AnalyticsData(object):
             breakdown = []
             metrics = "ga:pageviews,ga:users"
             for site in self.sites:
+                print "site ", site
                 rows = analytics.rollup_ids(self.site_ids[site], date.get_start(), date.get_end(), metrics=metrics, dimensions="ga:country", filters=filters, 
                                                 sort="-ga:pageviews", aggregate_key="ga:country")
                 world_rows = [analytics.rollup_ids(self.site_ids[site], date.get_start(), date.get_end(), metrics=metrics, dimensions=None, filters=row_filters, 
                                                         sort="-ga:pageviews", aggregate_key=None)]
-                try:
+
+                if world_rows[0]:
                     world_rows[0]["ga:country"] = "ROW"
-                except IndexError:
+                else:
                     world_rows = [{"ga:country":"ROW", "ga:pageviews":0, "ga:users":0}]
                     
                 rows.extend(world_rows)
+
                 for row in rows:
                     row =  utils.convert_to_floats(row, metrics.split(","))
                     

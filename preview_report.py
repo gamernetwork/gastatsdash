@@ -35,7 +35,7 @@ else:
 file_src = args.destination + "/" + file_name
 
 monthly_period = utils.StatsRange("period", date(2016, 05, 01), date(2016, 05, 31))
-daily_period = utils.StatsRange("period", date(2016, 06, 05), date(2016, 06, 05))
+daily_period = utils.StatsRange("period", date(2016, 07, 05), date(2016, 07, 05))
 
 if report_type == "YoutubeReport":
     sites =yt_config.CHANNELS.keys()
