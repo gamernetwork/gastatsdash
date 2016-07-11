@@ -1,4 +1,4 @@
-from Statsdash.report import YoutubeReport, AnalyticsCoreReport, AnalyticsSocialReport, AnalyticsSocialExport, AnalyticsTopSocialNetworks
+from Statsdash.report import YoutubeReport, AnalyticsCoreReport, AnalyticsSocialReport, AnalyticsSocialExport, AnalyticsYearSocialReport
 import argparse
 #import report_schedule
 
@@ -57,8 +57,8 @@ elif report_type == "AnalyticsSocialExport":
     sc = AnalyticsSocialExport(sites, monthly_period, config.all_recipients, "MONTHLY", "Social Export for")
     html = sc.generate_html()   
     sc.send_email(html) 
-elif report_type == "AnalyticsTopSocialNetworks":
-    html = AnalyticsTopSocialNetworks(sites, monthly_period, config.all_recipients, "MONTHLY", "Top Social Networks for")
+elif report_type == "AnalyticsYearSocialReport":
+    html = AnalyticsYearSocialReport(sites, monthly_period, config.all_recipients, "MONTHLY", "Top Social Networks for")
     html = html.generate_html()
     
 

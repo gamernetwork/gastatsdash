@@ -1,5 +1,7 @@
 import json
 from datetime import timedelta
+import random
+import time
 from Statsdash.config import LOGGING
 
 #from oauth2client.client import SignedJwtAssertionCredentials
@@ -40,6 +42,10 @@ class Analytics(object):
                     raise
                 if error['error'].get('code') == 500:
                     logger.warning("500 Error, #%d, trying again...", i)
+                    time.sleep((2 ** i) + random.random())
+                if error['error'].get('code') == 503:
+                    logger.warning("503 Error, #%d, trying again...", i)
+                    time.sleep((2 ** i) + random.random())
                 else:
                     raise
             except Exception, e:

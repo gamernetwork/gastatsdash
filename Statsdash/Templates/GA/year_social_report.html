@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block body %}
+
+{% for table in social_table %}
+<h2>{{table.network}}</h2>
+<table border="0" cellspacing="0">
+    <thead>
+        <tr>
+            <th>Month</th>
+            <th colspan="3">Sessions</th>
+            <th colspan="3">Pageviews</th>
+        </tr>
+        <tr>
+            <th></th>
+            <th>Figure</th>
+            <th>+/- MoM</th>
+            <th>+/- YoY</th>
+            <th>Figure</th>
+            <th>+/- MoM</th>
+            <th>+/- YoY</th>
+    </thead>
+    <tbody>
+    {% for row in table.data %}
+        <tr class="{{ loop.cycle('odd', 'even') }}">
+            <td class="src">{{row.month}}</td>
+            <td class="num">{{row.monthly_data.sessions|int|intcomma}}</td>
+            <td class = 'num' style="color: {% if row.monthly_data.previous_percentage_sessions > 0 %}green{% else %}red{% endif %};">{{row.monthly_data.previous_percentage_sessions|round(1)}}%</td>
+            <td class = 'num' style="color: {% if row.monthly_data.yearly_percentage_sessions > 0 %}green{% else %}red{% endif %};">{{row.monthly_data.yearly_percentage_sessions|round(1)}}%</td>
+            
+            <td class="num">{{row.monthly_data.pageviews|int|intcomma}}</td>
+            <td class = 'num' style="color: {% if row.monthly_data.previous_percentage_pageviews > 0 %}green{% else %}red{% endif %};">{{row.monthly_data.previous_percentage_pageviews|round(1)}}%</td>
+            <td class = 'num' style="color: {% if row.monthly_data.yearly_percentage_pageviews > 0 %}green{% else %}red{% endif %};">{{row.monthly_data.yearly_percentage_pageviews|round(1)}}%</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endfor %}
+        
+        
+{% endblock %}
