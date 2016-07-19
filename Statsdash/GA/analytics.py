@@ -44,7 +44,7 @@ class Analytics(object):
                     raise
             except Exception, e:
                 logger.warning("Unknown error from GA")
-                logger.warning("Type: " + type(e) + "  " + e)
+                logger.warning("Type: " + str(type(e)) + "  " + str(e))
         return None
 
         
@@ -86,9 +86,10 @@ class Analytics(object):
         return self.execute_query(query)
  
  
-    def rollup_ids(self, ids, start, end, metrics, dimensions=None, filters=None, sort=None, max_results=None, aggregate_key=None):
+    def rollup_ids(self, properties, start, end, metrics, dimensions=None, filters=None, sort=None, max_results=None, aggregate_key=None):
         main_row = []
-        for id in ids:
+        for property_details in properties:
+            id = property_details['id']
             results = self.run_report(id, start, end, metrics=metrics, dimensions=dimensions, filters=filters, sort=sort, max_results=max_results)
             rows = utils.format_data_rows(results)
             if rows:     

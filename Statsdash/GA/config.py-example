@@ -8,13 +8,11 @@ KEY_FILE = 'path/to/keyfile.p12'
 
 
 # GA table ids for each site
-TABLES = {'site.com':'ga:12345678',
-          'zite.de' :'ga:87654321',
-          'sait.fr' :'ga:87655678',
-          }
-          
-          
-          
+TABLES = {
+    'site.com': [{'id': 'ga:12345678'}, {'id': 'ga:12345678', 'wait_for_data': False}],
+    'zite.de' : [{'id': 'ga:87654321'}],
+    'sait.fr' : [{'id': 'ga:87655678'}],
+}
 #Extra data
 ALL_SITES_NAME = "Network"
 

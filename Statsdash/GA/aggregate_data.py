@@ -27,14 +27,16 @@ class AnalyticsData(object):
         
         self.date_list = [self.period, self.previous, self.yearly]
         
-        self.site_ids = utils.convert_values_list(site_ids)
+        self.site_ids = site_ids
     
     def check_available_data(self):
         run_report = {"result":True, "site":[]}
         for site in self.sites:
             ids = self.site_ids[site]
-            for id in ids:
-                data_available = analytics.data_available(id, self.period.get_end())
+            for property_details in ids:
+                if not property_details.get('wait_for_data', True):
+                    continue
+                data_available = analytics.data_available(property_details['id'], self.period.get_end())
                 if not data_available:
                     run_report["result"] = False
                     run_report["site"].append(site)		

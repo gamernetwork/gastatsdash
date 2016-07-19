@@ -116,7 +116,7 @@
               <td class="num" style="color: {% if month_summary_table.yearly_percentage_sessions > 0 %}green{% else %}red{% endif %};"> {{month_summary_table.yearly_percentage_sessions|round(1)}}%</td>   
           {% if all_sites == false %}
               <tr class="odd">
-                  <th> {{ site|capitalize }}</th>
+                  <th> Network month to date</th>
                   <td class="num"> {{network_month_summary_table.pageviews|int|intcomma}} </td>                      
                   <td class="num"> {{network_month_summary_table.users|int|intcomma}} </td>
                   <td class="num"> {{network_month_summary_table.sessions|int|intcomma}} </td>

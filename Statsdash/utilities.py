@@ -39,7 +39,10 @@ def percentage(change, total):
 	
 def convert_to_floats(row, metrics):
     for metric in metrics:
-        row[metric] = float(row[metric])
+        try:
+            row[metric] = float(row[metric])
+        except KeyError:
+            row[metric] = 0.0
     return row 	
 	
 def rate_per_1000(metric, comparative):
