@@ -58,8 +58,10 @@ elif report_type == "AnalyticsSocialExport":
     html = sc.generate_html()   
     sc.send_email(html) 
 elif report_type == "AnalyticsYearSocialReport":
-    html = AnalyticsYearSocialReport(sites, monthly_period, config.all_recipients, "MONTHLY", "Top Social Networks for")
-    html = html.generate_html()
+    report = AnalyticsYearSocialReport(sites, monthly_period, config.all_recipients, "MONTHLY", "Top Social Networks for")
+    html = report.generate_html()
+    report.send_email(html)
+    
     
 
 else:

@@ -453,7 +453,7 @@ class AnalyticsYearSocialReport(Report):
         
         today = self.period.end_date
         
-        start_month = date(today.year-1, today.month, 1)
+        start_month = date(today.year-3, today.month, 1)
         end_month = today + timedelta(days=1) #first of next month so includes this month
         current = start_month
         month_stats_range = []
@@ -461,6 +461,7 @@ class AnalyticsYearSocialReport(Report):
             start_date = current
             end_date = utils.add_one_month((current - timedelta(days=1)))
             name =  start_date.strftime("%b-%Y")
+            print name
             month_stats_range.append(utils.StatsRange(name, start_date, end_date))
             current = utils.add_one_month(start_date)     
 
@@ -473,6 +474,7 @@ class AnalyticsYearSocialReport(Report):
             data = AnalyticsData(self.sites, month, "MONTHLY")
             new_row["data"] = data.social_network_table(0)
             #new_row["summary"] = data.summary_table()
+            print new_row
             social.append(new_row)
         
         print social
