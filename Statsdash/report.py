@@ -461,18 +461,15 @@ class AnalyticsYearSocialReport(Report):
             start_date = current
             end_date = utils.add_one_month((current - timedelta(days=1)))
             name =  start_date.strftime("%b-%Y")
-            print name
             month_stats_range.append(utils.StatsRange(name, start_date, end_date))
             current = utils.add_one_month(start_date)     
   
         for month in month_stats_range:
-            print month.get_start()
             new_row = {}
             new_row["month"] = month.name
             data = AnalyticsData(self.sites, month, "MONTHLY")
             new_row["data"] = data.social_network_table(0)
             #new_row["summary"] = data.summary_table()
-            print new_row
             social.append(new_row)
 
         
@@ -496,7 +493,6 @@ class AnalyticsYearSocialReport(Report):
             else:
                 continue
         top_network = top_network[:6]
-        print top_network
         
         social_table = []
         for network in top_network:
@@ -511,9 +507,7 @@ class AnalyticsYearSocialReport(Report):
                     match = {"pageviews":0, "sessions":0 }#put in full exception zero case dictionary
                 new_row["data"].append({"month":row["month"], "monthly_data":match}) #extend the match dictionary with month key? 
             social_table.append(new_row)
-
-            
-        print "SOCIAL TABLE : \n", social_table           
+    
          
         html = self.template.render(
             subject=self.get_subject(),
