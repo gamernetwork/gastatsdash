@@ -34,7 +34,7 @@ else:
 	
 file_src = args.destination + "/" + file_name
 
-monthly_period = utils.StatsRange("period", date(2016, 06, 01), date(2016, 06, 30))
+monthly_period = utils.StatsRange("period", date(2016, 07, 01), date(2016, 07, 31))
 daily_period = utils.StatsRange("period", date(2016, 07, 05), date(2016, 07, 05))
 
 if report_type == "YoutubeReport":

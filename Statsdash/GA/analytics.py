@@ -43,9 +43,11 @@ class Analytics(object):
                 if error['error'].get('code') == 500:
                     logger.warning("500 Error, #%d, trying again...", i)
                     time.sleep((2 ** i) + random.random())
+                    continue
                 if error['error'].get('code') == 503:
                     logger.warning("503 Error, #%d, trying again...", i)
                     time.sleep((2 ** i) + random.random())
+                    continue
                 else:
                     raise
             except Exception, e:
