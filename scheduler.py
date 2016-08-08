@@ -94,8 +94,9 @@ class RunLogger(object):
             day = frequency_options.get("day")
             next_run = add_one_month(last_run)
             next_run = next_run.replace(day=day)
-            if next_run <= now + timedelta(days=1):
-                next_run = add_one_month(next_run)    
+            #why is this here 
+            #if next_run <= now + timedelta(days=1):
+               # next_run = add_one_month(next_run)    
             if (now - next_run).days >= 2:
               self.override_data = True
         return next_run
@@ -144,56 +145,6 @@ def _run():
                 )           
                 run_logger.record_run(identifier, run_datetime)
 
-
-"""
-def _run():
-
-    run_logger = RunLogger()
-    
-    logging.config.dictConfig(LOGGING)
-    logger = logging.getLogger('report')
-
-    for config in reports:
-        identifier = config['identifier']
-        frequency = config['frequency']
-        frequency_options = config.get('frequency_options', {})
-        report_class = config['report']
-        last_run = run_logger.get_last_run(identifier)
-        next_run_date = run_logger.get_next_run(last_run, frequency, frequency_options).date()
-        today = date.today()
-        needs_run = next_run_date <= today
-        print "%s next run: %s.  Needs run: %s" % (identifier, next_run_date, needs_run)
-        if needs_run:
-            report = create_report(report_class, config, next_run_date)
-            if run_logger.override_data == True:
-                data_available = report.data_available(override=True)
-                print "overriding data available", run_logger.override_data
-                logger.warning("overriding data available and sending report anyway")
-            else:
-                data_available = report.data_available()
-
-            run_logger.override_data = False
-            print "%s next run: %s.  Data available: %s" % (identifier, next_run_date, data_available)
-            if data_available:
-            
-                #if data available
-                #try send report
-                #except exeptioin
-                #print/log exception
-                #continue to next report
-                report.send_report()
-                run_datetime = datetime(year=report.period.end_date.year, 
-                    month=report.period.end_date.month, 
-                    day=report.period.end_date.day,
-                    hour=0,
-                    minute=0,
-                    second=0,
-                    microsecond=1
-                ) 
-                           
-                run_logger.record_run(identifier, run_datetime)
-
-"""
 
 def run_schedule():
     print "** Running schedule at %s" % datetime.now().isoformat()

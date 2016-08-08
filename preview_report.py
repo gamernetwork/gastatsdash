@@ -37,11 +37,15 @@ file_src = args.destination + "/" + file_name
 monthly_period = utils.StatsRange("period", date(2016, 07, 01), date(2016, 07, 31))
 daily_period = utils.StatsRange("period", date(2016, 07, 05), date(2016, 07, 05))
 
+test_period = utils.StatsRange("future", date(2016, 8, 01), date(2016, 8, 30))
+
 if report_type == "YoutubeReport":
     sites =yt_config.CHANNELS.keys()
-    yt = YoutubeReport(sites, monthly_period, ['brendan.smith@gamer-network.net', 'faye.butler@gamer-network.net', 'jon.hicks@gamer-network.net', 'mark.kennedy@gamer-network.net'], "MONTHLY", "Gamer Network Video Report statsdash for")
+    yt = YoutubeReport(sites, test_period, [''], "MONTHLY", "Gamer Network Video Report statsdash for")
+    check = yt.check_data_availability()
+    print check
     html = yt.generate_html()
-    yt.send_email(html)
+    #yt.send_email(html)
 elif report_type == "AnalyticsCoreReport":
     ac = AnalyticsCoreReport(sites, daily_period, config.all_recipients, "WOW_DAILY", "Report for")
     #ac = AnalyticsCoreReport(sites, monthly_period, config.all_recipients, "MONTHLY", "Report for")

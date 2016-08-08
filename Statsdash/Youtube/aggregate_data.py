@@ -37,12 +37,13 @@ class YoutubeData(object):
     def check_available_data(self):
         run_report = {"result":True, "channel":[]}
         for channel in self.channels:
-        	ids = self.channel_ids[channel]
-        	for id in ids:
-        	    data_available = analytics.data_available(id, self.period.get_end())
+            ids = self.channel_ids[channel]
+            for id in ids:
+                data_available = analytics.data_available(id, self.period.get_end())
                 if not data_available:
                     run_report['result'] = False
-                    run_report['channel'] += channel			
+                    run_report['channel'].append(channel)	
+
         return run_report
 
 		
