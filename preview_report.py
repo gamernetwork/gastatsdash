@@ -39,7 +39,7 @@ daily_period = utils.StatsRange("period", date(2016, 07, 05), date(2016, 07, 05)
 
 if report_type == "YoutubeReport":
     sites =yt_config.CHANNELS.keys()
-    yt = YoutubeReport(sites, monthly_period, config.all_recipients, "MONTHLY", "Gamer Network Video Report statsdash for")
+    yt = YoutubeReport(sites, monthly_period, ['brendan.smith@gamer-network.net', 'faye.butler@gamer-network.net', 'jon.hicks@gamer-network.net', 'mark.kennedy@gamer-network.net'], "MONTHLY", "Gamer Network Video Report statsdash for")
     html = yt.generate_html()
     yt.send_email(html)
 elif report_type == "AnalyticsCoreReport":

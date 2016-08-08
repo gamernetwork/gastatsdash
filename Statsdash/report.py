@@ -210,19 +210,8 @@ class AnalyticsCoreReport(Report):
             full_month_table = full_month_data.summary_table()            
             
         elif self.frequency == "MONTHLY":
-            start_month = date(today.year-1, today.month, 1)
-            end_month = date(today.year, today.month, 1)
-            current = start_month
-            month_stats_range = []
-            months = []
-            while current != end_month:
-                start_date = current
-                end_date = utils.add_one_month((current - timedelta(days=1)))
-                name =  start_date.strftime("%b-%Y")
-                month_stats_range.append(utils.StatsRange(name, start_date, end_date))
-                months.append(name)
-                current = utils.add_one_month(start_date)     
-                
+
+            month_stats_range = utils.list_of_months(today, 1)
         
             device = []  
             for month in month_stats_range:
@@ -450,19 +439,9 @@ class AnalyticsYearSocialReport(Report):
             
                         
     def generate_html(self):
-        
+
         today = self.period.end_date
-        
-        start_month = date(today.year-3, today.month, 1)
-        end_month = today + timedelta(days=1) #first of next month so includes this month
-        current = start_month
-        month_stats_range = []
-        while current != end_month:
-            start_date = current
-            end_date = utils.add_one_month((current - timedelta(days=1)))
-            name =  start_date.strftime("%b-%Y")
-            month_stats_range.append(utils.StatsRange(name, start_date, end_date))
-            current = utils.add_one_month(start_date)     
+        month_stats_range = utils.list_of_months(today, 3)
   
         for month in month_stats_range:
             new_row = {}
@@ -551,19 +530,7 @@ class AnalyticsSocialExport(Report):
     	
     def generate_html(self):
 
-        start_month = date(self.period.start_date.year - 1, self.period.start_date.month, 01)
-        end_month = date(self.period.start_date.year, self.period.start_date.month, 01)
-        current = start_month
-        month_stats_range = []
-        months = []
-        while current != end_month:
-            start_date = current
-            end_date = utils.add_one_month((current - timedelta(days=1)))
-            name =  start_date.strftime("%b-%Y")
-            month_stats_range.append(utils.StatsRange(name, start_date, end_date))
-            months.append(name)
-            current = utils.add_one_month(start_date)
-         
+        month_stats_range = utils.list_of_months(self.period.end_date, 1)
         social_export = []   
         for month in month_stats_range:
             new_row = {}
