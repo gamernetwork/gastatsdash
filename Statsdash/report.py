@@ -438,7 +438,7 @@ class AnalyticsYearSocialReport(Report):
             return ga_config.ALL_SITES_NAME
           
     
-    def _get_social_data():
+    def _get_social_data(self):
         today = self.period.end_date
         month_stats_range = utils.list_of_months(today, 3)
   
@@ -448,24 +448,12 @@ class AnalyticsYearSocialReport(Report):
             data = AnalyticsData(self.sites, month, "MONTHLY")
             new_row["data"] = data.social_network_table(0)
             #new_row["summary"] = data.summary_table()
-            social.append(new_row)
-     
-        social_table = []
-        for row in social:
-            new_row = {}
-            for data in row["data"]:
-                try:
-                    new_row[data["social_network"]].append(data)
-                except KeyError:
-                    new_row[data["social_network"]] = [data]
-                    
-            social_table.append(new_row)
-            
-        return social_table
+            social.append(new_row)            
+        return social
     
-    def _get_top_networks():
+    def _get_top_networks(self):
         top_networks_past_year = AnalyticsData(self.sites, utils.StatsRange("year", start_month, today), "YEARLY").social_network_table(0)
-        
+
         top_network = ["Facebook", "Twitter", "reddit"]
         for row in top_networks_past_year:
             if row["social_network"] not in top_network:            
@@ -477,7 +465,7 @@ class AnalyticsYearSocialReport(Report):
                         
     def generate_html(self):
         
-        social_table = self._get_social_data()        
+        social = self._get_social_data()        
         top_network = self._get_top_networks()
         
         social_table = []

@@ -64,7 +64,7 @@ elif report_type == "AnalyticsSocialExport":
 elif report_type == "AnalyticsYearSocialReport":
     report = AnalyticsYearSocialReport(sites, monthly_period, config.all_recipients, "MONTHLY", "Top Social Networks for")
     html = report.generate_html()
-    report.send_email(html)
+    #report.send_email(html)
     
     
 
