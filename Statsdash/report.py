@@ -436,10 +436,9 @@ class AnalyticsYearSocialReport(Report):
             return self.sites[0]
         elif len(self.sites) == len(ga_config.TABLES.keys()):
             return ga_config.ALL_SITES_NAME
-            
-                        
-    def generate_html(self):
-
+          
+    
+    def _get_social_data():
         today = self.period.end_date
         month_stats_range = utils.list_of_months(today, 3)
   
@@ -450,8 +449,7 @@ class AnalyticsYearSocialReport(Report):
             new_row["data"] = data.social_network_table(0)
             #new_row["summary"] = data.summary_table()
             social.append(new_row)
-
-        
+     
         social_table = []
         for row in social:
             new_row = {}
@@ -462,7 +460,10 @@ class AnalyticsYearSocialReport(Report):
                     new_row[data["social_network"]] = [data]
                     
             social_table.append(new_row)
-        
+            
+        return social_table
+    
+    def _get_top_networks():
         top_networks_past_year = AnalyticsData(self.sites, utils.StatsRange("year", start_month, today), "YEARLY").social_network_table(0)
         
         top_network = ["Facebook", "Twitter", "reddit"]
@@ -472,6 +473,12 @@ class AnalyticsYearSocialReport(Report):
             else:
                 continue
         top_network = top_network[:6]
+        return top_network                    
+                        
+    def generate_html(self):
+        
+        social_table = self._get_social_data()        
+        top_network = self._get_top_networks()
         
         social_table = []
         for network in top_network:
@@ -479,7 +486,7 @@ class AnalyticsYearSocialReport(Report):
             new_row["network"] = network
             new_row["data"] = []
             for row in social:
-                #in row["Data"] find matching network row
+                #in row["data"] find matching network row
                 try:
                     match = utils.list_search(row["data"], "social_network", network)
                 except KeyError:

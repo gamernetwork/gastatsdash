@@ -133,17 +133,21 @@ def _run():
             run_logger.override_data = False
             print "%s next run: %s.  Data available: %s" % (identifier, next_run_date, data_available)
             if data_available:
-                html = report.generate_html()
-                report.send_email(html)
-                run_datetime = datetime(year=report.period.end_date.year, 
-                    month=report.period.end_date.month, 
-                    day=report.period.end_date.day,
-                    hour=0,
-                    minute=0,
-                    second=0,
-                    microsecond=1
-                )           
-                run_logger.record_run(identifier, run_datetime)
+                try:
+                    html = report.generate_html()
+                    report.send_email(html)
+                    run_datetime = datetime(year=report.period.end_date.year, 
+                        month=report.period.end_date.month, 
+                        day=report.period.end_date.day,
+                        hour=0,
+                        minute=0,
+                        second=0,
+                        microsecond=1
+                    )           
+                    run_logger.record_run(identifier, run_datetime)
+                except Exception:
+                	traceback.print_exc()
+                	continue
 
 
 def run_schedule():
