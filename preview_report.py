@@ -47,7 +47,7 @@ elif report_type == "AnalyticsCoreReport":
     #ac = AnalyticsCoreReport(sites, monthly_period, config.all_recipients, "MONTHLY", "Report for")
     #ac = AnalyticsCoreReport(sites, monthly_period, config.all_recipients, "MONTHLY", "Report for")
     html = ac.generate_html()
-    ac.send_email(html)
+    #ac.send_email(html)
 elif report_type == "AnalyticsSocialReport":
     sc = AnalyticsSocialReport(sites, monthly_period, config.all_recipients, "MONTHLY", "Social Report for")
     #sc = AnalyticsSocialReport(sites, monthly_period, config.all_recipients, "MONTHLY", "Social Report for")

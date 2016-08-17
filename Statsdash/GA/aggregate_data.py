@@ -129,6 +129,18 @@ class AnalyticsData(object):
         else:
             return path    
             
+    def _check_for_amp(self, path, title):
+        """
+        Checks if the article path includes 'amp' making it an AMP article, and appends this to the name so easier to see in report
+        """
+        exp ="/amp/"
+        regex = re.compile(exp)
+        m = regex.search(path + "/")
+        if m:
+            title = title + " (AMP)"
+            return title
+        else:
+            return title
  
     def article_table(self):
         """
@@ -146,8 +158,11 @@ class AnalyticsData(object):
                 rows = utils.change_key_names(rows, {"title":"pageTitle", "path":"pagePath", "host":"hostname"})
                 for row in rows:
                     path = row["path"]
+                    title = row["title"]
                     new_path = self._remove_query_string(path)
+                    new_title = self._check_for_amp(path, title)
                     row["path"] = new_path
+                    row["title"] = new_title
                     row["pageviews"] = float(row["pageviews"])
                 
                 articles.extend(rows)
@@ -175,7 +190,6 @@ class AnalyticsData(object):
             breakdown = []
             metrics = "ga:pageviews,ga:users"
             for site in self.sites:
-                print "site ", site
                 rows = analytics.rollup_ids(self.site_ids[site], date.get_start(), date.get_end(), metrics=metrics, dimensions="ga:country", filters=filters, 
                                                 sort="-ga:pageviews", aggregate_key="ga:country")
                 world_rows = [analytics.rollup_ids(self.site_ids[site], date.get_start(), date.get_end(), metrics=metrics, dimensions=None, filters=row_filters, 
@@ -302,8 +316,11 @@ class AnalyticsData(object):
                 rows = utils.change_key_names(rows, {"title":"pageTitle", "path":"pagePath", "host":"hostname"})
                 for row in rows:
                     path = row["path"]
+                    title = row["title"]
                     new_path = self._remove_query_string(path)
+                    new_title = self._check_for_amp(path, title)
                     row["path"] = new_path
+                    row["title"] = new_title
                     row["pageviews"] = float(row["pageviews"])
                 
                 articles.extend(rows)
