@@ -181,9 +181,8 @@ def _run():
             print "%s next run: %s.  Data available: %s" % (identifier, next_run_date, data_available)
             if data_available:
                 try:
-                    print "trying"
-                    #html = report.generate_html()
-                    #report.send_email(html)
+                    html = report.generate_html()
+                    report.send_email(html)
                     run_datetime = datetime(year=report.period.end_date.year, 
                         month=report.period.end_date.month, 
                         day=report.period.end_date.day,
@@ -192,8 +191,7 @@ def _run():
                         second=0,
                         microsecond=1
                     )           
-                    raise Exception("im an error")
-                    #run_logger.record_run(identifier, run_datetime)
+                    run_logger.record_run(identifier, run_datetime)
                 except Exception:
                     print "Error in generating report %s" % identifier
                     error_list.add_error("Error in generating report %s : \n %s" % (identifier, traceback.format_exc()))
