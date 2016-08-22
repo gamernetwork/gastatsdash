@@ -108,7 +108,7 @@ class RunLogger(object):
         return next_run
 
 
-class Errors():
+class Errors(object):
     errors = []
     def get_errors(self):
         """
@@ -122,31 +122,28 @@ class Errors():
         """
         self.errors.append(error)
         
-        
     def send_errors(self):
-            """
-            Send html email using config parameters
-            """
-            msg = MIMEMultipart('alternative')
-            msg.set_charset('utf8')
-            msg['Subject'] = "Statsdash Errors"
-            msg['From'] = config.SEND_FROM
-            msg['To'] = config.ERROR_REPORTER
-            
-            message = ""
-            for error in self.errors:
-                message += error + "\n"
-            
-            text_part = MIMEText(message, 'plain')      
-            msg.attach(text_part)
-            
-            sender = smtplib.SMTP(config.SMTP_ADDRESS)
-            sender.sendmail(config.SEND_FROM, config.ERROR_REPORTER, msg.as_string())
+        """
+        Send html email using config parameters
+        """
+        msg = MIMEMultipart('alternative')
+        msg.set_charset('utf8')
+        msg['Subject'] = "Statsdash Errors"
+        msg['From'] = config.SEND_FROM
+        msg['To'] = config.ERROR_REPORTER
         
-            sender.quit()  
+        message = ""
+        for error in self.errors:
+            message += error + "\n"
+        
+        text_part = MIMEText(message, 'plain')      
+        msg.attach(text_part)
+        
+        sender = smtplib.SMTP(config.SMTP_ADDRESS)
+        sender.sendmail(config.SEND_FROM, config.ERROR_REPORTER, msg.as_string())
+    
+        sender.quit()  
             
-
-
 
 def _run():
     """
