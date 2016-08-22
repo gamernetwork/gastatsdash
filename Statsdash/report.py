@@ -129,12 +129,6 @@ class YoutubeReport(Report):
         return html
 		
     def check_data_availability(self, override=False):
-        """
-        incomplete
-        - could this be in main report
-        - does it need override or in scheduler should it only be called if override is false? 
-        - is there a better way than a function to call a function??
-        """
         check = self.data.check_available_data()
         if check["result"]:
             return True
@@ -170,12 +164,6 @@ class AnalyticsCoreReport(Report):
         logger.debug("Running analytics core report")
 
     def check_data_availability(self, override=False):
-        """
-        incomplete
-        - could this be in main report
-        - does it need override or in scheduler should it only be called if override is false? 
-        - is there a better way than a function to call a function??
-        """
         check = self.data.check_available_data()
         if check["result"]:
             return True
@@ -222,19 +210,8 @@ class AnalyticsCoreReport(Report):
             full_month_table = full_month_data.summary_table()            
             
         elif self.frequency == "MONTHLY":
-            start_month = date(today.year-1, today.month, 1)
-            end_month = date(today.year, today.month, 1)
-            current = start_month
-            month_stats_range = []
-            months = []
-            while current != end_month:
-                start_date = current
-                end_date = utils.add_one_month((current - timedelta(days=1)))
-                name =  start_date.strftime("%b-%Y")
-                month_stats_range.append(utils.StatsRange(name, start_date, end_date))
-                months.append(name)
-                current = utils.add_one_month(start_date)     
-                
+
+            month_stats_range = utils.list_of_months(today, 1)
         
             device = []  
             for month in month_stats_range:
@@ -341,12 +318,6 @@ class AnalyticsSocialReport(Report):
             self.all_sites = False
 		
     def check_data_availability(self, override=False):
-        """
-        incomplete
-        - could this be in main report
-        - does it need override or in scheduler should it only be called if override is false? 
-        - is there a better way than a function to call a function??
-        """
         check = self.data.check_available_data()
         if check["result"]:
             return True
@@ -418,6 +389,111 @@ class AnalyticsSocialReport(Report):
 
 
 
+class AnalyticsYearSocialReport(Report):
+    def __init__(self, sites, period, recipients, frequency, subject):
+        super(AnalyticsYearSocialReport, self).__init__(sites, period, recipients, frequency, subject)
+        self.sites = sites
+        self.period = period
+        self.recipients = recipients
+        self.frequency = frequency
+        self.subject = subject		 
+        self.data = AnalyticsData(self.sites, self.period, self.frequency)    
+        self.warning_sites = []
+        self.template = self.env.get_template("GA/year_social_report.html")
+        
+        logger.debug("Running analytics top social network report for the year")      
+
+        if len(self.sites) == len(ga_config.TABLES.keys()):
+            self.all_sites = True
+        else:
+            self.all_sites = False
+
+    def get_subject(self):
+        """
+        Return the subject of the email that includes the dates for this period
+        """
+        start_month = date(self.period.start_date.year-1, self.period.start_date.month, 1)
+        dates = start_month.strftime("%B %Y") + " - " + self.period.start_date.strftime('%B %Y')
+        subject = ' '.join([self.subject, dates])
+        
+        return subject
+
+		
+    def check_data_availability(self, override=False):
+        check = self.data.check_available_data()
+        if check["result"]:
+            return True
+        else:
+            logger.debug("Data not available for: %s" % check["site"])
+            if override:
+                self.warning_sites = check["site"]
+                return True
+            else:
+                return False	
+                
+    def get_site(self):
+        if len(self.sites) == 1:
+            return self.sites[0]
+        elif len(self.sites) == len(ga_config.TABLES.keys()):
+            return ga_config.ALL_SITES_NAME
+          
+    
+    def _get_social_data(self):
+        today = self.period.end_date
+        month_stats_range = utils.list_of_months(today, 3)
+  
+        for month in month_stats_range:
+            new_row = {}
+            new_row["month"] = month.name
+            data = AnalyticsData(self.sites, month, "MONTHLY")
+            new_row["data"] = data.social_network_table(0)
+            #new_row["summary"] = data.summary_table()
+            social.append(new_row)            
+        return social
+    
+    def _get_top_networks(self):
+        top_networks_past_year = AnalyticsData(self.sites, utils.StatsRange("year", start_month, today), "YEARLY").social_network_table(0)
+
+        top_network = ["Facebook", "Twitter", "reddit"]
+        for row in top_networks_past_year:
+            if row["social_network"] not in top_network:            
+                top_network.append(row["social_network"])
+            else:
+                continue
+        top_network = top_network[:6]
+        return top_network                    
+                        
+    def generate_html(self):
+        
+        social = self._get_social_data()        
+        top_network = self._get_top_networks()
+        
+        social_table = []
+        for network in top_network:
+            new_row = {}
+            new_row["network"] = network
+            new_row["data"] = []
+            for row in social:
+                #in row["data"] find matching network row
+                try:
+                    match = utils.list_search(row["data"], "social_network", network)
+                except KeyError:
+                    match = {"pageviews":0, "sessions":0 }#put in full exception zero case dictionary
+                new_row["data"].append({"month":row["month"], "monthly_data":match}) #extend the match dictionary with month key? 
+            social_table.append(new_row)
+    
+         
+        html = self.template.render(
+            subject=self.get_subject(),
+            change=self.get_freq_label(),
+            site = self.get_site(),
+            all_sites = self.all_sites,
+            report_span = self.frequency,
+            warning_sites = self.warning_sites,
+            social_table = social_table
+        
+        )
+        return html	        
         
 
 class AnalyticsSocialExport(Report):
@@ -435,12 +511,6 @@ class AnalyticsSocialExport(Report):
         logger.debug("Running analytics social export")   	
 
     def check_data_availability(self, override=False):
-        """
-        incomplete
-        - could this be in main report
-        - does it need override or in scheduler should it only be called if override is false? 
-        - is there a better way than a function to call a function??
-        """
         check = self.data.check_available_data()
         if check["result"]:
             return True
@@ -455,19 +525,7 @@ class AnalyticsSocialExport(Report):
     	
     def generate_html(self):
 
-        start_month = date(self.period.start_date.year - 1, self.period.start_date.month, 01)
-        end_month = date(self.period.start_date.year, self.period.start_date.month, 01)
-        current = start_month
-        month_stats_range = []
-        months = []
-        while current != end_month:
-            start_date = current
-            end_date = utils.add_one_month((current - timedelta(days=1)))
-            name =  start_date.strftime("%b-%Y")
-            month_stats_range.append(utils.StatsRange(name, start_date, end_date))
-            months.append(name)
-            current = utils.add_one_month(start_date)
-         
+        month_stats_range = utils.list_of_months(self.period.end_date, 1)
         social_export = []   
         for month in month_stats_range:
             new_row = {}

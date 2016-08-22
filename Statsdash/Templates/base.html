@@ -68,6 +68,7 @@
 	</style>
 	<h1>{{ subject }}</h1>
 	<p>This data is confidential and for employees of {{ site }} only. Do not transmit outside the company. </p>
+	<p>This report is based on <a href="https://support.google.com/analytics/answer/1042498?hl=en" target="_blank">sampled data</a>.</p>
 	{% if warning_sites|length > 0 %}<p>We are missing some data for the following sites: {% for site in warning %}{{site|capitalize}}, {% endfor %}</p>{% endif %}
 
     {% if all_sites == false and site in warning %}<p>We are missing some data for this site.</p>{% endif %}

@@ -5,7 +5,7 @@
 		<tr>
 			<th>Channel</th>
 			{% for source in traffic.0 %}
-				<th>{{source.insightTrafficSourceType}}</th>
+				<th>{{source.insightTrafficSourceType|replace("_", " ")|capitalize}}</th>
 			{%- endfor %}
 		</tr>
 	</thead>
