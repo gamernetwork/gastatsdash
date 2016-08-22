@@ -66,11 +66,13 @@ class RunLogger(object):
         """
         When should the report run next.
         Returns a Date object
+        last_run == report end date
         """
         today = date.today() - timedelta(days=1)
         now = datetime(today.year, today.month, today.day, 00, 00, 00, 01)  #returns now as datetime with time as 00 00 00 00001
+        last_period_end = last_run
         
-        if last_run.year == 1:
+        if last_period_end.year == 1:
             if frequency == 'DAILY' or frequency == "WOW_DAILY":
                 return now
             if frequency == 'WEEKLY':
@@ -85,19 +87,22 @@ class RunLogger(object):
        
         if frequency == 'DAILY' or frequency == "WOW_DAILY":
             #if last run was over 2 days ago, set to yesterday 
-            next_run = last_run + timedelta(days=1)
-            if (now - last_run).days >= 2:
+            next_run = last_period_end + timedelta(days=1)
+            if (now - last_period_end).days >= 2:
               self.override_data = True
         if frequency == 'WEEKLY':
-            next_run = last_run + timedelta(days=7)
+            next_run = last_period_end + timedelta(days=7)
         if frequency == 'MONTHLY':
             day = frequency_options.get("day")
-            next_run = add_one_month(last_run)
-            next_run = next_run.replace(day=day)
-            if next_run <= now + timedelta(days=1):
-                next_run = add_one_month(next_run)    
+            #add one day to last_period_end to get the first day of next month period 
+            next_run = last_period_end + timedelta(days=1) 
+            #needs to run at the end of the next period, so add one month
+            next_run = add_one_month(last_period_end)
+            #make sure set to be correct day 
+            next_run = next_run.replace(day=day) 
             if (now - next_run).days >= 2:
               self.override_data = True
+
         return next_run
 
 
@@ -131,6 +136,7 @@ def _run():
             
             run_logger.override_data = False
             print "%s next run: %s.  Data available: %s" % (identifier, next_run_date, data_available)
+            
             if data_available:
                 html = report.generate_html()
                 report.send_email(html)
@@ -143,6 +149,7 @@ def _run():
                     microsecond=1
                 )           
                 run_logger.record_run(identifier, run_datetime)
+            
 
 
 """

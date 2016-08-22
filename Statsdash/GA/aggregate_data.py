@@ -4,6 +4,7 @@ import re
 import pygal
 from datetime import date, timedelta, datetime
 from analytics import Analytics
+from HTMLParser import HTMLParser
 
 import Statsdash.utilities as utils
 
@@ -138,6 +139,9 @@ class AnalyticsData(object):
         m = regex.search(path + "/")
         if m:
             title = title + " (AMP)"
+            #amp articles come with html characters
+            h = HTMLParser()
+            title = h.unescape(title)
             return title
         else:
             return title

@@ -206,7 +206,6 @@ class AnalyticsCoreReport(Report):
         num_articles = 5
         today = self.period.end_date
         
-
         if self.frequency != "MONTHLY":
             num_articles = 1
             #today = self.period.end_date
@@ -254,6 +253,7 @@ class AnalyticsCoreReport(Report):
             if self.frequency != "MONTHLY":
                 network_month_data = AnalyticsData(ga_config.TABLES.keys(), month_range, self.frequency)
                 network_month_summary_table = network_month_data.summary_table()
+        
             
         summary_table = self.data.summary_table()    
         site_table = self.data.site_summary_table()
