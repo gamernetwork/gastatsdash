@@ -75,7 +75,6 @@ class RunLogger(object):
         """
         today = date.today() - timedelta(days=1)
         now = datetime(today.year, today.month, today.day, 00, 00, 00, 01)  #returns now as datetime with time as 00 00 00 00001
-        last_period_end = last_run
         
         if last_period_end.year == 1:
             if frequency == 'DAILY' or frequency == "WOW_DAILY":
@@ -219,4 +218,6 @@ if __name__ == '__main__':
     
     run_schedule(args.test)
     
-    error_list.send_errors()
+    if error_list.get_errors():
+        error_list.send_errors()
+        
