@@ -130,7 +130,7 @@ class AnalyticsData(object):
         else:
             return path    
             
-    def _check_for_amp(self, path, title):
+    def _get_title(self, path, title):
         """
         Checks if the article path includes 'amp' making it an AMP article, and appends this to the name so easier to see in report
         """
@@ -164,7 +164,7 @@ class AnalyticsData(object):
                     path = row["path"]
                     title = row["title"]
                     new_path = self._remove_query_string(path)
-                    new_title = self._check_for_amp(path, title)
+                    new_title = self._get_title(path, title)
                     row["path"] = new_path
                     row["title"] = new_title
                     row["pageviews"] = float(row["pageviews"])
@@ -322,7 +322,7 @@ class AnalyticsData(object):
                     path = row["path"]
                     title = row["title"]
                     new_path = self._remove_query_string(path)
-                    new_title = self._check_for_amp(path, title)
+                    new_title = self._get_title(path, title)
                     row["path"] = new_path
                     row["title"] = new_title
                     row["pageviews"] = float(row["pageviews"])
