@@ -158,12 +158,21 @@ def chart(title, x_labels, data, x_title, y_title):
     return imgdata.buf
     
     #line_chart.render_to_png("/var/www/dev/faye/statsdash_reports/social.png")
-    
-    
+
 
 
 #date utils
 import datetime
+import calendar
+
+def get_month_day_range(date):
+    """
+    For a date, returns the start and end date of the month specified 
+    """
+    first_day = date.replace(day=1)
+    last_day = date.replace(day=calendar.monthrange(date.year, date.month)[1])
+    return first_day, last_day
+
 
 def add_one_month(t):
     """Return a `datetime.date` or `datetime.datetime` (as given) that is
@@ -184,11 +193,16 @@ def add_one_month(t):
 
     target_month = one_month_later.month
     
+    #issue with this conditional when t.day = 28 (i.e. feb, never gets to the end of next month)
+    #while one_month_later.day < 31  ? nope doesnt work if not trying to get the laast of the month 
+
     while one_month_later.day < t.day:  # advance to appropriate day, needs to always get to the end of the month 
         one_month_later += one_day
         if one_month_later.month != target_month:  # gone too far
             one_month_later -= one_day
             break
+            
+
     return one_month_later
 
 def subtract_one_month(t):
@@ -347,3 +361,33 @@ class StatsRange(object):
         Return instantiated one day period for date.
         """
         return cls("One month", subtract_one_month(date), date - timedelta(days=1))
+        
+        
+def list_of_months(today, num_years):
+    """
+    Return a list of monthly stats ranges for the amount of years specified 
+    """
+    #find last day of month??????
+    #today = self.period.end_date
+    start_month = date(today.year-num_years, today.month, 1)
+    end_month = today + timedelta(days=1) #first of next month so includes this month
+    current = start_month
+    month_stats_range = []
+    while (current.year, current.month) != (end_month.year, end_month.month):
+        start_date = current
+        end_date = get_month_day_range(current)[1]
+        name =  start_date.strftime("%b-%Y")
+        month_stats_range.append(StatsRange(name, start_date, end_date))
+        current = add_one_month(start_date)  
+        
+    return month_stats_range
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    

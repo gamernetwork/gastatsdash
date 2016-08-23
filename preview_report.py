@@ -1,4 +1,4 @@
-from Statsdash.report import YoutubeReport, AnalyticsCoreReport, AnalyticsSocialReport, AnalyticsSocialExport
+from Statsdash.report import YoutubeReport, AnalyticsCoreReport, AnalyticsSocialReport, AnalyticsSocialExport, AnalyticsYearSocialReport
 import argparse
 #import report_schedule
 
@@ -34,9 +34,13 @@ else:
 	
 file_src = args.destination + "/" + file_name
 
+
 monthly_period = utils.StatsRange("period", date(2016, 05, 01), date(2016, 05, 31))
 daily_period = utils.StatsRange("period", date(2016, 8, 12), date(2016, 8, 12))
 weekly_period = utils.StatsRange("period", date(2016, 8, 15), date(2016, 8, 21))
+
+
+test_period = utils.StatsRange("future", date(2016, 8, 01), date(2016, 8, 30))
 
 if report_type == "YoutubeReport":
     sites =yt_config.CHANNELS.keys()
@@ -59,6 +63,12 @@ elif report_type == "AnalyticsSocialExport":
     sc = AnalyticsSocialExport(sites, monthly_period, config.all_recipients, "MONTHLY", "Social Export for")
     html = sc.generate_html()   
     sc.send_email(html) 
+elif report_type == "AnalyticsYearSocialReport":
+    report = AnalyticsYearSocialReport(sites, monthly_period, config.all_recipients, "MONTHLY", "Top Social Networks for")
+    html = report.generate_html()
+    #report.send_email(html)
+    
+    
 
 else:
     raise Exception("Unknown report type")
