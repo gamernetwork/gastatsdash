@@ -145,7 +145,7 @@ class Errors(object):
         sender.quit()  
             
 
-def _run():
+def _run(dryrun=False):
     """
     The main loop.  Iterate over our report config and try to run reports that
     are scheduled to run now.
@@ -153,7 +153,7 @@ def _run():
     run_logger = RunLogger()
     logging.config.dictConfig(LOGGING)
     logger = logging.getLogger('report')
-    
+
     for config in reports:
         identifier = config['identifier']
         frequency = config['frequency']
@@ -176,63 +176,34 @@ def _run():
             
             run_logger.override_data = False
             print "%s next run: %s.  Data available: %s" % (identifier, next_run_date, data_available)
+            if dryrun == True:
+                print "last run %s" %(last_run)
+                print "period for run: %s - %s" % (period.start_date, period.end_date)               
             if data_available:
                 try:
-                    html = report.generate_html()
-                    report.send_email(html)
-                    run_datetime = datetime(year=report.period.end_date.year, 
-                        month=report.period.end_date.month, 
-                        day=report.period.end_date.day,
-                        hour=0,
-                        minute=0,
-                        second=0,
-                        microsecond=1
-                    )           
-                    run_logger.record_run(identifier, run_datetime)
+                    if dryrun == False:
+                        html = report.generate_html()
+                        report.send_email(html)
+                        run_datetime = datetime(year=report.period.end_date.year, 
+                            month=report.period.end_date.month, 
+                            day=report.period.end_date.day,
+                            hour=0,
+                            minute=0,
+                            second=0,
+                            microsecond=1
+                        )           
+                        run_logger.record_run(identifier, run_datetime)
                 except Exception:
                     print "Error in generating report %s" % identifier
                     error_list.add_error("Error in generating report %s : \n %s" % (identifier, traceback.format_exc()))
                     traceback.print_exc()
                     continue
 
-def dry_run():
-    """
-    Run the scheduler and print what would happen but don't actually run or record reports
-    """
-    
-    run_logger = RunLogger()
-    
-    for config in reports:
-        identifier = config['identifier']
-        frequency = config['frequency']
-        frequency_options = config.get('frequency_options', {})
-        report_class = config['report']
-        last_run = run_logger.get_last_run(identifier)
-        next_run_date = run_logger.get_next_run(last_run, frequency, frequency_options).date()
-        today = date.today()
-        needs_run = next_run_date <= today
-        print "%s next run: %s.  Needs run: %s" % (identifier, next_run_date, needs_run)
-        if needs_run:
-            period = utils.StatsRange.get_period(next_run_date, frequency)
-            report = config["report"](config["sites"], period, config["recipients"], config["frequency"], config["subject"])  
-            print "last run %s" %(last_run)
-            print "period for run: %s - %s" % (period.start_date, period.end_date)
-            if run_logger.override_data == True:
-                data_available = report.check_data_availability(override=True)
-                print "Override data"
-            else:
-                data_available = report.check_data_availability()
-            
-            run_logger.override_data = False
-            print "%s next run: %s.  Data available: %s" % (identifier, next_run_date, data_available)    
 
-  
-
-
-def run_schedule():
+def run_schedule(dryrun=False):
     print "** Running schedule at %s" % datetime.now().isoformat()
     try:
-        _run()
+        _run(dryrun)
     except Exception:
         traceback.print_exc()
     print "** Finished run at %s" % datetime.now().isoformat()
@@ -243,9 +214,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
     error_list = Errors()
     
-    if args.test == False:
-       run_schedule()
-    elif args.test == True:
-        dry_run()
+    run_schedule(args.test)
     
     error_list.send_errors()
