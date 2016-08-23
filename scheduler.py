@@ -1,8 +1,13 @@
 import sqlite3, os, traceback
 
-
 from sqlite3 import OperationalError
 from datetime import date, datetime, timedelta
+import argparse
+import Statsdash.config as config
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.image import MIMEImage
+import smtplib
 
 import Statsdash.config as config
 from Statsdash.report_schedule import reports
@@ -62,7 +67,7 @@ class RunLogger(object):
         )
         self.conn.commit()
 
-    def get_next_run(self, last_run, frequency, frequency_options={}):
+    def get_next_run(self, last_period_end, frequency, frequency_options={}):
         """
         When should the report run next.
         Returns a Date object
@@ -86,7 +91,7 @@ class RunLogger(object):
                 return next_run
        
         if frequency == 'DAILY' or frequency == "WOW_DAILY":
-            #if last run was over 2 days ago, set to yesterday 
+            #if last period end was over 2 days ago, set to yesterday 
             next_run = last_period_end + timedelta(days=1)
             if (now - last_period_end).days >= 2:
               self.override_data = True
@@ -97,7 +102,7 @@ class RunLogger(object):
             #add one day to last_period_end to get the first day of next month period 
             next_run = last_period_end + timedelta(days=1) 
             #needs to run at the end of the next period, so add one month
-            next_run = add_one_month(last_period_end)
+            next_run = add_one_month(next_run)
             #make sure set to be correct day 
             next_run = next_run.replace(day=day) 
             if (now - next_run).days >= 2:
@@ -106,7 +111,44 @@ class RunLogger(object):
         return next_run
 
 
-def _run():
+class Errors(object):
+    errors = []
+    def get_errors(self):
+        """
+        Return list of current errors
+        """
+        return self.errors
+    
+    def add_error(self, error):
+        """
+        Add to list of errors
+        """
+        self.errors.append(error)
+        
+    def send_errors(self):
+        """
+        Send html email using config parameters
+        """
+        msg = MIMEMultipart('alternative')
+        msg.set_charset('utf8')
+        msg['Subject'] = "Statsdash Errors"
+        msg['From'] = config.SEND_FROM
+        msg['To'] = config.ERROR_REPORTER
+        
+        message = ""
+        for error in self.errors:
+            message += error + "\n"
+        
+        text_part = MIMEText(message, 'plain')      
+        msg.attach(text_part)
+        
+        sender = smtplib.SMTP(config.SMTP_ADDRESS)
+        sender.sendmail(config.SEND_FROM, config.ERROR_REPORTER, msg.as_string())
+    
+        sender.quit()  
+            
+
+def _run(dryrun=False):
     """
     The main loop.  Iterate over our report config and try to run reports that
     are scheduled to run now.
@@ -114,7 +156,7 @@ def _run():
     run_logger = RunLogger()
     logging.config.dictConfig(LOGGING)
     logger = logging.getLogger('report')
-    
+
     for config in reports:
         identifier = config['identifier']
         frequency = config['frequency']
@@ -131,38 +173,50 @@ def _run():
             if run_logger.override_data == True:
                 data_available = report.check_data_availability(override=True)
                 logger.warning("Overriding data availability and sending report anyway")
+                error_list.add_error("No data available, overriding for report %s between %s - %s " % (identifier, period.start_date, period.end_date))
             else:
                 data_available = report.check_data_availability()
             
             run_logger.override_data = False
             print "%s next run: %s.  Data available: %s" % (identifier, next_run_date, data_available)
-            
+            if dryrun == True:
+                print "last run %s" %(last_run)
+                print "period for run: %s - %s" % (period.start_date, period.end_date)               
             if data_available:
                 try:
-                    html = report.generate_html()
-                    report.send_email(html)
-                    run_datetime = datetime(year=report.period.end_date.year, 
-                        month=report.period.end_date.month, 
-                        day=report.period.end_date.day,
-                        hour=0,
-                        minute=0,
-                        second=0,
-                        microsecond=1
-                    )           
-                    run_logger.record_run(identifier, run_datetime)
+                    if dryrun == False:
+                        html = report.generate_html()
+                        report.send_email(html)
+                        run_datetime = datetime(year=report.period.end_date.year, 
+                            month=report.period.end_date.month, 
+                            day=report.period.end_date.day,
+                            hour=0,
+                            minute=0,
+                            second=0,
+                            microsecond=1
+                        )           
+                        run_logger.record_run(identifier, run_datetime)
                 except Exception:
-                	traceback.print_exc()
-                	continue
+                    print "Error in generating report %s" % identifier
+                    error_list.add_error("Error in generating report %s : \n %s" % (identifier, traceback.format_exc()))
+                    traceback.print_exc()
+                    continue
 
 
-def run_schedule():
+def run_schedule(dryrun=False):
     print "** Running schedule at %s" % datetime.now().isoformat()
     try:
-        _run()
+        _run(dryrun)
     except Exception:
         traceback.print_exc()
     print "** Finished run at %s" % datetime.now().isoformat()
 
 if __name__ == '__main__':
-
-    run_schedule()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-t", "--test", help="test run", action="store_true")
+    args = parser.parse_args()
+    error_list = Errors()
+    
+    run_schedule(args.test)
+    
+    error_list.send_errors()
