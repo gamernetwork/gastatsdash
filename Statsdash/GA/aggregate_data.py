@@ -75,8 +75,8 @@ class AnalyticsData(object):
             data[count] = aggregate      
         
         for period in data:
-            data[period]["pv_per_session"] = data[period]["pv_per_session"]/len(self.sites)
-            data[period]["avg_session_time"] = (data[period]["avg_session_time"]/len(self.sites))/60.0
+            data[period]["pv_per_session"] = data[period].get("pv_per_session", 0)/len(self.sites)
+            data[period]["avg_session_time"] = (data[period].get("avg_session_time", 0)/len(self.sites))/60.0
             
             
         this_period = utils.add_change(data[0], data[1], ["pageviews", "users", "sessions", "pv_per_session", "avg_session_time"], "previous")

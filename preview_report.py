@@ -35,8 +35,8 @@ else:
 file_src = args.destination + "/" + file_name
 
 
-monthly_period = utils.StatsRange("period", date(2016, 05, 01), date(2016, 05, 31))
-daily_period = utils.StatsRange("period", date(2016, 8, 12), date(2016, 8, 12))
+monthly_period = utils.StatsRange("period", date(2016, 07, 01), date(2016, 07, 31))
+daily_period = utils.StatsRange("period", date(2016, 8, 22), date(2016, 8, 22))
 weekly_period = utils.StatsRange("period", date(2016, 8, 15), date(2016, 8, 21))
 
 
@@ -49,8 +49,8 @@ if report_type == "YoutubeReport":
     html = yt.generate_html()
     #yt.send_email(html)
 elif report_type == "AnalyticsCoreReport":
-    ac = AnalyticsCoreReport(sites, daily_period, config.all_recipients, "WOW_DAILY", "Report for")
-    #ac = AnalyticsCoreReport(sites, monthly_period, config.all_recipients, "MONTHLY", "Report for")
+    #ac = AnalyticsCoreReport(['jelly.deals'], daily_period, config.all_recipients, "WOW_DAILY", "Report for")
+    ac = AnalyticsCoreReport(['jelly.deals'], monthly_period, config.all_recipients, "MONTHLY", "Report for")
     #ac = AnalyticsCoreReport(sites, monthly_period, config.all_recipients, "MONTHLY", "Report for")
     html = ac.generate_html()
     #ac.send_email(html)
