@@ -17,6 +17,8 @@ from Statsdash.utilities import find_last_weekday, add_one_month, find_next_week
 
 from Statsdash.config import LOGGING
 import logging, logging.config, logging.handlers
+from tendo import singleton
+import sys
 
 class RunLogger(object):
     """
@@ -204,6 +206,8 @@ def _run(dryrun=False):
 
 def run_schedule(dryrun=False):
     print "** Running schedule at %s" % datetime.now().isoformat()
+    me = singleton.SingleInstance()
+    
     try:
         _run(dryrun)
     except Exception:
@@ -216,7 +220,11 @@ if __name__ == '__main__':
     args = parser.parse_args()
     error_list = Errors()
     
-    run_schedule(args.test)
+    try:
+        run_schedule(args.test)
+    except SystemExit:
+        print "** Quitting run at %s" % datetime.now().isoformat()
+        sys.exit(-1)
     
     if error_list.get_errors():
         error_list.send_errors()
