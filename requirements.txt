@@ -25,3 +25,4 @@ requests==2.10.0
 premailer
 pygal
 cairosvg
+tendo==0.2.8

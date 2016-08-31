@@ -17,6 +17,8 @@ from Statsdash.utilities import find_last_weekday, add_one_month, find_next_week
 
 from Statsdash.config import LOGGING
 import logging, logging.config, logging.handlers
+from tendo import singleton
+import sys
 
 class RunLogger(object):
     """
@@ -152,6 +154,12 @@ def _run(dryrun=False):
     The main loop.  Iterate over our report config and try to run reports that
     are scheduled to run now.
     """   
+    try:
+        me = singleton.SingleInstance()
+    except SystemExit:
+        print "** Quitting run at %s" % datetime.now().isoformat()   
+        sys.exit(-1)
+        
     run_logger = RunLogger()
     logging.config.dictConfig(LOGGING)
     logger = logging.getLogger('report')
@@ -203,7 +211,7 @@ def _run(dryrun=False):
 
 
 def run_schedule(dryrun=False):
-    print "** Running schedule at %s" % datetime.now().isoformat()
+    print "** Running schedule at %s" % datetime.now().isoformat() 
     try:
         _run(dryrun)
     except Exception:
