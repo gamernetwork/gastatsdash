@@ -154,6 +154,12 @@ def _run(dryrun=False):
     The main loop.  Iterate over our report config and try to run reports that
     are scheduled to run now.
     """   
+    try:
+        me = singleton.SingleInstance()
+    except SystemExit:
+        print "** Quitting run at %s" % datetime.now().isoformat()   
+        sys.exit(-1)
+        
     run_logger = RunLogger()
     logging.config.dictConfig(LOGGING)
     logger = logging.getLogger('report')
@@ -205,9 +211,7 @@ def _run(dryrun=False):
 
 
 def run_schedule(dryrun=False):
-    print "** Running schedule at %s" % datetime.now().isoformat()
-    me = singleton.SingleInstance()
-    
+    print "** Running schedule at %s" % datetime.now().isoformat() 
     try:
         _run(dryrun)
     except Exception:
@@ -220,11 +224,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     error_list = Errors()
     
-    try:
-        run_schedule(args.test)
-    except SystemExit:
-        print "** Quitting run at %s" % datetime.now().isoformat()
-        sys.exit(-1)
+    run_schedule(args.test)
     
     if error_list.get_errors():
         error_list.send_errors()
