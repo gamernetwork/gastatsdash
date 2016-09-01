@@ -148,7 +148,7 @@ class YoutubeReport(Report):
             if override:
                 self.warning_sites = check["channel"]
                 
-                return check["site"]
+                return check["channel"]
             else:
                 return False
 		    
