@@ -58,7 +58,18 @@ class Report(object):
         first_letter = self.frequency[0].upper()
         label = first_letter + "o" + first_letter
         return label
-    
+
+    def check_data_availability(self, override=False):
+        check = self.data.check_available_data()
+        if check["result"]:
+            return True
+        else:
+            logger.debug("Data not available for: %s" % check["site"])
+            if override:
+                self.warning_sites = check["site"]
+                return check["site"]
+            else:
+                return False	    
 
     def generate_html(self):
         """
@@ -137,7 +148,7 @@ class YoutubeReport(Report):
             if override:
                 self.warning_sites = check["channel"]
                 
-                return True
+                return check["channel"]
             else:
                 return False
 		    
@@ -162,18 +173,6 @@ class AnalyticsCoreReport(Report):
             self.all_sites = False
         
         logger.debug("Running analytics core report")
-
-    def check_data_availability(self, override=False):
-        check = self.data.check_available_data()
-        if check["result"]:
-            return True
-        else:
-            logger.debug("Data not available for: %s" % check["site"])
-            if override:
-                self.warning_sites = check["site"]
-                return True
-            else:
-                return False
                 
                 
     def get_site(self):
@@ -316,18 +315,6 @@ class AnalyticsSocialReport(Report):
             self.all_sites = True
         else:
             self.all_sites = False
-		
-    def check_data_availability(self, override=False):
-        check = self.data.check_available_data()
-        if check["result"]:
-            return True
-        else:
-            logger.debug("Data not available for: %s" % check["site"])
-            if override:
-                self.warning_sites = check["site"]
-                return True
-            else:
-                return False	
                 
     def get_site(self):
         if len(self.sites) == 1:
@@ -417,19 +404,6 @@ class AnalyticsYearSocialReport(Report):
         subject = ' '.join([self.subject, dates])
         
         return subject
-
-		
-    def check_data_availability(self, override=False):
-        check = self.data.check_available_data()
-        if check["result"]:
-            return True
-        else:
-            logger.debug("Data not available for: %s" % check["site"])
-            if override:
-                self.warning_sites = check["site"]
-                return True
-            else:
-                return False	
                 
     def get_site(self):
         if len(self.sites) == 1:
@@ -508,20 +482,7 @@ class AnalyticsSocialExport(Report):
         self.warning_sites = []
         self.template = self.env.get_template("social.csv")
         
-        logger.debug("Running analytics social export")   	
-
-    def check_data_availability(self, override=False):
-        check = self.data.check_available_data()
-        if check["result"]:
-            return True
-        else:
-            logger.debug("Data not available for: %s" % check["site"])
-            if override:
-                self.warning_sites = check["site"]
-                return True
-            else:
-                return False	
-        
+        logger.debug("Running analytics social export")   	        
     	
     def generate_html(self):
 

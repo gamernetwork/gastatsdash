@@ -178,9 +178,10 @@ def _run(dryrun=False):
             period = utils.StatsRange.get_period(next_run_date, frequency)
             report = config["report"](config["sites"], period, config["recipients"], config["frequency"], config["subject"])  
             if run_logger.override_data == True:
-                data_available = report.check_data_availability(override=True)
+                data_available = True
+                no_data_site = report.check_data_availability(override=True)
                 logger.warning("Overriding data availability and sending report anyway")
-                error_list.add_error("No data available, overriding for report %s between %s - %s " % (identifier, period.start_date, period.end_date))
+                error_list.add_error("There is no data, or a lack of data available for the site: %s between %s - %s. This is being overridden to send the report %s anyway." % (no_data_site, period.start_date, period.end_date, identifier)))
             else:
                 data_available = report.check_data_availability()
             
