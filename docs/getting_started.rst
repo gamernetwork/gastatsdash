@@ -6,18 +6,16 @@ A quick way to set up Statsdash.
 Install
 -------
 
-Pop it in a virtualenv for safety.
+Pop it in a virtualenv for safety. ::
 
-```shell
-virtualenv env
-env/bin/pip install -r requirements.txt
-```
+	virtualenv env
+	env/bin/pip install -r requirements.txt
 
-Copy ```report_schedule.py-example``` to ```report_schedule.py``` and change the reports config to be appropriate to you.
+Copy ``report_schedule.py-example`` to ``report_schedule.py`` and change the reports config to be appropriate to you.
 
-Copy ```config.py-example``` to ```config.py``` for Statsdash/config.py and change values to those appropriate to you. 
+Copy ``config.py-example`` to ``config.py`` for Statsdash/config.py and change values to those appropriate to you. 
 
-Do the same for each API config.py - ```Statsdash/GA/config.py``` and/or ```Statsdash/Youtube/config.py``` and change values to those appropriate to you. 
+Do the same for each API config.py - ``Statsdash/GA/config.py`` and/or ``Statsdash/Youtube/config.py`` and change values to those appropriate to you. 
 
 Get your tables IDs from the Google Analytics backends - look for the view IDs.
 
@@ -54,20 +52,20 @@ Generating OAuth Client ID
 Get your content owner ID
 --------------------------
 
-  - You must run the ```get_content_owner()``` function in ```Statsdash/Youtube/analytics.py```, to do this:
+  - You must run the ``get_content_owner()`` function in ``Statsdash/Youtube/analytics.py``, to do this:
   - Generate the OAuth client ID first (see above)
-  - Add this code at the very top of analytics.py:
-```  
-  import sys
-    sys.path.append("/path/to/gastatsdash")
-```
-  - Add this code at the bottom of the analytics.py:
-```  
-  if __name__=="__main__":
-      analytics = Analytics()
-      print analytics.get_content_owner()["items"][0]["id"]
-```
-  - You can then run ``` python analytics.py --noauth_local_webserver ```
+  - Add this code at the very top of analytics.py::
+
+  	import sys
+    		sys.path.append("/path/to/gastatsdash")
+
+  - Add this code at the bottom of the analytics.py::
+  
+  	if __name__=="__main__":
+      		analytics = Analytics()
+      		print analytics.get_content_owner()["items"][0]["id"]
+
+  - You can then run ``python analytics.py --noauth_local_webserver``
   - Follow the instructions. Copy the link into your browser, click "allow" and copy and paste the code back into the shell. 
   - Your content owner id will be printed out, put it into the Youtube/config.py 
   - Remember to remove these bits of code after! 
@@ -79,25 +77,22 @@ Usage
 
 Reports are run using a lightweight scheduler - scheduler.py.
 
-If you are using the Youtube API you must first set up the OAuth connection by running:
+If you are using the Youtube API you must first set up the OAuth connection by running::
 
-```
-python scheduler.py --noauth_local_webserver
-```
+	python scheduler.py --noauth_local_webserver
+
 Then copy the link into your browser, click "allow" and copy and paste the key given into the shell. 
 
 This should now have set up your scheduler with an oauth connection and created a file "scheduler.py-oauth2.json".
 
 You will have to do this for every file you want to run the Youtube API from. 
 
-You can now run the scheduler as normal:
+You can now run the scheduler as normal::
+
+	python scheduler.py
 
 
-```
-python scheduler.py
-```
-
-This will iterate through the reports in your report config ```report_schedule.py```,
+This will iterate through the reports in your report config ``report_schedule.py``,
 check whether a report is due to run now and whether the data for the report is
 available in Google Analytics.
 
