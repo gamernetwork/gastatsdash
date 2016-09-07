@@ -1,5 +1,6 @@
 *.p12
 config.py
+docs/_build
 *.py-oauth2.json
 *.pyc
 *.json
