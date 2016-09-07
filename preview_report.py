@@ -50,7 +50,7 @@ if report_type == "YoutubeReport":
     #yt.send_email(html)
 elif report_type == "AnalyticsCoreReport":
     #ac = AnalyticsCoreReport(['jelly.deals'], daily_period, config.all_recipients, "WOW_DAILY", "Report for")
-    ac = AnalyticsCoreReport(['jelly.deals'], monthly_period, config.all_recipients, "MONTHLY", "Report for")
+    ac = AnalyticsCoreReport(sites, daily_period, config.all_recipients, "DAILY", "Report for")
     #ac = AnalyticsCoreReport(sites, monthly_period, config.all_recipients, "MONTHLY", "Report for")
     html = ac.generate_html()
     #ac.send_email(html)
