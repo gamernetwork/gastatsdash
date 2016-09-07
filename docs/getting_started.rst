@@ -1,3 +1,8 @@
+Getting Started
+==============
+
+A quick way to set up Statsdash.
+
 Install
 -------
 

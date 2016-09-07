@@ -7,7 +7,7 @@ Welcome to Statsdash's documentation!
 =====================================
 
 Statsdash is a program that aggregates data from Google Analytics and Youtube Analytics to email out reports.
-Mainly aimed at users who want to compare data from multiple analytics profiles. 
+Mainly aimed at users who want to compare data from multiple analytics profiles and send out multiple different reports.
 
 
 Contents:
