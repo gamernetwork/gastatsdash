@@ -353,6 +353,7 @@ class StatsRange(object):
         """
         Return instantiated one day period for date.
         """
+        date = date - timedelta(days=1)
         return cls("One week", date-timedelta(days=6), date)
 
     @classmethod
