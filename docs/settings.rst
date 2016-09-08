@@ -39,7 +39,7 @@ Each report config is a dictionary with the necessary key, value pairs to create
 |		     +----------------------------------+--------------------------------------+
 |                    |  | Key = "weekday"              	|  | Key = "day'	               |
 |		     |  | Value = name of the weekday   |  | Value = Number of day in month    |
-|                    |      e.g. "Monday"               |      e.g. 1                          |
+|                    |  |   e.g. "Monday"               |  |   e.g. 1                          |
 +--------------------+----------------------------------+--------------------------------------+
 |     Identifier     |	 indiviudal report identifier					       |
 |		     |		 used in the schedule database to store run dates.	       |
