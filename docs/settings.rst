@@ -37,8 +37,8 @@ Each report config is a dictionary with the necessary key, value pairs to create
 |		     +----------------------------------+--------------------------------------+
 |		     |	 Weekly 		        |   Monthly		               |
 |		     +----------------------------------+--------------------------------------+
-|                    |  |Key = "weekday"              	|  |Key = "day'	                       |
-|		     |  |Value = name of the weekday    |  |Value = Number of day in month     |
+|                    |  | Key = "weekday"              	|  | Key = "day'	               |
+|		     |  | Value = name of the weekday   |  | Value = Number of day in month    |
 |                    |      e.g. "Monday"               |      e.g. 1                          |
 +--------------------+----------------------------------+--------------------------------------+
 |     Identifier     |	 indiviudal report identifier					       |
