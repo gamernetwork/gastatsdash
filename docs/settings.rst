@@ -53,11 +53,24 @@ Main Config
 
 ``Statsdash/config.py``
 
+In the main config should only be the settings you need for the report or schedule class. 
+
+You can see an example at ``Statsdash/config.py-example``
+
+For example, define in here:
+
+  - Logging info and configuration
+  - Mail settings and personal emails
+  - Schedule database location
+
 
 Google Analytics Config 
 ----------------------
 
 ``Statsdash/GA/config.py``
+
+You should put all the Google Analytics relevant settings in here.
+
 
 
 Youtube Analytics Config
