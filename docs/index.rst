@@ -16,6 +16,8 @@ Contents:
    :maxdepth: 2
 
    getting_started.rst
-   
+   settings.rst
+   scheduler.rst
+   reports.rst
 
 

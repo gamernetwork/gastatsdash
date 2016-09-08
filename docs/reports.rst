@@ -1,6 +1,10 @@
 Reports
 =======
 
+Overview
+--------
+The main function of the program is to aggregate and display the data in helpful html reports.
+For each new report type there is a specific report class that inherits from the base Report class. 
 
 Report Class
 ------------
@@ -20,6 +24,11 @@ send_email()
 	simple function to send the html email.
 
 Each child report class must define they're individual "generate_html" function which calculates and passes the data to the templates.
+
+
+Templates
+--------
+Jinja 2
 
 
 Add a new report
