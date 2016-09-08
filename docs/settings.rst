@@ -23,9 +23,9 @@ Each report config is a dictionary with the necessary key, value pairs to create
 |	Recipients   |	 List of emails who will recieve this report.			       |
 +--------------------+-------------------------------------------------------------------------+
 |	Subject	     |	 The subject line of the report					       |
-|		     |       The date period for the report is appended to the subject,	       |
-|                    |         so it might be best to end the subject line with " for ".       |
-|                    |           e.g. "Site.net daily report for"                              |
+|		     |      | The date period for the report is appended to the subject,       |
+|                    |      | so it might be best to end the subject line with " for ".        |
+|                    |      | e.g. "Site.net daily report for"                                 |
 +--------------------+-------------------------------------------------------------------------+
 |	Sites	     |	 List of site names 						       |
 |		     |      Must be the same string as in the individual analytics config      |
@@ -37,8 +37,8 @@ Each report config is a dictionary with the necessary key, value pairs to create
 |		     +----------------------------------+--------------------------------------+
 |		     |	 Weekly 		        |   Monthly		               |
 |		     +----------------------------------+--------------------------------------+
-|                    |   Key = "weekday"              	|   Key = "day'	                       |
-|		     |   Value = name of the weekday    |   Value = Number of day in month     |
+|                    |  |Key = "weekday"              	|  |Key = "day'	                       |
+|		     |  |Value = name of the weekday    |  |Value = Number of day in month     |
 |                    |      e.g. "Monday"               |      e.g. 1                          |
 +--------------------+----------------------------------+--------------------------------------+
 |     Identifier     |	 indiviudal report identifier					       |
@@ -58,7 +58,6 @@ In the main config should only be the settings you need for the report or schedu
 You can see an example at ``Statsdash/config.py-example``
 
 For example, define in here:
-
   - Logging info and configuration
   - Mail settings and personal emails
   - Schedule database location
