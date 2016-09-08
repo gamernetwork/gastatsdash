@@ -24,8 +24,8 @@ Each report config is a dictionary with the necessary key, value pairs to create
 +--------------------+-------------------------------------------------------------------------+
 |	Subject	     |	 The subject line of the report					       |
 |		     |       The date period for the report is appended to the subject,	       |
-|                    |       so it might be best to end the subject line with " for ".	       |
-|                    |       e.g. "Site.net daily report for"                                  |
+|                    |         so it might be best to end the subject line with " for ".       |
+|                    |           e.g. "Site.net daily report for"                              |
 +--------------------+-------------------------------------------------------------------------+
 |	Sites	     |	 List of site names 						       |
 |		     |      Must be the same string as in the individual analytics config      |
