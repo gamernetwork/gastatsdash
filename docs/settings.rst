@@ -6,11 +6,11 @@ Report Schedule
 
 ``Statsdash/report_schedule.py``
 
-This is where you list all the reports you want the scheduler to run.
+A list of the separate reports the scheduler will run.
 
 In the ``report_scheduler.py-example`` you should be able to see an example configuration.
 
-All the reports must be contained in a list named *reports*.
+All the reports must be contained in a list named **reports**.
 
 Each report config is a dictionary with the necessary key, value pairs to create that report, each one must have:
 
@@ -70,6 +70,9 @@ Google Analytics Config
 
 You should put all the Google Analytics relevant settings in here.
 
+See an example at ``Statsdash/GA/config.py-example``
+
+You should have a dictionary called **TABLES** that contains your *site names* as *keys*.  
 
 
 Youtube Analytics Config
