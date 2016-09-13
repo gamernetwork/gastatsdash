@@ -39,14 +39,16 @@ It also has a function that checks the data's availability which queries to get 
 Youtube Analytics
 -----------------
 
-We have set up access to the Youtube Analytics and Reporting API using OAuth 2.0. You will need to do this as well, following :ref:`these steps <oauth_account>` or for more info go `here <https://developers.google.com/youtube/reporting/guides/authorization>`_ or `here <https://developers.google.com/api-client-library/python/guide/aaa_oauth>`_.
+We have set up access to the Youtube Analytics and Reporting API using OAuth 2.0. You will need to do this as well, following :ref:`these steps <oauth_account>` or for more info go to the `youtube implementation <https://developers.google.com/youtube/reporting/guides/authorization>`_ or the `google python API client implementation <https://developers.google.com/api-client-library/python/guide/aaa_oauth>`_.
+
 
 You must have a content owner ID as this is how the analytics queries are set up. 
 
 Using this tool works best for content owners with multiple channels.
 
-Data Check
-To check if data is available we query for views on the period end date. If no results are returned then the data is not ready yet.
+The analytics class has one main function to run a query, rollup the date from same-channel IDs and get specific values like your content owner ID, video names or realtime channel statistics.
+
+It also has a function that checks the data availability which queries to get views on the period end date. If no results are returned then the data is not ready yet.
 
 
 Adding a new service
