@@ -17,41 +17,32 @@ Each report config is a dictionary with the necessary key, value pairs to create
 +--------------------+-------------------------------------------------------------------------+
 |	Key	     |			Value 						       |
 +====================+=========================================================================+
-|	Report 	     | Name of the report class you wish to use. 			       |
-|	             |									       |
-|		     | (This needs to be imported into the file)		               |
+|	Report 	     | | Name of the report class you wish to use. 			       |
+|		     | | (This needs to be imported into the file)		               |
 +--------------------+-------------------------------------------------------------------------+
-|	Recipients   | List of emails who will recieve this report.			       |
+|	Recipients   | | List of emails who will recieve this report.			       |
 +--------------------+-------------------------------------------------------------------------+
-|	Subject	     | The subject line of the report					       |
-|		     |									       |
-|		     | The date period for the report is appended to the subject,              |
-|		     | 									       |
-|                    | so it might be best to end the subject line with "for ".                |
-|		     |									       |
-|                    | e.g. "Site.net daily report for"                                        |
+|	Subject	     | | The subject line of the report					       |
+|		     | | The date period for the report is appended to the subject,            |
+|                    | | so it might be best to end the subject line with "for ".              |
+|                    | | e.g. "Site.net daily report for"                                      |
 +--------------------+-------------------------------------------------------------------------+
-|	Sites	     | List of site names 						       |
-|		     |  								       |
-|		     | Must equal the name in the individual analytics config                  |
+|	Sites	     | | List of site names 						       |
+|		     | | Must equal the name in the individual analytics config                |
 +--------------------+-------------------------------------------------------------------------+
-|	Frequency    |	 Options are "WOW_DAILY", "WEEKLY", "MONTHLY"			       |
+|	Frequency    | | Options are "WOW_DAILY", "WEEKLY", "MONTHLY"			       |
 +--------------------+----------------------+-------------------------+------------------------+
-|  Frequency Options | Set when to run a report for Weekly or Monthly frequecy values          |
-|                    |									       |	
-|    (optional)      | value should be a dictionary containing either:                         |
+|  Frequency Options | | Set when to run a report for Weekly or Monthly frequecy values        |
+|    (optional)      | | value should be a dictionary containing either:                       |
 |		     +----------------------------------+--------------------------------------+
 |		     |	 Weekly 		        |   Monthly		               |
 |		     +----------------------------------+--------------------------------------+
-|                    | Key = "weekday"              	| Key = "day'	                       |
-|		     |				        |				       |
-|		     | Value = Name of the weekday      | Value = Number of day in month       |
-|		     |				        |				       |
-|                    |   e.g. "Monday"                  |   e.g. 1                             |
+|                    | | Key = "weekday"              	| | Key = "day'	                       |
+|		     | | Value = Name of the weekday    | | Value = Number of day in month     |
+|                    | |   e.g. "Monday"                | |   e.g. 1                           |
 +--------------------+----------------------------------+--------------------------------------+
-|     Identifier     | indiviudal report identifier					       |
-|		     |									       |
-|		     | used in the schedule database to store run dates.	               |
+|     Identifier     | | indiviudal report identifier					       |
+|		     | | used in the schedule database to store run dates.	               |
 +--------------------+-------------------------------------------------------------------------+
 
 
