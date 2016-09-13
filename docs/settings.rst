@@ -6,7 +6,7 @@ Report Schedule
 
 ``Statsdash/report_schedule.py``
 
-A list of the separate reports the scheduler will run.
+This is where you list all the reports you want the scheduler to run.
 
 In the ``report_scheduler.py-example`` you should be able to see an example configuration.
 
@@ -68,17 +68,38 @@ Google Analytics Config
 
 ``Statsdash/GA/config.py``
 
-You should put all the Google Analytics relevant settings in here.
+You should put all the relevant Google Analytics settings in here.
+
+ - client email 
+ - path to key file
+ - dictionary of site names and IDs
+ - black list of page paths to remove from article tables
+ - black list of sources to remove from traffic source tables
 
 See an example at ``Statsdash/GA/config.py-example``
 
 You should have a dictionary called **TABLES** that contains your *site names* as *keys*.  
 
+The *value* of each site name key should be a list of dictionaries, each dictionary containing a key value pair with key "id" and value profile id. This is to allow multiple ids to be rolled up into the same site. e.g. when theres main site traffic and AMP traffic. Also an additional optional "wait_for_data" key that can be added to each id dictionary, value is default True but can be defined to False if there's no need to wait for date to become available for that id. 
+
+Additionally in the GA config values specific to GA are defined. For example, the path to your private analytics keyfile.
+There is also a code snippet to remove pathnames from article tables, e.g. to remove static pages such as "/index" and "/forum".
+Also a list of sources to remove from the source referral table. 
 
 Youtube Analytics Config
 -----------------------
 
 ``Statsdash/Youtube/config.py``
+
+You should put all the relevant Youtube Analytics settings in here.
+
+ - path to client secrets file
+ - content owner id
+ - dictionary of channel names and IDs
+
+See an example at ``Statsdash/Youtube/config.py-example``
+
+
 
 
 
