@@ -11,6 +11,7 @@ Report Class
 
 The report class defines what each report contains. 
 The parent class defines some base functions that all reports use:
+
 get_subject() 
 	creates the subject of the email, which is also the title of the report using the frequency and period variables.
 
@@ -23,12 +24,11 @@ check_data_availability()
 send_email()
 	simple function to send the html email.
 
-Each child report class must define they're individual "generate_html" function which calculates and passes the data to the templates.
-
+Each child report class must define a **generate_html()** function. Within this they call to the aggregate_data class and retrieve the data tables needed. Should then pass the table data to the template.
 
 Templates
 --------
-Jinja 2
+`Jinja 2 <http://jinja.pocoo.org/docs/dev/#>`_
 
 
 Add a new report
