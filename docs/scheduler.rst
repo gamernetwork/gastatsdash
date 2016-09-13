@@ -24,7 +24,7 @@ Data Availability
 
 Often with analytics services data is not ready to be queried immediately, so we make checks for when the data is available.
 
-For example, Google Analytics has a `processing latency <https://support.google.com/analytics/answer/1070983?hl=en>` of 24-48 hours.
+For example, Google Analytics has a `processing latency <https://support.google.com/analytics/answer/1070983?hl=en>`_ of 24-48 hours.
 
 This can mean reports will want to send when the data isn't ready. We have a check set up to make reports wait until the data is ready.
 
@@ -53,9 +53,7 @@ Report run dates are stored in SQLite database ``schedule.db``
 
 Note:
  
-  The date that is stored is the **period end date**. 
-  
-  *Not* the date the report was run.
+  The date that is stored is the **period end date**. *Not* the date the report was run.
 
 The **RunLogger** class connects to the database to pull the last run date and calculate the next run date.
 
