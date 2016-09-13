@@ -23,6 +23,8 @@ Get your channel IDs as a content owner from here: https://www.youtube.com/analy
 
 To get your content owner ID see below.
 
+.. _service_account:
+
 Generating service account
 --------------------------
 
