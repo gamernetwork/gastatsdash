@@ -59,6 +59,8 @@ In the main config should only be the settings you need for the report or schedu
 
 You can see an example at ``Statsdash/config.py-example``
 
+.. _config_settings:
+
 Google Analytics Config 
 ----------------------
 

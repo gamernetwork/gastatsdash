@@ -24,4 +24,4 @@ Config.py
 
   - mainly sets the variables for service connection
   - holds a dictionary of site names and IDs
-  - see :ref:`config <settings>`
+  - see :ref:`config <config_settings>`
