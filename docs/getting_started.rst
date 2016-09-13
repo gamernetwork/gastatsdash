@@ -36,6 +36,8 @@ Generating service account
   - You will be prompted to save a .p12 file - this is the private key file referenced in GA/config.py
   - Copy the service account email address and pop into GA/config.py
 
+.. _oauth_account:
+
 Generating OAuth Client ID
 --------------------------
 

@@ -30,7 +30,7 @@ Each service has a separate folder with similar files inside. Main files:
 Google Analytics
 ---------------
 
-We have set up access to the Google Analytics Core Reporting API using a service account. You will need to do this as well, following :ref:`these steps <service_account>` or for more info go `here <https://developers.google.com/analytics/devguides/reporting/core/v3/quickstart/service-py>`_ .
+We have set up access to the Google Analytics Core Reporting API using a service account. You will need to do this as well, following :ref:`these steps <service_account>` or for more info go `here <https://developers.google.com/analytics/devguides/reporting/core/v3/quickstart/service-py>`_.
 
 The analytics class has a function to run a query, implement exponential backoff when there is an error and to rollup the data from same-site IDs.
 
@@ -38,6 +38,8 @@ It also has a function that checks the data's availability which queries to get 
 
 Youtube Analytics
 -----------------
+
+We have set up access to the Youtube Analytics and Reporting API using OAuth 2.0. You will need to do this as well, following :ref:`these steps <oauth_account>` or for more info go `here <https://developers.google.com/youtube/reporting/guides/authorization>`_ or `here <https://developers.google.com/api-client-library/python/guide/aaa_oauth>`_.
 
 You must have a content owner ID as this is how the analytics queries are set up. 
 
