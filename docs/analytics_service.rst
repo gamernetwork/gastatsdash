@@ -54,7 +54,10 @@ It also has a function that checks the data availability which queries to get vi
 Adding a new service
 --------------------
 
+To extend Statsdash you could add more analytics services such as Facebook or Twitter to get more comparison. 
+
 To add a new service, you would need to set up the main files following the instructions from the API to create the connection and make the queries.
+
 In the aggregate_data file you would need to create the right functions using helper functions in the utilities to file to make sure the data is returned in similar format that the report and templates could use.
 You will also have to create new templates and a new report to utilise your new service.
 
