@@ -9,18 +9,18 @@ This tool is made to be used so that reports can be made using multiple differen
 
 Each service has a separate folder with similar files inside. Main files:
 
-Analytics.py
+**Analytics.py**
   
   - connection to the service's API
   - querying functions to get the data
 
-Aggregate_data.py
+**Aggregate_data.py**
 
   - creates a class that the reports can call
   - set the date period, frequency, sites
   - returns the data in a fixed format using functions defined in the shared ``utilities.py``
 
-Config.py
+**Config.py**
 
   - mainly sets the variables for service connection
   - holds a dictionary of site names and IDs
@@ -30,11 +30,11 @@ Config.py
 Google Analytics
 ---------------
 
-The analytics file is setup with exponential backoff for errors. It has just one main query function, into which can be passed the specific metrics, dimensions and dates that are needed.
+We have set up access to the Google Analytics Core Reporting API using a service account. You will need to do this as well, following :ref:`these steps <service_setup>` or for more info go `here <https://developers.google.com/analytics/devguides/reporting/core/v3/quickstart/service-py>`_ .
 
-Data Check
-To check if data is available we query to get pageviews for every hour for the period's end date. If the results returned does not include 24 hours, then the data is not ready yet.
+The analytics class has a function to run a query, implement exponential backoff when there is an error and to rollup the data from same-site IDs.
 
+It also has a function that checks the data's availability which queries to get pageviews for every hour for the period's end date. If the results returned does not include all 24 hours, then the data is not ready yet.
 
 Youtube Analytics
 -----------------
