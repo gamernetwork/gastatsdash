@@ -17,8 +17,8 @@ Contents:
 
    getting_started.rst
    settings.rst
-   scheduler.rst
-   reports.rst
    analytics_service.rst
-
+   aggregating_data.rst
+   reports.rst
+   scheduler.rst
 
