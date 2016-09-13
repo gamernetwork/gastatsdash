@@ -18,6 +18,9 @@ Scheduler's work flow in pseudo code ::
         else:
             continue
 
+To test a schedule run without generating reports or storing dates use this command ::
+
+    python scheduler.py --test
 
 Data Availability
 +++++++++++++++++
