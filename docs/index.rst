@@ -19,6 +19,6 @@ Contents:
    settings.rst
    scheduler.rst
    reports.rst
-   analytics_services.rst
+   analytics_service.rst
 
 
