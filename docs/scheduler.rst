@@ -22,6 +22,8 @@ To test a schedule run without generating reports or storing dates use this comm
 
     python scheduler.py --test
 
+The scheduler is set up as a singleton. For instance, if you set a cron to run the scheduler every hour, there is the possibility running reports may take longer than an hour. In this case, you don't want the cron to start another instance. The singleton instance means it will quit immediately if there is already an instance running.
+
 Data Availability
 +++++++++++++++++
 
@@ -37,16 +39,9 @@ Each analytics class has a data availability check function set up. See
 Errors
 ++++++
 
-The **Errors** class creates a list of errors when the scheduler is run, i.e. when the report is being overridden and errors thrown from generating the report.
+This class creates a list of errors when the scheduler is run, i.e. when the report is being overridden and errors thrown from generating the report.
 
 These errors can then be emailed to relevant parties to notify of an issue immediately.
-
-
-
--errors
--singleton instance
--run a test
-
 
 
 Schedule Database 
