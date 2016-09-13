@@ -51,9 +51,7 @@ Schedule Database
 
 Report run dates are stored in SQLite database ``schedule.db``
 
-Note:
- 
-  The date that is stored is the **period end date**. *Not* the date the report was run.
+   The date that is stored is the **period end date**. *Not* the date the report was run.
 
 The **RunLogger** class connects to the database to pull the last run date and calculate the next run date.
 
