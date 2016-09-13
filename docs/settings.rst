@@ -1,8 +1,8 @@
 Settings
-=======
+========
 
 Report Schedule
---------------
+---------------
 
 ``Statsdash/report_schedule.py``
 
@@ -17,23 +17,23 @@ Each report config is a dictionary with the necessary key, value pairs to create
 +--------------------+-------------------------------------------------------------------------+
 |	Key	     |			Value 						       |
 +====================+=========================================================================+
-|	Report 	     |	Name of the report class you wish to use. 			       |
-|		     |		(This needs to be imported into the file)		       |
+|	Report 	     | | Name of the report class you wish to use. 			       |
+|		     | | (This needs to be imported into the file)		               |
 +--------------------+-------------------------------------------------------------------------+
 |	Recipients   |	 List of emails who will recieve this report.			       |
 +--------------------+-------------------------------------------------------------------------+
-|	Subject	     |	 The subject line of the report					       |
-|		     |      | The date period for the report is appended to the subject,       |
-|                    |      | so it might be best to end the subject line with " for ".        |
-|                    |      | e.g. "Site.net daily report for"                                 |
+|	Subject	     | | The subject line of the report					       |
+|		     | | The date period for the report is appended to the subject,            |
+|                    | | so it might be best to end the subject line with "for ".              |
+|                    | | e.g. "Site.net daily report for"                                      |
 +--------------------+-------------------------------------------------------------------------+
-|	Sites	     |	 List of site names 						       |
-|		     |      Must be the same string as in the individual analytics config      |
+|	Sites	     | | List of site names 						       |
+|		     | | Must equal the name in the individual analytics config                |
 +--------------------+-------------------------------------------------------------------------+
-|	Frequency    |	 Options are "WOW_DAILY" "WEEKLY" or "MONTHLY"			       |
+|	Frequency    |	 Options are "WOW_DAILY", "WEEKLY", "MONTHLY"			       |
 +--------------------+----------------------+-------------------------+------------------------+
-|  Frequency Options |   Set when to run a report for Weekly or Monthly frequecy values        |
-|                    |    value should be a dictionary containing either:                      |
+|  Frequency Options | | Set when to run a report for Weekly or Monthly frequecy values        |
+|    (optional)      | | value should be a dictionary containing either:                       |
 |		     +----------------------------------+--------------------------------------+
 |		     |	 Weekly 		        |   Monthly		               |
 |		     +----------------------------------+--------------------------------------+
@@ -41,11 +41,9 @@ Each report config is a dictionary with the necessary key, value pairs to create
 |		     |  | Value = name of the weekday   |  | Value = Number of day in month    |
 |                    |  |   e.g. "Monday"               |  |   e.g. 1                          |
 +--------------------+----------------------------------+--------------------------------------+
-|     Identifier     |	 indiviudal report identifier					       |
-|		     |		 used in the schedule database to store run dates.	       |
+|     Identifier     | | indiviudal report identifier					       |
+|		     | | used in the schedule database to store run dates.	               |
 +--------------------+-------------------------------------------------------------------------+
-
-
 
 
 Main Config
@@ -55,13 +53,11 @@ Main Config
 
 In the main config should only be the settings you need for the report or schedule class. 
 
-You can see an example at ``Statsdash/config.py-example``
-
-For example, define in here:
   - Logging info and configuration
   - Mail settings and personal emails
   - Schedule database location
 
+You can see an example at ``Statsdash/config.py-example``
 
 Google Analytics Config 
 ----------------------
@@ -70,11 +66,12 @@ Google Analytics Config
 
 You should put all the relevant Google Analytics settings in here.
 
- - client email 
- - path to key file
- - dictionary of site names and IDs
- - black list of page paths to remove from article tables
- - black list of sources to remove from traffic source tables
+ - Client email 
+ - Path to key file
+ - Dictionary of site names and IDs
+ - Black list of page paths to remove from article tables
+ - Black list of sources to remove from traffic source tables
+ - Name for all your sites, labelled as "ALL_SITES_NAME"
 
 See an example at ``Statsdash/GA/config.py-example``
 
@@ -93,12 +90,11 @@ Youtube Analytics Config
 
 You should put all the relevant Youtube Analytics settings in here.
 
- - path to client secrets file
- - content owner id
- - dictionary of channel names and IDs
+ - Path to client secrets file
+ - Content owner id
+ - Dictionary of channel names and IDs
 
 See an example at ``Statsdash/Youtube/config.py-example``
-
 
 
 
