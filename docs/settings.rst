@@ -32,8 +32,8 @@ Each report config is a dictionary with the necessary key, value pairs to create
 +--------------------+-------------------------------------------------------------------------+
 |	Frequency    | | Options are "WOW_DAILY", "WEEKLY", "MONTHLY"			       |
 +--------------------+----------------------+-------------------------+------------------------+
-|  Frequency Options | | Set when to run a report for Weekly or Monthly frequecy values        |
-|    (optional)      | | value should be a dictionary containing either:                       |
+|  Frequency Options | | Only set when a report's frequency is Weekly or Monthly               |
+|                    | | Value should be a dictionary containing either:                       |
 |		     +----------------------------------+--------------------------------------+
 |		     |	 Weekly 		        |   Monthly		               |
 |		     +----------------------------------+--------------------------------------+
@@ -41,8 +41,8 @@ Each report config is a dictionary with the necessary key, value pairs to create
 |		     | | Value = Name of the weekday    | | Value = Number of day in month     |
 |                    | |   e.g. "Monday"                | |   e.g. 1                           |
 +--------------------+----------------------------------+--------------------------------------+
-|     Identifier     | | indiviudal report identifier					       |
-|		     | | used in the schedule database to store run dates.	               |
+|     Identifier     | | Indiviudal report identifier					       |
+|		     | | Used in the schedule database to store run dates.	               |
 +--------------------+-------------------------------------------------------------------------+
 
 
@@ -53,9 +53,9 @@ Main Config
 
 In the main config should only be the settings you need for the report or schedule class. 
 
-  - Logging info and configuration
-  - Mail settings and personal emails
-  - Schedule database location
+- Logging info and configuration
+- Mail settings and personal emails
+- Schedule database location
 
 You can see an example at ``Statsdash/config.py-example``
 
@@ -66,22 +66,22 @@ Google Analytics Config
 
 You should put all the relevant Google Analytics settings in here.
 
- - Client email 
- - Path to key file
- - Dictionary of site names and IDs
- - Black list of page paths to remove from article tables
- - Black list of sources to remove from traffic source tables
- - Name for all your sites, labelled as "ALL_SITES_NAME"
+- Client email 
+- Path to key file
+- Dictionary of site names and IDs
+  - must be called "TABLES"
+  - use site names as keys
+  - values should be a list of ID dictionaries 
+    - allows you to roll up multipls IDs, helpful for sites with AMP. 
+    - format: {"id":"ga:12345"}
+    - each ID dict can optionally set "wait_for_data" to be False (default = True)
+    - e.g. {"id":"ga:12345", "wait_for_data":False}
+- Black list of page paths to remove from article tables
+- Black list of sources to remove from traffic source tables
+- Name for all your sites, labelled as "ALL_SITES_NAME"
 
 See an example at ``Statsdash/GA/config.py-example``
 
-You should have a dictionary called **TABLES** that contains your *site names* as *keys*.  
-
-The *value* of each site name key should be a list of dictionaries, each dictionary containing a key value pair with key "id" and value profile id. This is to allow multiple ids to be rolled up into the same site. e.g. when theres main site traffic and AMP traffic. Also an additional optional "wait_for_data" key that can be added to each id dictionary, value is default True but can be defined to False if there's no need to wait for date to become available for that id. 
-
-Additionally in the GA config values specific to GA are defined. For example, the path to your private analytics keyfile.
-There is also a code snippet to remove pathnames from article tables, e.g. to remove static pages such as "/index" and "/forum".
-Also a list of sources to remove from the source referral table. 
 
 Youtube Analytics Config
 -----------------------
@@ -90,9 +90,12 @@ Youtube Analytics Config
 
 You should put all the relevant Youtube Analytics settings in here.
 
- - Path to client secrets file
- - Content owner id
- - Dictionary of channel names and IDs
+- Path to client secrets file
+- Content owner id
+- Dictionary of channel names and IDs
+  - must be called "CHANNELS"
+  - use channel names as keys
+  - channels IDs as values 
 
 See an example at ``Statsdash/Youtube/config.py-example``
 
