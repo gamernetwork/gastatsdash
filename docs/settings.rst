@@ -69,13 +69,16 @@ You should put all the relevant Google Analytics settings in here.
 - Client email 
 - Path to key file
 - Dictionary of site names and IDs
+
   - must be called "TABLES"
   - use site names as keys
   - values should be a list of ID dictionaries 
+
     - allows you to roll up multipls IDs, helpful for sites with AMP. 
     - format: {"id":"ga:12345"}
     - each ID dict can optionally set "wait_for_data" to be False (default = True)
     - e.g. {"id":"ga:12345", "wait_for_data":False}
+
 - Black list of page paths to remove from article tables
 - Black list of sources to remove from traffic source tables
 - Name for all your sites, labelled as "ALL_SITES_NAME"
@@ -93,6 +96,7 @@ You should put all the relevant Youtube Analytics settings in here.
 - Path to client secrets file
 - Content owner id
 - Dictionary of channel names and IDs
+
   - must be called "CHANNELS"
   - use channel names as keys
   - channels IDs as values 
