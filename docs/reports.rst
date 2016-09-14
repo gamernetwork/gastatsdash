@@ -45,7 +45,7 @@ Youtube Report
 
 This report uses the Youtube data service.
 
-.. image:: video_report.png
+.. image:: _static/ video_report.png
 
 Templates
 --------
