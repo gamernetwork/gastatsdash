@@ -5,7 +5,7 @@ Analytics Services
 Overview
 --------
 
-This tool is made to be used so that reports can be made using multiple different services. This is to help enable comparison across different platforms. So far Google Analytics and Youtube Analytics have been integrated, but other services such as Facebook or Twitter could be added.
+Reports can be made using multiple different services. This is to help enable comparison across different platforms. So far Google Analytics and Youtube Analytics have been integrated, but other services such as Facebook or Twitter could be added.
 
 Each service has a separate folder with similar files inside. Main files:
 

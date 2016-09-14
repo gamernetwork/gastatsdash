@@ -2,7 +2,7 @@
 Aggregating Data
 ===============
 
-Each service should have an aggregate_data.py. This includes a class which defines functions that create and return data tables in a set format. 
+Each data service should have an aggregate_data.py. This includes a class which defines functions that create and return data tables in a set format. 
 
 The main aim is for the report to be able to create an instance of the data class and call the data tables it needs.
 Example:: 
