@@ -6,65 +6,83 @@ Overview
 The main function of the program is to aggregate and display the data in helpful html reports.
 For each new report type there is a specific report class that inherits from the base Report class. 
 
-Report Class
-------------
+Reports
+-------
 
-The report class defines what each report contains. 
-The parent class defines some base functions that all reports use:
+*class* **Report**(sites, period, recipients, frequency, subject)
+    *sites* - A list of site names to run the report on
+    *period* - A StatsRange object that defines the period that report should run over
+    *recipients* - A list of emails the report will send to
+    *frequency* - Can be "MONTHLY", "WEEKLY" or "WOW_DAILY". Specifies how often it runs and previous period comparison, e.g. month on month comparison for monthly reports.
+    *subject* - Subject line of the email and heading of the report
 
-get_subject() 
-	creates the subject of the email, which is also the title of the report using the frequency and period variables.
+    get_subject()
+        | Adds date period onto the end of the argument subject. 
+        | E.g. for daily it will append Mon 12 Sep 2016.
 
-get_freq_label()
-	Creates a string to be used in templates for appearances. I.e. is the comparison WoW or MoM
+    get_freq_label()
+        | Returns the string to be used for previous period comparisons. 
+        | E.g. for monthly returns MoM 
 
-check_data_availability()
-	calls through to analytics. Returns true if data is available, false if not. If override is set to true, then it returns the name of the sites that have no data and must be overridden. 
+    check_data_availability()
+        | Calls through to analytics to check data availability for that period for the requested sites. 
+        | Returns True if data is available, false if not.
+        | If override is set to True, then it returns the name of the sites that must be overridden.
 
-send_email()
-	simple function to send the html email.
+    send_email()
+        | Function to send a html email, inlines all the styles.
 
-Each child report class must define a **generate_html()** function. Within this they call to the aggregate_data class and retrieve the data tables needed. Should then pass the table data to the template.
+    generate_html()
+        | Function that gathers the data and renders the template
 
-Report Types
------------
+*class* **YoutubeReport**(Report)
+    Init function sets up the template file and link to youtube analytics data class.    
 
-Each report type needs the following arguments to be intialised
+    generate_html()
+        | Gather data tables from youtube analytics data class:
+	|
+        |    - Summary table
+	|    - Statistics table
+        |    - Country table
+	|    - Top Video table
+	|    - Traffic Source table
+	|
+        | Render data tables to the specified html template
 
-=================	===============================================================
-Channels/Sites		A list of channel or site names equal to name in the config
-Period			StatsRange object defining the date range of the report
-Recipients		List of emails for the report to go to
-Frequency 		Value of either "WOW_DAILY", "WEEKLY" or "MONTHLY"
-Subject			Email subject line and heading of report
-=================	===============================================================
+*class* **AnalyticsCoreReport**(Report)
+    Init function sets up the template file and link to google analytics data class.
 
+    get_site()
+        | Returns either the name of the site to be used in the template
+	| If the report iterates over all sites, then use a all inclusive name set in config, e.g. Network
 
-Youtube Report
-++++++++++++++
-
-This report uses the Youtube data service.
-
-Analytics Core Report
-+++++++++++++++++++++
-
-A main core report that gives an overview of a site.
-
-Analytics Social Report
-+++++++++++++++++++++++
-
-A report that focuses on the current social referral traffic
-
-Analytics Year Social Report
-++++++++++++++++++++++++++++
-
-A report that focuses on social referrals over the last 3 years
-
-Analytics Social Export
-++++++++++++++++++++++
-
-Sends out an email with a csv attachment containing data about the social referrals over the last year 
-
+    generate_html()
+        | Gather data tables from google analytics data class:
+	|
+	|    - Summary table
+	|    - Site summary table
+	|    - Country table
+	|    - Top Article table
+	|    - Traffic Source table
+	|    - Referral table
+	|    - Device table
+	|    - Social Network table
+	|    -  If it's not monthly:
+	|	
+	|        - "Month to date" summary table
+	|	  
+	|    - If it is monthly:
+	|
+	|        - Device graph over the last year
+	|
+	|    - If it's not all sites:
+	|
+	|        - All sites summary table
+	|        - If not monthly:
+	|           
+	|            - "Month to date" network summary table
+	|	  
+	| Render data to html template
 
 
 Templates
