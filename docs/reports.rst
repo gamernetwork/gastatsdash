@@ -9,12 +9,12 @@ For each new report type there is a specific report class that inherits from the
 Reports
 -------
 
-*class* **Report**(sites, period, recipients, frequency, subject)
-    *sites* - A list of site names to run the report on
-    *period* - A StatsRange object that defines the period that report should run over
-    *recipients* - A list of emails the report will send to
-    *frequency* - Can be "MONTHLY", "WEEKLY" or "WOW_DAILY". Specifies how often it runs and previous period comparison, e.g. month on month comparison for monthly reports.
-    *subject* - Subject line of the email and heading of the report
+*class* Report(sites, period, recipients, frequency, subject)
+    | *sites* - A list of site names to run the report on
+    | *period* - A StatsRange object that defines the period that report should run over
+    | *recipients* - A list of emails the report will send to
+    | *frequency* - Can be "MONTHLY", "WEEKLY" or "WOW_DAILY". Specifies how often it runs and previous period comparison, e.g. month on month comparison for monthly reports.
+    | *subject* - Subject line of the email and heading of the report
 
     get_subject()
         | Adds date period onto the end of the argument subject. 
@@ -35,21 +35,19 @@ Reports
     generate_html()
         | Function that gathers the data and renders the template
 
-*class* **YoutubeReport**(Report)
+*class* YoutubeReport(Report)
     Init function sets up the template file and link to youtube analytics data class.    
 
     generate_html()
         | Gather data tables from youtube analytics data class:
-	|
         |    - Summary table
 	|    - Statistics table
         |    - Country table
 	|    - Top Video table
 	|    - Traffic Source table
-	|
         | Render data tables to the specified html template
 
-*class* **AnalyticsCoreReport**(Report)
+*class* AnalyticsCoreReport(Report)
     Init function sets up the template file and link to google analytics data class.
 
     get_site()
@@ -58,7 +56,6 @@ Reports
 
     generate_html()
         | Gather data tables from google analytics data class:
-	|
 	|    - Summary table
 	|    - Site summary table
 	|    - Country table
@@ -68,20 +65,13 @@ Reports
 	|    - Device table
 	|    - Social Network table
 	|    -  If it's not monthly:
-	|	
 	|        - "Month to date" summary table
-	|	  
 	|    - If it is monthly:
-	|
 	|        - Device graph over the last year
-	|
 	|    - If it's not all sites:
-	|
 	|        - All sites summary table
 	|        - If not monthly:
-	|           
 	|            - "Month to date" network summary table
-	|	  
 	| Render data to html template
 
 
