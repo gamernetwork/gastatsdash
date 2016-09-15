@@ -104,6 +104,7 @@ reporttype	Required 	No default	The name of the report class, e.g. AnalyticsCore
 --sitename	Optional 	All sites	Name of the site, as it is in the config
 --destination	Optional	"."		Path to where to save the report out
 --filename	Optional	report_preview	Name of the file to save 
+============	=========	============	==========================================================
 
 Example configuration might be::
 
