@@ -10,11 +10,11 @@ Reports
 -------
 
 *class* Report(sites, period, recipients, frequency, subject)
-    | *sites* - A list of site names to run the report on
-    | *period* - A StatsRange object that defines the period that report should run over
-    | *recipients* - A list of emails the report will send to
-    | *frequency* - Can be "MONTHLY", "WEEKLY" or "WOW_DAILY". Specifies how often it runs and previous period comparison, e.g. month on month comparison for monthly reports.
-    | *subject* - Subject line of the email and heading of the report
+    | **sites** - A list of site names to run the report on
+    | **period** - A StatsRange object that defines the period that report should run over
+    | **recipients** - A list of emails the report will send to
+    | **frequency** - Can be "MONTHLY", "WEEKLY" or "WOW_DAILY". Specifies how often it runs and previous period comparison, e.g. month on month comparison for monthly reports.
+    | **subject** - Subject line of the email and heading of the report
 
     get_subject()
         | Adds date period onto the end of the argument subject. 
