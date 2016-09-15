@@ -45,7 +45,27 @@ Youtube Report
 
 This report uses the Youtube data service.
 
-.. image:: _static/ video_report.png
+Analytics Core Report
++++++++++++++++++++++
+
+A main core report that gives an overview of a site.
+
+Analytics Social Report
++++++++++++++++++++++++
+
+A report that focuses on the current social referral traffic
+
+Analytics Year Social Report
+++++++++++++++++++++++++++++
+
+A report that focuses on social referrals over the last 3 years
+
+Analytics Social Export
+++++++++++++++++++++++
+
+Sends out an email with a csv attachment containing data about the social referrals over the last year 
+
+
 
 Templates
 --------
@@ -62,10 +82,33 @@ Add a new report
 Run a report
 ------------
 
-- preview report
-- scheduler
+Preview 
+++++++
 
+You can preview an individual report using the ``preview_report.py`` file.
 
+To preview a report you can run the file from the command line with these paramaters: 
+
+============	=========	===========	==========================================================
+argument	Optional  	Default		Definition
+============	=========	===========	==========================================================
+reporttype	Required 	No default	The name of the report class, e.g. AnalyticsCoreReport
+--sitename	Optional 	All sites	Name of the site, as it is in the config
+--destination	Optional	"."		Path to where to save the report out
+--filename	Optional	report_preview	Name of the file to save 
+
+Example configuration might be::
+
+	python preview_report.py AnalyticsCoreReport -s site.net -d file/to/path -n my_report_test
+
+The frequency and periods are manually set up within the file. To alter these you'll have to alter the file.There are preset monthly, weekly and daily StatsRange objects setup but you may need to just change the date or frequency of the report.
+
+		
+Schedule
++++++++
+
+Set up a report in ``report_schedule.py`` and run the scheduler.
+For more info see Report Schedule Settings and Using the Scheduler.
  
 
 
