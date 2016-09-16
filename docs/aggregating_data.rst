@@ -17,9 +17,21 @@ Example::
 
 The functions within the aggregate_data files should query the analytics class to get the data, then use shared functions from the utilities file to aggregate and format the data in a set form.
 
+*class* AnalyticsData(sites period, frequency)
+    | Creates a list of periods to gather data for based on the period and the frequency.
+    | Using StatsRange objects it will get the previous period and yearly period to calculate percentage change against
+
 
 Google Analytics Data Aggregator
 -------------------------------
+
+summary_table()
+    | For each date period, and for each site in the site list calculate...
+    | pageviews, users, sessions, pageviews per sessions and average session duration
+    | aggregate all this data, so it's a total for all the sites specified
+    | add percentage change against each past period (previous and yearly)
+    | return data as a list of dictionaries.
+
 
 - summary table
 - site summary table
