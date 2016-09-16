@@ -15,7 +15,6 @@ Example::
         
         #send tables to template
 
-
 Utilities
 --------
 
@@ -40,7 +39,7 @@ Example::
     from datetime import date
     monthly_period = utils.StatsRange("July", date(2016, 07, 01), date(2016, 07, 31))
 
-*class* StatsRange(name, start_date, end_date)
+*class* **StatsRange**(name, start_date, end_date)
     
     get_start()
         return start date in isoformat
@@ -51,19 +50,19 @@ Example::
     days_in_range()
         return number of days in period
 
-    get_period(date, frequency)
+    get_period(*date*, *frequency*)
         return a StatsRange object based on the date and frequency given
 
-    get_previuos_period(current_period, frequency)
+    get_previuos_period(*current_period*, *frequency*)
         return a StatsRange object based on the current period and frequency
 
-    get_one_day_period(date)
+    get_one_day_period(*date*)
         return a StatsRange object for the date given
 
-    get_one_week_period(date)
+    get_one_week_period(*date*)
         return a StatsRange object of a week ending on the date given
 
-    get_one_month_period(date)
+    get_one_month_period(*date*)
         return a StatsRange object of a month ending on the date given 
      
 
