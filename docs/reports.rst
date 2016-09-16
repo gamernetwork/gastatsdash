@@ -97,14 +97,14 @@ You can preview an individual report using the ``preview_report.py`` file.
 
 To preview a report you can run the file from the command line with these paramaters: 
 
-============	=========	=============	==========================================================
-argument	Optional  	Default		Definition
-============	=========	=============	==========================================================
-reporttype	Required 	No default	The name of the report class, e.g. AnalyticsCoreReport
---sitename	Optional 	All sites	Name of the site, as it is in the config
---destination	Optional	"."		Path to where to save the report out
---filename	Optional	report_preview	Name of the file to save 
-============	=========	=============	==========================================================
+==============	=========   ================	==========================================================
+argument	Optional    Default		Definition
+==============	=========   ================	==========================================================
+reporttype	Required    No default		The name of the report class, e.g. AnalyticsCoreReport
+--sitename	Optional    All sites		Name of the site, as it is in the config
+--destination	Optional    "."			Path to where to save the report out
+--filename	Optional    report_preview	Name of the file to save 
+==============	=========   ================	==========================================================
 
 Example configuration might be::
 
