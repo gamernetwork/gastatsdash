@@ -140,6 +140,15 @@ Templates
 --------
 `Jinja 2 <http://jinja.pocoo.org/docs/dev/#>`_
 
+Templates use the `Jinja 2 <http://jinja.pocoo.org/docs/dev/#>`_ templating language. 
+
+The layout is set up so that each table function in the aggregating data classes corresponds to a template file, within the relevant folder. 
+
+For instance, within the templates folder there is GA folder, each google analytics data table has a separate template file. 
+
+The file ``Templates/GA/base.html`` extends the main base, and it includes each table only if that table value exists. 
+
+All template files should inherit from ``Templates/base.html``. In this file the styles are set, as is the subject and some confidentiality lines.
 
 Add a new report
 ---------------
