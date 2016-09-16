@@ -138,15 +138,16 @@ Here are the reports that are provided:
 
 Templates
 --------
-`Jinja 2 <http://jinja.pocoo.org/docs/dev/#>`_
 
 Templates use the `Jinja 2 <http://jinja.pocoo.org/docs/dev/#>`_ templating language. 
 
 The layout is set up so that each table function in the aggregating data classes corresponds to a template file, within the relevant folder. 
 
-For instance, within the templates folder there is GA folder, each google analytics data table has a separate template file. 
+For instance, within the templates folder there is GA folder in which each google analytics data table has a separate template file. 
 
-The file ``Templates/GA/base.html`` extends the main base, and it includes each table only if that table value exists. 
+The file ``Templates/GA/base.html`` extends the main base, and it includes each table only if that table value exists. This is the file that the Google Analytics reports use as a template. 
+
+The youtube reports use the ``Templates/Youtube/base.html`` file as a template, and has similar structure where it includes the table template files, only if the table exists in that report. 
 
 All template files should inherit from ``Templates/base.html``. In this file the styles are set, as is the subject and some confidentiality lines.
 
