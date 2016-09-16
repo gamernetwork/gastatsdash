@@ -15,6 +15,45 @@ Example::
         
         #send tables to template
 
+The functions within the aggregate_data files should query the analytics class to get the data, then use shared functions from the utilities file to aggregate and format the data in a set form.
+
+
+Google Analytics Data Aggregator
+-------------------------------
+
+- summary table
+- site summary table
+- article table
+- country table
+- traffic source table
+- referring sites table
+- social network table
+- referral articles
+- device table
+- device chart
+- social chart
+
+ga helper functions
+- remove ga names
+- check data availability
+- remove query string
+- get title
+- get source list
+
+
+Youtube Analytics Data Aggregator
+--------------------------------
+
+- country table
+- channel summary table
+- channel stats table
+- video table
+- traffic source table
+
+helpers:
+- check data availability
+
+
 Utilities
 --------
 
