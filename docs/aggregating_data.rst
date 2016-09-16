@@ -29,6 +29,21 @@ Date Utils
 
 Used mainly in scheduler to calculate next runs.
 
+get_month_day_range(*date*)
+    return start and end date of the month in date
+
+add_one_month(*t*)
+   returns datetime object that has had one month added to t
+
+subtract_one_month(*t*)
+    returns datetime object that has had one much subtracted from t
+
+find_last_weekday(*start_date*, *weekday*)
+    returns the date of the previous closest day of the week that matches the string weekday
+
+find_next_weekday(*start_date*, *weekday*)
+    returns the date of the next closest day of the week that matches the string weekday
+
 StatsRange
 +++++++++
 
@@ -39,7 +54,7 @@ Example::
     from datetime import date
     monthly_period = utils.StatsRange("July", date(2016, 07, 01), date(2016, 07, 31))
 
-*class* **StatsRange**(name, start_date, end_date)
+*class* StatsRange(name, start_date, end_date)
     
     get_start()
         return start date in isoformat
