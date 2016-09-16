@@ -34,6 +34,7 @@ Google Analytics Data Aggregator
 - social chart
 
 ga helper functions
+
 - remove ga names
 - check data availability
 - remove query string
@@ -51,6 +52,7 @@ Youtube Analytics Data Aggregator
 - traffic source table
 
 helpers:
+
 - check data availability
 
 
