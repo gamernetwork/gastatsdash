@@ -32,6 +32,21 @@ summary_table()
     | add percentage change against each past period (previous and yearly)
     | return data as a list of dictionaries.
 
+site_summary_table()
+    | For each date period and for each site specified calculate...
+    | pageviews, users, sessions, pageviews per session and average session duration
+    | add percentage change against each past period
+    | return data as a list of dictionaries, each dictionary being one sites data
+
+article_table()
+    | For current period and the previous period and for each site specified calculate...
+    | pageviews in descending order, return the page path, title and site name.
+    | aggregate data so it's most viewed articles for all sites
+    | add percentage change 
+    | return top 20 articles as a list of dictionaries
+
+country_table()
+    | 
 
 - summary table
 - site summary table
