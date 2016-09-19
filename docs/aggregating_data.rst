@@ -139,8 +139,10 @@ Main Functions
 ++++++++++++++
 
 Used mainly by aggregate_data.py in service folders to aggregate and format the data. 
+
 Main format is set as a list of dictionaries, where each dictionary holds the data for one dimension.
-For instance, the data for social network table would be a list of dictionaries, where each dictionary is the data for one social network. This can then be sorted and shortened to hold data for the top 3 social networks. 
+
+For instance, the data for a social network table would be a list of dictionaries, where each dictionary is the data for one social network. You can then sort and the set the length of the list as needed. 
 
 format_data_rows(*results*)
     | Google analytics returns data in a `set format <https://developers.google.com/analytics/devguides/reporting/core/v3/reference#data_response>`_
