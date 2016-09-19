@@ -52,11 +52,11 @@ country_table()
     | List of countries specify which countries to list, and those not in the list are included instead together in a "Rest of World" key
 
 traffic_source_table()
-    | see :ref:`get_source_list`
+    | see :ref:`get-source-list`
     | returns this, limited to 10 sources
 
 referring_sites_table(num_articles)
-    | see :ref:`get_source_list`
+    | see :ref:`get-source-list`
     | gets specified number of articles for each source in the source list
     | using referall_articles() function 
 
@@ -106,7 +106,7 @@ _get_title(path, title)
     | check if path includes the "amp" string
     | if it does, add "AMP" to the end of the article title to show it is an amp version
 
-.. _get_source_list:
+.. _get-source-list:
 
 _get_source_list()
     | for each data period and for each site calculate...
