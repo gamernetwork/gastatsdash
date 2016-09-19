@@ -52,11 +52,11 @@ country_table()
     | List of countries specify which countries to list, and those not in the list are included instead together in a "Rest of World" key
 
 traffic_source_table()
-    | see :any:`my-source-list`
+    | see :keyword:`my-source-list`
     | returns this, limited to 10 sources
 
 referring_sites_table(num_articles)
-    | see :any:`my-source-list`
+    | see :keyword:`my-source-list`
     | gets specified number of articles for each source in the source list
     | using referall_articles() function 
 
