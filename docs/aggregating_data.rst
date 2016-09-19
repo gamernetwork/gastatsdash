@@ -46,27 +46,70 @@ article_table()
     | return top 20 articles as a list of dictionaries
 
 country_table()
-    | 
+    | For each date period and for each site specified calculate..
+    | the pageviews and users for each country in descending pageview order
+    | aggregate the data so we can see totals for each country over all sites specified
+    | add percentage change
+    | returns list of dictionaries, each dictionary being a country.
+ 
+traffic_source_table()
+    | see _get_source_list()
+    | returns this, limited to 10 sources
 
-- summary table
-- site summary table
-- article table
-- country table
-- traffic source table
-- referring sites table
-- social network table
-- referral articles
-- device table
-- device chart
-- social chart
+referring_sites_table(num_articles)
+    | see _get_source_list()
+    | gets specified number of articles for each source in the source list
+    | using referall_articles() function 
 
-ga helper functions
+social_network_table(num_articles)
+    | For each date period and for each site in specified site list calculate...
+    | the pageviews, users and sessions for social networks
+    | aggregate all this data so totals for each social network over all sites specified
+    | add percentage change
+    | using referall_articles() get top articles for each social network
+    | return as list of dictionaries, one dictionary for each social network
 
-- remove ga names
-- check data availability
-- remove query string
-- get title
-- get source list
+referral_articles(filter, limit)
+    | for current period and previous period and for each site specified calculate..
+    | the pageviews for articles filtered by specified filter
+    | aggregate data and add percentage change
+    | return list of dictionaries 
+
+device_table()
+    | for each date period and for each site in specified calculate...
+    | the users for each device category
+    | aggregate data for each device category over all sites specified
+    | add percentage change
+    | return list of dictionaries 
+
+device_chart(data)
+    | return chart data for number of users on devices
+
+social_chart()
+    | return chart data for pageviews, users and sessions of socail networks
+
+
+_remove_ga_names(rows)
+    | remove the "ga:" in front of the google analytics metrics and dimension keys
+
+check_available_data()
+    | for each site check if data is available
+    | return dictionary with boolean of true/false and list of sites with no data available
+
+_remove_query_string(path)
+    | remove the query string from the end of article page paths so similar articles can be aggregated properly
+    | return the new article path
+
+_get_title(path, title)
+    | check if path includes the "amp" string
+    | if it does, add "AMP" to the end of the article title to show it is an amp version
+
+_get_source_list()
+    | for each data period and for each site calculate...
+    | the pageviews and users for traffic source and medium
+    | aggregate the data for sources across all sites
+    | add percentage change
+    | return list of dictionaries, each dictionary being a source
 
 
 Youtube Analytics Data Aggregator
