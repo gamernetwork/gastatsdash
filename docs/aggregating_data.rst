@@ -52,11 +52,11 @@ country_table()
     | List of countries specify which countries to list, and those not in the list are included instead together in a "Rest of World" key
 
 traffic_source_table()
-    | see :ref:`my-source-list`
+    | see :any:`my-source-list`
     | returns this, limited to 10 sources
 
 referring_sites_table(num_articles)
-    | see :ref:`my-source-list`
+    | see :any:`my-source-list`
     | gets specified number of articles for each source in the source list
     | using referall_articles() function 
 
@@ -108,9 +108,6 @@ _get_title(path, title)
 
 .. _my-source-list:
 
-blahh
------
-
 _get_source_list()
     | for each data period and for each site calculate...
     | the pageviews and users for traffic source and medium
@@ -132,7 +129,7 @@ helpers:
 
 - check data availability
 
-see :ref:`my-source-list`
+see :any:`my-source-list`
 
 Utilities
 --------
