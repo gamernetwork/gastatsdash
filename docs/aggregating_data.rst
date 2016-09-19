@@ -29,38 +29,34 @@ Data Tables
 ++++++++++
 
 summary_table()
-    | For each date period, and for each site in the site list calculate...
-    | pageviews, users, sessions, pageviews per sessions and average session duration
-    | aggregate all this data, so it's a total for all the sites specified
-    | add percentage change against each past period (previous and yearly)
-    | return data as a list of dictionaries.
+    | Find the pageviews, users, sessions, pageviews per session and average session duration
+    | for each date period and each site specified
+    | use utility functions to aggregate, add percentages and format
+    | return the total sum metrics of all the specified sites as a dictionary
 
 site_summary_table()
-    | For each date period and for each site specified calculate...
-    | pageviews, users, sessions, pageviews per session and average session duration
-    | add percentage change against each past period
-    | return data as a list of dictionaries, each dictionary being one sites data
+    | Find the pageviews, users, sessions, pageviews per session and average session duration
+    | for each date period and each site specified
+    | use utility functions to aggregate, add percentages and format
+    | return the total sum metrics for each site as a list of dictionaries 
 
 article_table()
-    | For current period and the previous period and for each site specified calculate...
-    | pageviews in descending order, return the page path, title and site name.
-    | aggregate data so it's most viewed articles for all sites
-    | add percentage change 
-    | return top 20 articles as a list of dictionaries
+    | Find the pageviews for the current and previous date period and for each site specified 
+    | use utility functions to aggregate, add percentages and format
+    | return the total sum metrics for top 20 articles for all sites sorted by descending pageviews
 
 country_table()
-    | For each date period and for each site specified calculate..
-    | the pageviews and users for each country in descending pageview order
-    | aggregate the data so we can see totals for each country over all sites specified
-    | add percentage change
-    | returns list of dictionaries, each dictionary being a country.
- 
+    | Find the pageviews and users for each date period and each site specified
+    | use the utility functions to aggregate, add percentages and format the data
+    | return total sum of metrics for each country for all sites as a list of dictionaries
+    | List of countries specify which countries to list, and those not in the list are included instead together in a "Rest of World" key
+
 traffic_source_table()
-    | see _get_source_list()
+    | see :ref:`get_source_list`
     | returns this, limited to 10 sources
 
 referring_sites_table(num_articles)
-    | see _get_source_list()
+    | see :ref:`get_source_list`
     | gets specified number of articles for each source in the source list
     | using referall_articles() function 
 
@@ -109,6 +105,8 @@ _remove_query_string(path)
 _get_title(path, title)
     | check if path includes the "amp" string
     | if it does, add "AMP" to the end of the article title to show it is an amp version
+
+.. _get_source_list:
 
 _get_source_list()
     | for each data period and for each site calculate...
