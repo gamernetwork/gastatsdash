@@ -129,6 +129,7 @@ helpers:
 
 - check data availability
 
+see :ref:`get-source-list`
 
 Utilities
 --------
