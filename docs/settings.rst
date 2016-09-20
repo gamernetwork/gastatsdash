@@ -1,6 +1,8 @@
 Settings
 ========
 
+.. _report-schedule:
+
 Report Schedule
 ---------------
 

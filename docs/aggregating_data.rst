@@ -1,6 +1,6 @@
 
 Aggregating Data
-===============
+=================
 
 Each data service should have an aggregate_data.py. This includes a class which defines functions that create and return data tables in a set format. 
 
@@ -18,70 +18,79 @@ Example::
 The functions within the aggregate_data files should query the analytics class to get the data, then use shared functions from the utilities file to aggregate and format the data in a set form.
 
 *class* AnalyticsData(sites, period, frequency)
-    | Creates a list of periods to gather data for based on the period and the frequency.
-    | Using StatsRange objects it will get the previous period and yearly period to calculate percentage change against
+    | Initialises class from which to call analytics and get the data tables
+    | Init function creates a list of periods to gather data for based on the period and the frequency.
+    | Using StatsRange objects it will get the previous period and yearly period to calculate percentage change with
 
+Data Table Functions
+    | These functions query analytics with specific metrics, dimensions and filters needed to get the data
+    | They call the data for each date period (current, previous and yearly) and for each site specified when the class was initialised
+    | Then using utility functions they aggregate, format and add percentage changes to the data structure
+    | Return the data as a list of dictionaries, each dictionary will be an inidividual dimension type, e.g. for the dimension social networks, you might have a dictionary for Facebook, Twitter, reddit etc
+
+Helper Functions
+    | These are specific functionss to be used by the service to help format the data into a more readable and sharable way for the reports and templates to use
 
 Google Analytics Data Aggregator
--------------------------------
+---------------------------------
 
 Data Tables
-++++++++++
+++++++++++++
 
 summary_table()
-    | Find the pageviews, users, sessions, pageviews per session and average session duration
-    | for each date period and each site specified
-    | use utility functions to aggregate, add percentages and format
-    | return the total sum metrics of all the specified sites as a dictionary
+    | Metrics: pageviews, users, sessions, pageviews per session, average session duration
+    | Dimensions: None. 
+    | This will return a single dictionary with the metrics accumulated for all the sites
 
 site_summary_table()
-    | Find the pageviews, users, sessions, pageviews per session and average session duration
-    | for each date period and each site specified
-    | use utility functions to aggregate, add percentages and format
-    | return the total sum metrics for each site as a list of dictionaries 
+    | Metrics: pageviews, users, sessions, pageviews per session, average session duration
+    | Dimensions: None.
+    | Adds "site" key which is a string of the site name to each dictionary
+    | Returns list of dictionaries where each dictionary is data for a separate site
 
 article_table()
-    | Find the pageviews for the current and previous date period and for each site specified 
-    | use utility functions to aggregate, add percentages and format
-    | return the total sum metrics for top 20 articles for all sites sorted by descending pageviews
+    | Metrics: pageviews
+    | Dimensions: page path, page title, host name
+    | Does not return data or percentage change for yearly as articles change so quickly
+    | Returns a list of dictionaries, each dictionary being a single article. The length will be 20 and sorted by descending pageviews 
 
 country_table()
-    | Find the pageviews and users for each date period and each site specified
-    | use the utility functions to aggregate, add percentages and format the data
-    | return total sum of metrics for each country for all sites as a list of dictionaries
-    | List of countries specify which countries to list, and those not in the list are included instead together in a "Rest of World" key
+    | Metrics: pageviews, users
+    | Dimensions: country 
+    | List of countries specify what countries will be individuall listed in the table, the rest will be included in a "Rest of World" all inclusive dictionary
+    | Return a list of dictionaries sorted by descending pageviews, length will be the length of list of countries plus 1
 
 traffic_source_table()
-    | see :ref:`my-source-list`
-    | returns this, limited to 10 sources
+    | see :ref:`get_source_list()  <get-source-list>`
+    | return with length limited to 10
 
-referring_sites_table(num_articles)
-    | see :ref:`my-source-list`
+referring_sites_table(*num_articles*)
+    | see :ref:`get_source_list() <get-source-list>`
     | gets specified number of articles for each source in the source list
-    | using referall_articles() function 
+    | using :ref:`referral_articles() <referral-articles>` function 
 
-social_network_table(num_articles)
-    | For each date period and for each site in specified site list calculate...
-    | the pageviews, users and sessions for social networks
-    | aggregate all this data so totals for each social network over all sites specified
-    | add percentage change
-    | using referall_articles() get top articles for each social network
-    | return as list of dictionaries, one dictionary for each social network
+social_network_table(*num_articles*)
+    | Metrics: pageviews, users, sessions
+    | Dimensions: social network
+    | Filter: Don't include data where social network is not set
+    | Sort by descending users
+    | Using :ref:`referral_articles() <referral-articles>` get *num_articles* for each network
 
-referral_articles(filter, limit)
-    | for current period and previous period and for each site specified calculate..
-    | the pageviews for articles filtered by specified filter
-    | aggregate data and add percentage change
-    | return list of dictionaries 
+.. _referral-articles:
+
+referral_articles(*filter*, *limit*)
+    | Metrics: pageviews
+    | Dimensions: page path, page title, host name
+    | Filter: set from *filter* could be empty or specify a social network or source for example
+    | Does not return data or percentage change for yearly as articles change so quickly
+    | Return a list of dictionaries, sorted by descending pageviews, length = *limit*
 
 device_table()
-    | for each date period and for each site in specified calculate...
-    | the users for each device category
-    | aggregate data for each device category over all sites specified
-    | add percentage change
-    | return list of dictionaries 
+    | Metrics: users
+    | Dimensions: device category (desktop, mobile or tablet)
+    | Sorted by descending users
 
-device_chart(data)
+device_chart(*data*)
     | return chart data for number of users on devices
 
 social_chart()
@@ -95,47 +104,80 @@ check_available_data()
     | for each site check if data is available
     | return dictionary with boolean of true/false and list of sites with no data available
 
-_remove_ga_names(rows)
+_remove_ga_names(*rows*)
     | remove the "ga:" in front of the google analytics metrics and dimension keys
 
-_remove_query_string(path)
+_remove_query_string(*path*)
     | remove the query string from the end of article page paths so similar articles can be aggregated properly
     | return the new article path
 
-_get_title(path, title)
+_get_title(*path*, *title*)
     | check if path includes the "amp" string
     | if it does, add "AMP" to the end of the article title to show it is an amp version
 
-.. _my-source-list:
+.. _get-source-list:
 
 _get_source_list()
-    | for each data period and for each site calculate...
-    | the pageviews and users for traffic source and medium
-    | aggregate the data for sources across all sites
-    | add percentage change
-    | return list of dictionaries, each dictionary being a source
+    | Metrics: pageviews, users
+    | Dimensions: source / medium
+    | Sort by descending users
 
 
 Youtube Analytics Data Aggregator
---------------------------------
+----------------------------------
 
-- country table
-- channel summary table
-- channel stats table
-- video table
-- traffic source table
+Data Tables
++++++++++++
 
-helpers:
+country_table()
+    | Metrics: views, estimated minutes watched, subscribers gained, subscribers lost
+    | Dimensions: country
+    | Add "subscriberChange" key, by subs gained - subs lost
+    | Returns top 20 countries sorted by descending estimated minutes watched
 
-- check data availability
+channel_summary_table()
+    | Metrics: subscribers gained, subscribers lost, estimated minutes watched
+    | Dimensions: None
+    | Adds "channel" key which is a string of the channel name to each dictionary
+    | Adds "subscriberCount" using the current total number of subscribers
+    | Adds "subscriberChange" key by subs gained - subs lost
+    | Each dictionary is the data for a separate channel
 
-see :role:`my-source-list`
+channel_stats_table()
+    | Metrics: views, likes, dislikes, comments, shares, subscribers gained
+    | Dimensions: None
+    | Adds "channel" key which is a string of the channel name to each dictionary
+    | Adds a rate per 1000 views key value pair for likes, shares, comments and subscribers
+    | Adds a like to dislike ratio key value pair
+
+video_table()
+    | Metrics: views, estimated minutes watched
+    | Dimensions: video
+    | Adds "channel" key which is a string of the channel name to each dictionary
+    | Adds "title" key for the title of the video
+    | Returns top 10 videos sorted by descending estimated minutes watched
+
+traffic_source_table()
+    | Metrics: estimated minutes watched
+    | Dimensions: traffic source type
+    | Returns a list of lists of dictionaries 
+    | Each list describes one channel, and contains a dictionary for each traffic source
+    | For traffic sources, the total of all channels for each one is calculated and it is ordered by descending estimated minutes watched, this order defines how the sources are ordered within each list
+    | The total estimated minutes watched for each channel is calculated and this defines the order of the lists, descending estimated minutes watched
+    | For each channel list, the percentage for each traffic source for that channel is calculated, added under the key "source_percentage" 
+
+Helper Functions
+++++++++++++++++
+
+check_available_data()
+    | queries analytics to see if data is available for each site
+    | returns a dictionary with a value of True/False and a list of sites where data is not available
 
 Utilities
---------
+---------
 
 Main Functions
-++++++++++++++
++++++++++++++++
 
 Used mainly by aggregate_data.py in service folders to aggregate and format the data. 
 
@@ -213,7 +255,7 @@ find_next_weekday(*start_date*, *weekday*)
     returns the date of the next closest day of the week that matches the string weekday
 
 StatsRange
-+++++++++
+++++++++++
 
 Used mainly in reports to create a date range for the report to run
 To create a StatsRange object, input a name as a string and two python datetime objects (start and end of the period).
@@ -223,7 +265,8 @@ Example::
     monthly_period = utils.StatsRange("July", date(2016, 07, 01), date(2016, 07, 31))
 
 *class* StatsRange(name, start_date, end_date)
-    
+    Object that defines a date period from start_date to end_date, used to show the report period.
+
     get_start()
         return start date in isoformat
 

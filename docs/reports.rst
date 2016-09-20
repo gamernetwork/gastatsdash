@@ -151,6 +151,26 @@ The youtube reports use the ``Templates/Youtube/base.html`` file as a template, 
 
 All template files should inherit from ``Templates/base.html``. In this file the styles are set, as is the subject and some confidentiality lines.
 
+In ``Statsdash/render.py`` you can define filter functions to be used in the templates that aren't already defined in Jinja.
+
+Already defined filter functions:
+
+int_comma(*value*)
+    | Adds commas to long numbers to make them more readable
+    | e.g. when value = 1000, returns the string 1,000
+
+cut(*word*, *part="www."*)
+    | Removes the substring defined by *part* from the string *word*
+    | Substring to remove defaults as "www." for site names, but can be any string
+    | Returns the stripped *word*
+
+Use ::
+
+    {{ value|int_comma }}
+    {{ site_name|cut("www.") }}
+
+
+
 Add a new report
 ---------------
 
@@ -212,7 +232,8 @@ Schedule
 +++++++
 
 Set up a report in ``report_schedule.py`` and run the scheduler.
-For more info see Report Schedule Settings and Using the Scheduler.
+
+For more info see :ref:`Report Schedule Settings <report-schedule>` and :ref:`Using the Scheduler <using-scheduler>`.
  
 
 
