@@ -35,7 +35,7 @@ For example, Google Analytics has a `processing latency <https://support.google.
 
 This can mean reports will want to send when the data isn't ready. We have a check set up to make reports wait until the data is ready.
 
-Each analytics class has a data availability check function set up.
+Each analytics class has a data availability check function set up. See :ref:`youtube check <youtube-data-available>` and :ref:`ga check <ga-data-available>`
 
 
 Errors
@@ -54,8 +54,4 @@ Report run dates are stored in SQLite database ``schedule.db``
    The date that is stored is the **period end date**. *Not* the date the report was run.
 
 The **RunLogger** class connects to the database to pull the last run date and calculate the next run date.
-
-
-
-
 
