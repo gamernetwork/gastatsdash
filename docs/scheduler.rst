@@ -35,7 +35,7 @@ For example, Google Analytics has a `processing latency <https://support.google.
 
 This can mean reports will want to send when the data isn't ready. We have a check set up to make reports wait until the data is ready.
 
-Each analytics class has a data availability check function set up. See :ref:`youtube check <youtube-data-available>` and :ref:`ga check <ga-data-available>`
+Each analytics class has a data availability check function set up. See :ref:`youtube <youtube-data-available>` and :ref:`ga <ga-data-available>` reference.
 
 
 Errors
@@ -45,7 +45,6 @@ This class creates a list of errors when the scheduler is run, i.e. when the rep
 
 These errors can then be emailed to relevant parties to notify of an issue immediately.
 
-
 Schedule Database 
 ------------------
 
@@ -53,5 +52,16 @@ Report run dates are stored in SQLite database ``schedule.db``
 
    The date that is stored is the **period end date**. *Not* the date the report was run.
 
-The **RunLogger** class connects to the database to pull the last run date and calculate the next run date.
+Run Logger
+++++++++++
+
+The *RunLogger* class defines functions that connect to the database and retrieve the data about when the reports have last been run and uses this to find when the report should be run next.
+
+get_next_run() 
+    | Calculates when the report should run next
+    | Dependent on the frequency of the report and when it ran last
+    | Also sets the override to True if the next run is set to be over 2 days ago
+
+
+
 
