@@ -15,6 +15,7 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
+   overview.rst
    getting_started.rst
    settings.rst
    analytics_service.rst
