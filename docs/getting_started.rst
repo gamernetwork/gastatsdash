@@ -100,6 +100,8 @@ This will iterate through the reports in your report config ``report_schedule.py
 check whether a report is due to run now and whether the data for the report is
 available in Google Analytics.
 
+How frequently the report is run is set in the config and the last run date is stored in a sqlite database, using this information the shceduler can work out when the report should next run.
+
 If the data is available for the dependent sites, the scheduler will trigger
 the report to run and email its recipients.
 
