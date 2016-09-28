@@ -1,4 +1,4 @@
-Architecture Overview
+Architectural Overview
 =====================
 
 The statsdash project flow is shown in the diagram. 
