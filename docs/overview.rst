@@ -9,6 +9,6 @@ The report class, calls to these analytics services through the data aggregator 
 
 The scheduler runs over the report schedule and checks when a report needs to run. If it needs to run and the data is available, it initialises the relevant report object, generates the html and sends the email.
 
-.. image:: stats_overview_dia.png
+.. image:: _static/stats_overview_dia.png
 
 
