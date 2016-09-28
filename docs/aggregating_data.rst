@@ -258,6 +258,20 @@ StatsRange
 ++++++++++
 
 Used mainly in reports to create a date range for the report to run
+This is where the **frequency** argument is mainly used.
+Frequency can be:
+
+DAILY
+  a one day period, where it's previous period is the day before
+WOW_DAILY
+  a one day period, where it's previous period is that day last week (-7days)
+WEEKLY
+  a 7 day period, where it's previous period is the week before
+MONTHLY
+  a one month period (utilises the **subtract_one_month** function), where it's previous period is the month before
+YEARLY
+  a one year period, where it's previous period is the year before
+
 To create a StatsRange object, input a name as a string and two python datetime objects (start and end of the period).
 Example::
 
@@ -279,7 +293,7 @@ Example::
     get_period(*date*, *frequency*)
         return a StatsRange object based on the date and frequency given
 
-    get_previuos_period(*current_period*, *frequency*)
+    get_previous_period(*current_period*, *frequency*)
         return a StatsRange object based on the current period and frequency
 
     get_one_day_period(*date*)
