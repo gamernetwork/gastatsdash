@@ -1,7 +1,7 @@
 Architectural Overview
 =====================
 
-The statsdash project flow is shown in the diagram. 
+This is an overview of how the statsdash project works at a high level. You can see the work flow in the diagram below.
 
 There are two analytics services, Google Analytics and Youtube Analytics. Both of these analytics services are contained within their own folder. Each one contains an analytics file, that creates the connection to the service and runs the queries, an individual config and a data aggregator which formats the data gathered into specified data tables. 
 
