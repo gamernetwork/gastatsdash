@@ -56,7 +56,17 @@ Main Config
 In the main config should only be the settings you need for the report or schedule class. 
 
 - Logging info and configuration
+
+  - A basic python logger config
+  - Get more info `here <https://docs.python.org/2/library/logging.html>`_
+  - Uses a dictionary based config, `example <https://docs.python.org/2/howto/logging-cookbook.html#an-example-dictionary-based-configuration>`_
+
 - Mail settings and personal emails
+
+  - *SMTP_ADDRESS*: The server from which to send emails
+  - *SEND_FROM*: The email from which to send the reports
+  - *ERROR_REPORTER*: The email to send the error logs to
+   
 - Schedule database location
 
 You can see an example at ``Statsdash/config.py-example``

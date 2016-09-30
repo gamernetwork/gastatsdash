@@ -34,4 +34,6 @@ LOGGING = {
 SMTP_ADDRESS = 'localhost:25'
 SEND_FROM = 'statsdash@your-hostname.net'
 
+ERROR_REPORTER = ['logging@your-hostname.net']
+
 SCHEDULE_DB_LOCATION = os.path.abspath('.')
