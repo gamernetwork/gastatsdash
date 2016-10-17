@@ -69,7 +69,7 @@ class RunLogger(object):
         )
         self.conn.commit()
 
-    def get_next_run(self, last_period_end, frequency, frequency_options={}):
+    def get_next_run(self, last_run, frequency, frequency_options={}):
         """
         When should the report run next.
         Returns a Date object
@@ -78,7 +78,7 @@ class RunLogger(object):
         today = date.today() - timedelta(days=1)
         now = datetime(today.year, today.month, today.day, 00, 00, 00, 01)  #returns now as datetime with time as 00 00 00 00001
         
-        if last_period_end.year == 1:
+        if last_run.year == 1:
             if frequency == 'DAILY' or frequency == "WOW_DAILY":
                 return now
             if frequency == 'WEEKLY':
@@ -93,15 +93,17 @@ class RunLogger(object):
        
         if frequency == 'DAILY' or frequency == "WOW_DAILY":
             #if last period end was over 2 days ago, set to yesterday 
-            next_run = last_period_end + timedelta(days=1)
-            if (now - last_period_end).days >= 2:
+            next_run = last_run + timedelta(days=1)
+            if (now - last_run).days >= 2:
               self.override_data = True
         if frequency == 'WEEKLY':
-            next_run = last_period_end + timedelta(days=7)
+            weekday = frequency_options.get('weekday', 'Monday')
+            # Next run is the next matching weekday *after* the last run
+            next_run = find_next_weekday(last_run, weekday, force_future=True)
         if frequency == 'MONTHLY':
             day = frequency_options.get("day")
-            #add one day to last_period_end to get the first day of next month period 
-            next_run = last_period_end + timedelta(days=1) 
+            #add one day to last_run to get the first day of next month period 
+            next_run = last_run + timedelta(days=1) 
             #needs to run at the end of the next period, so add one month
             next_run = add_one_month(next_run)
             #make sure set to be correct day 
@@ -226,6 +228,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
     error_list = Errors()
     
+    if args.test:
+        print("**Dry Run**")
     run_schedule(args.test)
     
     if error_list.get_errors():
