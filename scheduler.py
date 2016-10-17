@@ -136,7 +136,7 @@ class Errors(object):
         msg.set_charset('utf8')
         msg['Subject'] = "Statsdash Errors"
         msg['From'] = config.SEND_FROM
-        msg['To'] = config.ERROR_REPORTER
+        msg['To'] = ", ".join(config.ERROR_REPORTER)
         
         message = ""
         for error in self.errors:
