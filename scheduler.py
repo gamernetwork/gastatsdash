@@ -228,6 +228,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
     error_list = Errors()
     
+    if args.test:
+        print("**Dry Run**")
     run_schedule(args.test)
     
     if error_list.get_errors():
