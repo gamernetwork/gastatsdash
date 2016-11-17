@@ -29,6 +29,8 @@ else:
 	
 if args.sitename == "all_sites":
     sites = ga_config.TABLES.keys()
+if args.sitename == "all_network_sites":
+    sites = ga_config.ALL_NETWORK_SITES
 else:
     sites = [args.sitename]
 	
@@ -50,8 +52,8 @@ if report_type == "YoutubeReport":
     #yt.send_email(html)
 elif report_type == "AnalyticsCoreReport":
     #ac = AnalyticsCoreReport(['jelly.deals'], daily_period, config.all_recipients, "WOW_DAILY", "Report for")
-    ac = AnalyticsCoreReport(['jelly.deals'], monthly_period, config.all_recipients, "MONTHLY", "Report for")
-    #ac = AnalyticsCoreReport(sites, monthly_period, config.all_recipients, "MONTHLY", "Report for")
+    #ac = AnalyticsCoreReport(['jelly.deals'], monthly_period, config.all_recipients, "MONTHLY", "Report for")
+    ac = AnalyticsCoreReport(sites, daily_period, config.all_recipients, "MONTHLY", "Report for")
     html = ac.generate_html()
     #ac.send_email(html)
 elif report_type == "AnalyticsSocialReport":
