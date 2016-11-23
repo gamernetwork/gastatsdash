@@ -141,7 +141,7 @@ class YoutubeData(object):
                     table.extend(rows)
                 else:
                     #print "No data for channel " + channel + " on " + date.get_start() + " - " + date.get_end()
-                    logger.debug("No data for site " + site + " on " + date.get_start() + " - " + date.get_end())     
+                    logger.debug("No data for channel " + channel + " on " + date.get_start() + " - " + date.get_end())     
                                                
             sorted = utils.sort_data(table, "views")
             data[count] = sorted
