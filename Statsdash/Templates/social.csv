@@ -1,4 +1,2 @@
 Month, Facebook-pageviews, Facebook-sessions, Twitter-pageviews, Twitter-sessions
-{% for row in social_export %}
-{{ row.month }}, {% for social in row.data if social.social_network == "Facebook" or social.social_network == "Twitter" %}{{social.pageviews}}, {{social.sessions}}, {% endfor %}
-{% endfor %}
+{% for row in social_export %}{{ row.month }}, {% for social in row.data if social.social_network == "Facebook" or social.social_network == "Twitter" %}{{social.pageviews}}, {{social.sessions}}, {% endfor %}{% endfor %}
