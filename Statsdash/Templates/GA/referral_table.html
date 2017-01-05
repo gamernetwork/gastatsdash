@@ -11,7 +11,7 @@
     <tbody>
         {% for row in referrals|sort(reverse=True, attribute="pageviews") %}
         <tr class="{{ loop.cycle('odd', 'even') }}">
-            <th> {{row.source|capitalize}} </th>
+            <th> {{row.source|title}} </th>
             <td class="num">{{row.pageviews|int|intcomma}}</td>
             <td class = "src">{% for article in row.articles %}<span style="display:list-item;list-style:none;"><a href="http://{{article.host}}{{article.path}}">{{article.title}}</a></span> {% endfor %}</td>
             <!--<td class="num">{% for article in value %}<span>{{article.metrics.pageviews}}</span> {% endfor %}</td>-->

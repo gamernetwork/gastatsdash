@@ -1,4 +1,4 @@
-<h2>{{ site|capitalize }} Overview</h2>
+<h2>{{ site|title }} Overview</h2>
 <table border="0" cellspacing="0">
     <thead>
         <tr>
@@ -11,7 +11,7 @@
     </thead>
     <tbody>
         <tr class="odd">
-            <th> {{ site|capitalize }}{% if report_span == 'MONTHLY' %} total this month{% else %} on this date{% endif %}</th>
+            <th> {{ site|title }}{% if report_span == 'MONTHLY' %} total this month{% else %} on this date{% endif %}</th>
             <td class="num"> {{summary_table.pageviews|int|intcomma}} </td>
             <td class="num"> {{summary_table.users|int|intcomma}} </td>
             <td class="num"> {{summary_table.pv_per_session|round(1)}} </td>
@@ -104,7 +104,7 @@
       </thead>
       <tbody>
           <tr class="odd">
-              <th> {{ site|capitalize }} month to date</th>
+              <th> {{ site|title }} month to date</th>
               <td class="num"> {{month_summary_table.pageviews|int|intcomma}} </td>                  
               <td class="num"> {{month_summary_table.users|int|intcomma}} </td>
               <td class="num"> {{month_summary_table.sessions|int|intcomma}} </td>
