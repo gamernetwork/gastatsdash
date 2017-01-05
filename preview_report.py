@@ -29,7 +29,7 @@ else:
 	
 if args.sitename == "all_sites":
     sites = ga_config.TABLES.keys()
-if args.sitename == "all_network_sites":
+elif args.sitename == "all_network_sites":
     sites = ga_config.ALL_NETWORK_SITES
 else:
     sites = [args.sitename]
@@ -38,7 +38,7 @@ file_src = args.destination + "/" + file_name
 
 
 monthly_period = utils.StatsRange("period", date(2016, 07, 01), date(2016, 07, 31))
-daily_period = utils.StatsRange("period", date(2016, 8, 22), date(2016, 8, 22))
+daily_period = utils.StatsRange("period", date(2016, 12, 16), date(2016, 12, 16))
 weekly_period = utils.StatsRange("period", date(2016, 8, 15), date(2016, 8, 21))
 
 
@@ -53,7 +53,7 @@ if report_type == "YoutubeReport":
 elif report_type == "AnalyticsCoreReport":
     #ac = AnalyticsCoreReport(['jelly.deals'], daily_period, config.all_recipients, "WOW_DAILY", "Report for")
     #ac = AnalyticsCoreReport(['jelly.deals'], monthly_period, config.all_recipients, "MONTHLY", "Report for")
-    ac = AnalyticsCoreReport(sites, daily_period, config.all_recipients, "MONTHLY", "Report for")
+    ac = AnalyticsCoreReport(['eurogamer.de'], daily_period, config.all_recipients, "WOW_DAILY", "Report for")
     html = ac.generate_html()
     #ac.send_email(html)
 elif report_type == "AnalyticsSocialReport":

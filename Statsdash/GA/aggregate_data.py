@@ -32,10 +32,17 @@ class AnalyticsData(object):
     
     def check_available_data(self):
         run_report = {"result":True, "site":[]}
+        multiple_sites = True
+        if len(self.sites) == 1:
+            multiple_sites = False
         for site in self.sites:
             ids = self.site_ids[site]
             for property_details in ids:
-                if not property_details.get('wait_for_data', True):
+                wait = property_details.get('wait_for_data', True)
+                # If we're running a report for multiple sites and this property
+                # is not essential, we can safely go ahead with or without
+                # the data available.
+                if multiple_sites and not wait:
                     continue
                 data_available = analytics.data_available(property_details['id'], self.period.get_end())
                 if not data_available:

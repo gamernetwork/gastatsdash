@@ -19,7 +19,7 @@
 	<tbody>
 		{% for row in site_summary %}
 			<tr class="{{ loop.cycle('odd', 'even') }}">
-				<th>{{ row.site|capitalize }}</th>
+				<th>{{ row.site|title }}</th>
 				<td class="num">{{ row.users|int|intcomma }}</td>
 				<td class="num"><span style="color: {% if row.previous_percentage_users > 0 %}green{% else %}red{% endif %};">{{row.previous_percentage_users|round(1)}}%</span></td>
 				<td class="num"><span style="color: {% if row.yearly_percentage_users > 0 %}green{% else %}red{% endif %};">{{row.yearly_percentage_users|round(1)}}%</span></td>					
