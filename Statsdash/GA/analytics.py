@@ -108,14 +108,12 @@ class Analytics(object):
                 #no data
                 #print "No data for id " + id + " " + " on " + start + " - " + end
                 logger.debug("No data for " + id + " " + " on " + start + " - " + end)
-                logger.debug("for metrics: " + metrics + " dimensions: " + str(dimensions) + " filters: " + str(filters))
+                str_dimensions = "None"
+                if dimensions:
+                    str_dimensions = dimensions.encode('utf-8')
+                str_filters = "None"
+                if filters:
+                    str_filters = filters.encode('utf-8')
+                logger.debug("for metrics: " + metrics + " dimensions: " + str_dimensions + " filters: " + str_filters)
         main_row = utils.aggregate_data(main_row, metrics.split(","), aggregate_key)
         return main_row       
-        
-        
-        
-        
-        
-        
-        
-        

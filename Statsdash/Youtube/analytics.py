@@ -3,7 +3,6 @@
 from datetime import datetime, timedelta
 import httplib2
 import os
-import sys
 import json
 import config
 import Statsdash.utilities as utils
@@ -11,10 +10,7 @@ from Statsdash.config import LOGGING
 
 from apiclient.discovery import build
 from apiclient.errors import HttpError
-from oauth2client.client import flow_from_clientsecrets
 from oauth2client.file import Storage
-from oauth2client.tools import argparser, run_flow
-from oauth2client.service_account import ServiceAccountCredentials
 import logging, logging.config, logging.handlers
 
 logging.config.dictConfig(LOGGING)
@@ -46,6 +42,9 @@ https://developers.google.com/api-client-library/python/guide/aaa_client_secrets
 """ % os.path.abspath(os.path.join(os.path.dirname(__file__),
                                    CLIENT_SECRETS_FILE))
 
+class ImproperlyConfiguredException(Exception):
+    pass
+
 
 class Analytics(object):
     """
@@ -59,14 +58,11 @@ class Analytics(object):
     	"""
     	initialise credentials and build api object to query
     	"""
-    	flow = flow_from_clientsecrets(CLIENT_SECRETS_FILE,scope=" ".join(YOUTUBE_SCOPES),redirect_uri='http://localhost:8080')
-    	storage = Storage("%s-oauth2.json" % sys.argv[0])
+    	storage = Storage("youtube-oauth2.json")
     	credentials = storage.get()
     
-    	#credentials = None
-    
     	if credentials is None or credentials.invalid:
-    		credentials = run_flow(flow, storage)
+            raise ImproperlyConfiguredException("Couldn't find any service account credentials.  Please run `python create_credentials.py --noauth_local_webserver` first")
     
     	http = credentials.authorize(httplib2.Http())
     

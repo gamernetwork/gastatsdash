@@ -13,7 +13,7 @@
     <tbody>
         {% for row in top_articles %}
         <tr class="{{ loop.cycle('odd', 'even') }}">
-            <th>{{row.host|cut("www.")|capitalize}}</th>
+            <th>{{row.host|cut("www.")|title}}</th>
             <td class="src"><a href="http://{{row.host}}{{row.path}}">{{row.title}}</a></td>
             <td class="num">{{row.pageviews|int|intcomma}}</td>
             {% if report_span == 'WOW_DAILY' %}

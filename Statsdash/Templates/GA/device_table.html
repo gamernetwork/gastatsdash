@@ -12,7 +12,7 @@
     <tbody>
         {% for row in device_table %}
             <tr class="{{ loop.cycle('odd', 'even') }}">
-                <th> {{row.device_category|capitalize}} </th>
+                <th> {{row.device_category|title}} </th>
                 <td class = 'num'> {{row.users|int|intcomma}} </td>
                 {% if report_span == 'MONTHLY' %}<td class = 'num' style="color: {% if row.yearly_percentage_users > 0 %}green{% else %}red{% endif %};"> {{row.yearly_percentage_users|round(1)}}%</td>{% endif %}
                 <td class = 'num'> {{((row.users / summary_table.users) * 100)|round(1)}}% </td>

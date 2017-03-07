@@ -167,7 +167,7 @@ class AnalyticsCoreReport(Report):
         self.template = self.env.get_template("GA/base.html")
         self.imgdata = None
         
-        if len(self.sites) == len(ga_config.TABLES.keys()):
+        if self.sites == ga_config.ALL_NETWORK_SITES:
             self.all_sites = True
         else:
             self.all_sites = False
@@ -178,7 +178,7 @@ class AnalyticsCoreReport(Report):
     def get_site(self):
         if len(self.sites) == 1:
             return self.sites[0]
-        elif len(self.sites) == len(ga_config.TABLES.keys()):
+        elif self.all_sites:
             return ga_config.ALL_SITES_NAME
     
 
@@ -311,7 +311,7 @@ class AnalyticsSocialReport(Report):
         
         logger.debug("Running analytics social report")
         
-        if len(self.sites) == len(ga_config.TABLES.keys()):
+        if self.sites == len(ga_config.TABLES.keys()):
             self.all_sites = True
         else:
             self.all_sites = False

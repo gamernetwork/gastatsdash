@@ -41,9 +41,13 @@ class RunLogger(object):
                 "(identifier text unique, last_run datetime)"
         )
 
-    def get_last_run(self, identifier):
+    def get_last_run_end(self, identifier):
         """
-        Get the last run of a report given a unique identifier.
+        Get the datetime of the end of the last run of a report given a unique 
+        identifier.
+
+        Yields datetime(1,1,1) if a report with that identifier has never been 
+        recorded.
         """
         c = self.conn.cursor()
         c.execute(
@@ -69,16 +73,16 @@ class RunLogger(object):
         )
         self.conn.commit()
 
-    def get_next_run(self, last_period_end, frequency, frequency_options={}):
+    def get_next_run(self, last_run_end, frequency, frequency_options={}):
         """
         When should the report run next.
         Returns a Date object
-        last_run == report end date
+        last_run_end == report end date
         """
         today = date.today() - timedelta(days=1)
         now = datetime(today.year, today.month, today.day, 00, 00, 00, 01)  #returns now as datetime with time as 00 00 00 00001
         
-        if last_period_end.year == 1:
+        if last_run_end.year == 1:
             if frequency == 'DAILY' or frequency == "WOW_DAILY":
                 return now
             if frequency == 'WEEKLY':
@@ -93,15 +97,19 @@ class RunLogger(object):
        
         if frequency == 'DAILY' or frequency == "WOW_DAILY":
             #if last period end was over 2 days ago, set to yesterday 
-            next_run = last_period_end + timedelta(days=1)
-            if (now - last_period_end).days >= 2:
+            next_run = last_run_end + timedelta(days=1)
+            if (now - last_run_end).days >= 2:
               self.override_data = True
         if frequency == 'WEEKLY':
-            next_run = last_period_end + timedelta(days=7)
+            weekday = frequency_options.get('weekday', 'Monday')
+            # Next run is the next matching weekday *after* the last run
+            # So if we run every Monday, our last_run_end will be on a Sunday - 
+            #   so add one day
+            next_run = find_next_weekday(last_run_end + timedelta(days=1), weekday, force_future=True)
         if frequency == 'MONTHLY':
             day = frequency_options.get("day")
-            #add one day to last_period_end to get the first day of next month period 
-            next_run = last_period_end + timedelta(days=1) 
+            #add one day to last_run_end to get the first day of next month period 
+            next_run = last_run_end + timedelta(days=1) 
             #needs to run at the end of the next period, so add one month
             next_run = add_one_month(next_run)
             #make sure set to be correct day 
@@ -134,7 +142,7 @@ class Errors(object):
         msg.set_charset('utf8')
         msg['Subject'] = "Statsdash Errors"
         msg['From'] = config.SEND_FROM
-        msg['To'] = config.ERROR_REPORTER
+        msg['To'] = ", ".join(config.ERROR_REPORTER)
         
         message = ""
         for error in self.errors:
@@ -169,8 +177,8 @@ def _run(dryrun=False):
         frequency = config['frequency']
         frequency_options = config.get('frequency_options', {})
         report_class = config['report']
-        last_run = run_logger.get_last_run(identifier)
-        next_run_date = run_logger.get_next_run(last_run, frequency, frequency_options).date()
+        last_run_end = run_logger.get_last_run_end(identifier)
+        next_run_date = run_logger.get_next_run(last_run_end, frequency, frequency_options).date()
         today = date.today()
         needs_run = next_run_date <= today
         print "%s next run: %s.  Needs run: %s" % (identifier, next_run_date, needs_run)
@@ -189,7 +197,7 @@ def _run(dryrun=False):
             run_logger.override_data = False
             print "%s next run: %s.  Data available: %s" % (identifier, next_run_date, data_available)
             if dryrun == True:
-                print "last run %s" %(last_run)
+                print "last run's end %s" %(last_run_end)
                 print "period for run: %s - %s" % (period.start_date, period.end_date)               
             if data_available:
                 try:
@@ -226,6 +234,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
     error_list = Errors()
     
+    if args.test:
+        print("**Dry Run**")
     run_schedule(args.test)
     
     if error_list.get_errors():

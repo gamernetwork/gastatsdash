@@ -236,7 +236,7 @@ def find_last_weekday(start_date, weekday):
     given a starting date and a string weekday, return the date object for the 
     closest date in the past with that weekday.  returns today if that matches.
 
-    eg: last_weekday(date(01,01,2015), "monday")
+    eg: last_weekday(date(01,01,2015), "Monday")
     returns date(29,12,2014) since this is the previous monday
     """
     desired_weekday = WEEKDAY_INDEXES[weekday]
@@ -249,18 +249,26 @@ def find_last_weekday(start_date, weekday):
         days = 7 - (desired_weekday - current_weekday)
     return start_date - datetime.timedelta(days=days)
 
-def find_next_weekday(start_date, weekday):
+def find_next_weekday(start_date, weekday, force_future=False):
     """
-    given a starting date and a string weekday, return the date object for the 
+    Given a starting date and a string weekday, return the date object for the 
     closest date in the future with that weekday.  returns today if that matches.
 
-    eg: last_weekday(date(01,01,2015), "monday")
-    returns date(29,12,2014) since this is the previous monday
+    Args:
+        `start_date` - datetime object - datetime to anchor from
+        `weekday` - string - one of "Monday"-"Sunday"
+        `[force_future]` - boolean - return the weekday from the following week
+            if `start_date` matches our desired weekday.  Defaults to False
+
+    eg: next_weekday(date(01,01,2015), "Monday")
+    returns date(05,01,2015) since this is the next monday
     """
     desired_weekday = WEEKDAY_INDEXES[weekday]
     current_weekday = start_date.weekday()
     if desired_weekday == current_weekday:
         days = 0
+        if force_future:
+            days = 7
     if desired_weekday < current_weekday:
         days = 7 - current_weekday + desired_weekday
     if desired_weekday > current_weekday:
