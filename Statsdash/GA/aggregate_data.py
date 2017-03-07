@@ -1,4 +1,3 @@
-
 import config
 import re
 import pygal
@@ -31,8 +30,22 @@ class AnalyticsData(object):
         self.site_ids = site_ids
     
     def check_available_data(self):
-        run_report = {"result":True, "site":[]}
+        run_report = {"result": True, "site": []}
         multiple_sites = True
+        # Get the end time of the period
+        period_end_time = datetime(
+            year=self.period.end_date.year,
+            month=self.period.end_date.month,
+            day=self.period.end_date.day,
+            hour=23,
+            minute=59,
+            second=59,
+        )
+        analytics_populated_time = period_end_time + timedelta(hours=1)
+        data_possibly_available = datetime.now() > analytics_populated_time
+        if not data_possibly_available:
+            print("Nah mate")
+            return False
         if len(self.sites) == 1:
             multiple_sites = False
         for site in self.sites:
