@@ -44,7 +44,6 @@ class AnalyticsData(object):
         analytics_populated_time = period_end_time + timedelta(hours=1)
         data_possibly_available = datetime.now() > analytics_populated_time
         if not data_possibly_available:
-            print("Nah mate")
             return False
         if len(self.sites) == 1:
             multiple_sites = False
