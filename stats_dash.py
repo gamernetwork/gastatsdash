@@ -37,6 +37,9 @@ COUNTRIES_REGEX = "Czec|Germa|Denma|Spai|Franc|Italy|Portug|Swede|Polan|Brazi|Be
 if sys.argv[1] == "month":
     end_date = date.today() - timedelta(days=1)
     start_date = dateutils.subtract_one_month( date.today() )
+if sys.argv[1].startswith('201'):
+    start_date = date(int(sys.argv[1]), 1, 1)
+    end_date = start_date + timedelta(days=365)
 else:
     d = int(sys.argv[1])
     end_date = date.today() - timedelta(days=1)
@@ -124,20 +127,21 @@ def get_totals( gaid, start_date, end_date ):
     return totals
 
 if __name__ == "__main__":
-    for table, gaid in sorted( config.TABLES.items() ):
+    for table, props in sorted( config.TABLES.items() ):
 
         sys.stderr.write( table + "\n" )
         # get totals
-        totals = get_totals( gaid, start_date, end_date )
+        for prop in props:
+            totals = get_totals( prop['id'], start_date, end_date )
 
-        # country breakdown
-        countries = get_country_breakdown( gaid, start_date, end_date )
+            # country breakdown
+            #countries = get_country_breakdown( gaid, start_date, end_date )
 
-        sites.append( {
-            "name": table,
-            "countries": countries,
-            "totals": totals,
-        } )
+            sites.append( {
+                "name": table + ' ' + prop['id'],
+                #"countries": countries,
+                "totals": totals,
+            } )
 
     print json.dumps({
         "period" : sys.argv[1],
