@@ -44,7 +44,7 @@ class AnalyticsData(object):
         analytics_populated_time = period_end_time + timedelta(hours=1)
         data_possibly_available = datetime.now() > analytics_populated_time
         if not data_possibly_available:
-            return False
+            return {'result': False, 'site': ['Too early for data to be available!']}
         if len(self.sites) == 1:
             multiple_sites = False
         for site in self.sites:
