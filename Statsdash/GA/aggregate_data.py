@@ -134,7 +134,12 @@ class AnalyticsData(object):
         
         return added_change
                            
-
+    def _remove_page_number(self, path):
+        """
+        Removes any page numbering suffix from URLs (typicaly, wordpress)
+        """
+        path = re.sub("/[1-9](/\?|\?|/$|$)", "", path)
+        return path    
 
     def _remove_query_string(self, path):
         """
@@ -182,7 +187,7 @@ class AnalyticsData(object):
                 for row in rows:
                     path = row["path"]
                     title = row["title"]
-                    new_path = self._remove_query_string(path)
+                    new_path = self._remove_page_number(self._remove_query_string(path))
                     new_title = self._get_title(path, title)
                     row["path"] = new_path
                     row["title"] = new_title
@@ -340,7 +345,7 @@ class AnalyticsData(object):
                 for row in rows:
                     path = row["path"]
                     title = row["title"]
-                    new_path = self._remove_query_string(path)
+                    new_path = self._remove_page_number(self._remove_query_string(path))
                     new_title = self._get_title(path, title)
                     row["path"] = new_path
                     row["title"] = new_title
