@@ -185,16 +185,17 @@ class AnalyticsData(object):
                     new_path = self._remove_query_string(path)
                     new_title = self._get_title(path, title)
                     row["path"] = new_path
+                    row["site_path"] = site + new_path
                     row["title"] = new_title
                     row["pageviews"] = float(row["pageviews"])
                 
                 articles.extend(rows)
-            aggregated = utils.aggregate_data(articles, ["pageviews"], match_key="path")
+            aggregated = utils.aggregate_data(articles, ["pageviews"], match_key="site_path")
             sorted = utils.sort_data(aggregated, "pageviews", limit=20)
             data[count] = sorted
             #group
 
-        added_change = utils.add_change(data[0], data[1], ["pageviews"], "previous", match_key="path")
+        added_change = utils.add_change(data[0], data[1], ["pageviews"], "previous", match_key="site_path")
 
         return added_change
         
