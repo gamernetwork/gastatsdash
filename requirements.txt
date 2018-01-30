@@ -1,14 +1,12 @@
 BeautifulSoup==3.2.1
 argparse==1.2.1
-cffi==0.8.6
-cryptography==0.6.1
 cssutils==1.0
 wheel
 distribute==0.6.24
 google-api-python-client==1.3.1
 httplib2==0.9
 oauth2client==2.1.0
-pyOpenSSL==0.14
+pyOpenSSL==17.5.0
 pyasn1==0.1.7
 pyasn1-modules==0.0.5
 pycparser==2.10
@@ -24,5 +22,5 @@ Jinja2==2.8
 requests==2.10.0
 premailer
 pygal
-cairosvg
+cairosvg==1.0.21
 tendo==0.2.8
