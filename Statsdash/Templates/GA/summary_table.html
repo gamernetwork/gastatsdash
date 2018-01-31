@@ -1,3 +1,7 @@
+{% set pages_per_visitor = (summary_table.pageviews|int / summary_table.users|int)|round(1) %}
+{% set previous_pages_per_visitor = (summary_table.previous_figure_pageviews|int / summary_table.previous_figure_users|int)|round(1) %}
+{% set percent_change_pages_per_visitor = (((pages_per_visitor / previous_pages_per_visitor) - 1) * 100)|round(1) %}
+
 <h2>{{ site|title }} Overview</h2>
 <table border="0" cellspacing="0">
     <thead>
@@ -14,21 +18,21 @@
             <th> {{ site|title }}{% if report_span == 'MONTHLY' %} total this month{% else %} on this date{% endif %}</th>
             <td class="num"> {{summary_table.pageviews|int|intcomma}} </td>
             <td class="num"> {{summary_table.users|int|intcomma}} </td>
-            <td class="num"> {{summary_table.pv_per_session|round(1)}} </td>
+            <td class="num"> {{pages_per_visitor}} </td>
             <td class="num"> {{summary_table.avg_session_time|round(1)}} minutes </td>
         </tr>
         <tr class="even">
             <th> Data {% if report_span == 'MONTHLY' %}last month{% else %}this day last week{% endif %} </th>
             <td class="num"> {{summary_table.previous_figure_pageviews|int|intcomma}}</td>
             <td class="num"> {{summary_table.previous_figure_users|int|intcomma}} </td>
-            <td class="num"> {{summary_table.previous_figure_pv_per_session|round(1)}} </td>
+            <td class="num"> {{previous_pages_per_visitor}} </td>
             <td class="num"> {{summary_table.previous_figure_avg_session_time|round(1)}} minutes</td>
         </tr>  
         <tr class="odd">
             <th> Change vs {% if report_span == 'MONTHLY' %}last month{% else %}this day last week{% endif %}</th>
             <td class="num" style="color: {% if summary_table.previous_percentage_pageviews > 0 %}green{% else %}red{% endif %};"> {{ summary_table.previous_percentage_pageviews|round(1) }}%</td>
             <td class="num" style="color: {% if summary_table.previous_percentage_users > 0 %}green{% else %}red{% endif %};"> {{summary_table.previous_percentage_users|round(1)}}%</td>
-            <td class="num" style="color: {% if summary_table.previous_percentage_pv_per_session > 0 %}green{% else %}red{% endif %};"> {{summary_table.previous_percentage_pv_per_session|round(1)}}%</td>
+            <td class="num" style="color: {% if percent_change_pages_per_visitor > 0 %}green{% else %}red{% endif %};"> {{percent_change_pages_per_visitor}}%</td>
             <td class="num" style="color: {% if summary_table.previous_percentage_avg_session_time > 0 %}green{% else %}red{% endif %};"> {{summary_table.previous_percentage_avg_session_time|round(1)}}%</td>
         </tr>   
         {% if report_span == 'MONTHLY' %}
@@ -36,13 +40,18 @@
             <th> Change vs this month last year </th>
             <td class="num" style="color: {% if summary_table.yearly_percentage_pageviews > 0 %}green{% else %}red{% endif %};"> {{summary_table.yearly_percentage_pageviews|round(1)}}%</td>                
             <td class="num" style="color: {% if summary_table.yearly_percentage_users > 0 %}green{% else %}red{% endif %};"> {{summary_table.yearly_percentage_users|round(1)}}%</td>
-            <td class="num" style="color: {% if summary_table.yearly_percentage_pv_per_session > 0 %}green{% else %}red{% endif %};"> {{summary_table.yearly_percentage_pv_per_session|round(1)}}%</td>
+            <td class="num" style="color: {% if percent_change_pages_per_visitor > 0 %}green{% else %}red{% endif %};"> {{summary_table.yearly_percentage_pv_per_session|round(1)}}%</td>
             <td class="num" style="color: {% if summary_table.yearly_percentage_avg_session_time > 0 %}green{% else %}red{% endif %};"> {{summary_table.yearly_percentage_avg_session_time|round(1)}}%</td>
         </tr>   
         {% endif %}
     </tbody>
 </table>           
 {% if all_sites == false %}
+
+{% set network_pages_per_visitor = (network_summary_table.pageviews|int / network_summary_table.users|int)|round(1) %}
+{% set network_previous_pages_per_visitor = (network_summary_table.previous_figure_pageviews|int / network_summary_table.previous_figure_users|int)|round(1) %}
+{% set network_percent_change_pages_per_visitor = (((network_pages_per_visitor / network_previous_pages_per_visitor) - 1) * 100)|round(1) %}
+
 <h2>Network Overview</h2>
 <table border="0" cellspacing="0">
     <thead>
@@ -59,21 +68,21 @@
             <th> Network Data </th>
             <td class="num"> {{network_summary_table.pageviews|int|intcomma}} </td>
             <td class="num"> {{network_summary_table.users|int|intcomma}} </td>            
-            <td class="num"> {{network_summary_table.pv_per_session|round(1)}} </td>
+            <td class="num"> {{network_pages_per_visitor}} </td>
             <td class="num"> {{network_summary_table.avg_session_time|round(1)}} minutes </td>
         <tr> 
         <tr class="even">
             <th> Network data {% if report_span == 'MONTHLY' %}last month{% else %}this day last week{% endif %}</th>
             <td class="num"> {{network_summary_table.previous_figure_pageviews|int|intcomma}}</td>                
             <td class="num"> {{network_summary_table.previous_figure_users|int|intcomma}} </td>
-            <td class="num"> {{network_summary_table.previous_figure_pv_per_session|round(1)}} </td>
+            <td class="num"> {{network_previous_pages_per_visitor}} </td>
             <td class="num"> {{network_summary_table.previous_figure_avg_session_time|round(1)}} minutes</td>
         </tr>  
         <tr class="odd">
             <th> Network change vs {% if report_span == 'MONTHLY' %}last month{% else %}this day last week{% endif %}</th>
             <td class="num" style="color: {% if network_summary_table.previous_percentage_pageviews > 0 %}green{% else %}red{% endif %};"> {{network_summary_table.previous_percentage_pageviews|round(1)}}%</td>                
             <td class="num" style="color: {% if network_summary_table.previous_percentage_users > 0 %}green{% else %}red{% endif %};"> {{network_summary_table.previous_percentage_users|round(1)}}%</td>
-            <td class="num" style="color: {% if network_summary_table.previous_percentage_pv_per_session > 0 %}green{% else %}red{% endif %};"> {{network_summary_table.previous_percentage_pv_per_session|round(1)}}%</td>
+            <td class="num" style="color: {% if network_percent_change_pages_per_visitor > 0 %}green{% else %}red{% endif %};"> {{network_percent_change_pages_per_visitor}}%</td>
             <td class="num" style="color: {% if network_summary_table.previous_percentage_avg_session_time > 0 %}green{% else %}red{% endif %};"> {{network_summary_table.previous_percentage_avg_session_time|round(1)}}%</td>
         </tr>   
         {% if report_span == 'MONTHLY' %}

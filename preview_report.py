@@ -38,7 +38,7 @@ file_src = args.destination + "/" + file_name
 
 
 monthly_period = utils.StatsRange("period", date(2016, 07, 01), date(2016, 07, 31))
-daily_period = utils.StatsRange("period", date(2018, 1, 26), date(2018, 1, 26))
+daily_period = utils.StatsRange("period", date(2018, 1, 16), date(2018, 1, 16))
 weekly_period = utils.StatsRange("period", date(2016, 8, 15), date(2016, 8, 21))
 
 
