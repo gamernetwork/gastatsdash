@@ -38,7 +38,7 @@ file_src = args.destination + "/" + file_name
 
 
 monthly_period = utils.StatsRange("period", date(2016, 07, 01), date(2016, 07, 31))
-daily_period = utils.StatsRange("period", date(2016, 12, 16), date(2016, 12, 16))
+daily_period = utils.StatsRange("period", date(2018, 1, 16), date(2018, 1, 16))
 weekly_period = utils.StatsRange("period", date(2016, 8, 15), date(2016, 8, 21))
 
 
@@ -52,7 +52,7 @@ if report_type == "YoutubeReport":
     #yt.send_email(html)
 elif report_type == "AnalyticsCoreReport":
     #ac = AnalyticsCoreReport(['jelly.deals'], daily_period, config.all_recipients, "WOW_DAILY", "Report for")
-    ac = AnalyticsCoreReport(['eurogamer.de'], daily_period, config.all_recipients, "WOW_DAILY", "Report for")
+    ac = AnalyticsCoreReport(['eurogamer.net'], daily_period, config.all_recipients, "WOW_DAILY", "Report for")
     html = ac.generate_html()
     #ac.send_email(html)
 elif report_type == "AnalyticsSocialReport":

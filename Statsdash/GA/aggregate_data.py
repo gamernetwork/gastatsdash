@@ -185,16 +185,17 @@ class AnalyticsData(object):
                     new_path = self._remove_query_string(path)
                     new_title = self._get_title(path, title)
                     row["path"] = new_path
+                    row["site_path"] = site + new_path
                     row["title"] = new_title
                     row["pageviews"] = float(row["pageviews"])
                 
                 articles.extend(rows)
-            aggregated = utils.aggregate_data(articles, ["pageviews"], match_key="path")
+            aggregated = utils.aggregate_data(articles, ["pageviews"], match_key="site_path")
             sorted = utils.sort_data(aggregated, "pageviews", limit=20)
             data[count] = sorted
             #group
 
-        added_change = utils.add_change(data[0], data[1], ["pageviews"], "previous", match_key="path")
+        added_change = utils.add_change(data[0], data[1], ["pageviews"], "previous", match_key="site_path")
 
         return added_change
         
@@ -240,61 +241,63 @@ class AnalyticsData(object):
         
         return added_change
             
-    def _get_source_list(self):
+    def _get_by_source(self, subdivide_by_medium=False):
         data = {}
+        aggregate_key = "ga:source"
+        match_key = "source"
+        if subdivide_by_medium:
+            aggregate_key = "ga:sourceMedium"
+            match_key = "source_medium"
         for count, date in enumerate(self.date_list):
             traffic_sources = []
             metrics = "ga:pageviews,ga:users"
             for site in self.sites:       
-                rows = analytics.rollup_ids(self.site_ids[site], date.get_start(), date.get_end(), metrics=metrics, dimensions="ga:sourceMedium", sort="-ga:users", aggregate_key="ga:sourceMedium")
+                rows = analytics.rollup_ids(self.site_ids[site], date.get_start(), date.get_end(), metrics=metrics, dimensions=aggregate_key, sort="-ga:users", aggregate_key=aggregate_key)
                 rows = self._remove_ga_names(rows)
-                rows = utils.change_key_names(rows, {"source_medium":"sourceMedium"})
+                if subdivide_by_medium:
+                    rows = utils.change_key_names(rows, {"source_medium":"sourceMedium"})
                 for row in rows:
                     row =  utils.convert_to_floats(row, ["pageviews", "users"])
                     
                 traffic_sources.extend(rows)
                 
-            aggregated = utils.aggregate_data(traffic_sources, ["pageviews", "users"], match_key="source_medium")
+            aggregated = utils.aggregate_data(traffic_sources, ["pageviews", "users"], match_key=match_key)
             sorted = utils.sort_data(aggregated, "users")
             data[count] = sorted   
             
-        added_change = utils.add_change(data[0], data[1], ["pageviews", "users"], "previous", match_key="source_medium")
-        added_change = utils.add_change(added_change, data[2], ["pageviews", "users"], "yearly", match_key="source_medium")
+        added_change = utils.add_change(data[0], data[1], ["pageviews", "users"], "previous", match_key=match_key)
+        added_change = utils.add_change(added_change, data[2], ["pageviews", "users"], "yearly", match_key=match_key)
         
         return added_change
-
         
     def traffic_source_table(self):
-        table = self._get_source_list()
+        table = self._get_by_source(subdivide_by_medium=True)
         table = table[:10]
         return table    
         
-        
     def referring_sites_table(self, num_articles):
-        sources = self._get_source_list()
+        sources = self._get_by_source()
         count = 0
         referrals = []
+        black_ex = '|'
+        black_string = black_ex.join(config.SOURCE_BLACK_LIST)
+        regex = re.compile(black_string)
         for row in sources:
-            source = row["source_medium"].split(" / ")[0] 
-            black_ex = '|'
-            black_string = black_ex.join(config.SOURCE_BLACK_LIST)
-            regex = re.compile(black_string)
+            if count == 5:
+                break
+            source = row["source"]
             match = regex.search(source)
-            if match: 
-                continue;           
+            if match:
+                continue
             else:
-                if count == 5:
-                    break
-                else:
-                    count += 1
-                    filter = "ga:source==%s" % source
-                    article = self.referral_articles(filter, num_articles)
-                    row["source"] = source
-                    row["articles"] = article   
-                    referrals.append(row)    
+                count += 1
+                filter = "ga:source==%s" % source
+                article = self.referral_articles(filter, num_articles)
+                row["source"] = source
+                row["articles"] = article
+                referrals.append(row)
         
         return referrals 
-        
         
     def social_network_table(self, num_articles):
         data = {}

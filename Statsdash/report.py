@@ -201,7 +201,7 @@ class AnalyticsCoreReport(Report):
             to_month_data = AnalyticsData(self.sites, month_range, self.frequency)
             to_month_table = to_month_data.summary_table()
             
-            last = utils.add_one_month((first-timedelta(days=1)))
+            last = utils.add_one_month(first) - timedelta(days=1)
             num_days = (last - self.period.end_date).days
             month_range = utils.StatsRange("Month to date Aggregate", first, last)           
             full_month_data = AnalyticsData(self.sites, month_range, self.frequency)
