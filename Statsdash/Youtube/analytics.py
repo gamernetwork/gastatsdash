@@ -1,5 +1,7 @@
 #!/usr/bin/python
 
+#import sys
+#sys.path.append("/home/brendan/src/gamernetwork/tools/gastatsdash")
 from datetime import datetime, timedelta
 import httplib2
 import os
@@ -22,7 +24,7 @@ YOUTUBE_SCOPES = ["https://www.googleapis.com/auth/youtube.readonly", "https://w
 YOUTUBE_API_SERVICE_NAME = "youtube"
 YOUTUBE_API_VERSION = "v3"
 YOUTUBE_ANALYTICS_API_SERVICE_NAME = "youtubeAnalytics"
-YOUTUBE_ANALYTICS_API_VERSION = "v1"
+YOUTUBE_ANALYTICS_API_VERSION = "v2"
 YOUTUBE_PARTNER_API_SERVICE_NAME = "youtubePartner"
 YOUTUBE_PARTNER_API_VERSION = "v1"
 
@@ -89,10 +91,10 @@ class Analytics(object):
     		ids="contentOwner==%s" % config.CONTENT_OWNER_ID,
     		metrics="views",
     		dimensions=None,
-    		start_date=date,
-    		end_date=date,
+    		startDate=date,
+    		endDate=date,
     		filters="channel==%s" % id,
-    		max_results=None,
+    		maxResults=None,
     		sort=None,
     		)
     
@@ -164,14 +166,16 @@ class Analytics(object):
         	ids="contentOwner==%s" % config.CONTENT_OWNER_ID,
         	metrics=metrics,
         	dimensions=dimensions,
-        	start_date=start_date,
-        	end_date=end_date,
+        	startDate=start_date,
+        	endDate=end_date,
         	filters=filters,
-        	max_results=max_results,
+        	maxResults=max_results,
         	sort=sort,
+                fields="rows,kind,columnHeaders",
         	)
         
-        return self.execute_query(analytics_query_response)
+        result = self.execute_query(analytics_query_response)
+        return result
 
     def rollup_ids(self, ids, start, end, metrics, dimensions=None, filters=None, sort=None, max_results=None, aggregate_key=None):
         main_row = []
@@ -204,3 +208,6 @@ class Analytics(object):
         
         return self.execute_query(video_results)
 		
+#if __name__=="__main__":
+#    analytics = Analytics()
+#    print analytics.get_content_owner()["items"][0]["id"]
