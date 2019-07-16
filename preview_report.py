@@ -37,9 +37,9 @@ else:
 file_src = args.destination + "/" + file_name
 
 
-monthly_period = utils.StatsRange("period", date(2016, 07, 01), date(2016, 07, 31))
-daily_period = utils.StatsRange("period", date(2018, 1, 16), date(2018, 1, 16))
-weekly_period = utils.StatsRange("period", date(2016, 8, 15), date(2016, 8, 21))
+monthly_period = utils.StatsRange("period", date(2018, 5, 01), date(2018, 05, 31))
+daily_period = utils.StatsRange("period", date(2018, 6, 5), date(2018, 6, 5))
+weekly_period = utils.StatsRange("period", date(2018, 2, 12), date(2018, 2, 18))
 
 
 test_period = utils.StatsRange("future", date(2016, 8, 01), date(2016, 8, 30))
@@ -47,12 +47,12 @@ test_period = utils.StatsRange("future", date(2016, 8, 01), date(2016, 8, 30))
 if report_type == "YoutubeReport":
     sites =yt_config.CHANNELS.keys()
     #yt = YoutubeReport(sites, monthly_period, config.all_recipients, "MONTHLY", "Video Report for")
-    yt = YoutubeReport(sites, weekly_period, config.all_recipients, "WEEKLY", "Video Report for")
+    yt = YoutubeReport(sites, monthly_period, config.all_recipients, "WEEKLY", "Video Report for")
     html = yt.generate_html()
     #yt.send_email(html)
 elif report_type == "AnalyticsCoreReport":
     #ac = AnalyticsCoreReport(['jelly.deals'], daily_period, config.all_recipients, "WOW_DAILY", "Report for")
-    ac = AnalyticsCoreReport(['eurogamer.net'], daily_period, config.all_recipients, "WOW_DAILY", "Report for")
+    ac = AnalyticsCoreReport(['usgamer.net'], daily_period, config.all_recipients, "WOW_DAILY", "Report for")
     html = ac.generate_html()
     #ac.send_email(html)
 elif report_type == "AnalyticsSocialReport":
