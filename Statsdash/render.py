@@ -53,5 +53,5 @@ def get_environment():
     env = Environment(loader=FileSystemLoader('Statsdash/Templates'), extensions=['jinja2.ext.loopcontrols'])
     env.filters['intcomma'] = int_comma
     env.filters['cut'] = cut
-    env.globals['divo_or_na'] = div_or_na
+    env.globals['div_or_na'] = div_or_na
     return env
