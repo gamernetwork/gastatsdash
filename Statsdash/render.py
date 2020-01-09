@@ -39,6 +39,12 @@ def cut(word, part="www."):
     truncated = "".join(split)
     return truncated 
 
+def div_or_na(num, denom):
+    if float(denom) > 0:
+        return float(num) / float(denom)
+    else:
+        return "N/A"
+
 
 def get_environment():
     """
@@ -47,4 +53,5 @@ def get_environment():
     env = Environment(loader=FileSystemLoader('Statsdash/Templates'), extensions=['jinja2.ext.loopcontrols'])
     env.filters['intcomma'] = int_comma
     env.filters['cut'] = cut
+    env.globals['divo_or_na'] = div_or_na
     return env

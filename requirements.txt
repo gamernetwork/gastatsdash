@@ -9,3 +9,4 @@ requests==2.10.*
 premailer
 pygal
 tendo==0.2.*
+oauth2client==2.1.*

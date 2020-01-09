@@ -26,7 +26,8 @@
 				<td class="num">{{ row.pageviews|int|intcomma }}</td>
 				<td class="num"><span style="color: {% if row.previous_percentage_pageviews > 0 %}green{% else %}red{% endif %};">{{row.previous_percentage_pageviews|round(1)}}%</span></td>
 				<td class="num"><span style="color: {% if row.yearly_percentage_pageviews > 0 %}green{% else %}red{% endif %};">{{row.yearly_percentage_pageviews|round(1)}}%</span></td>
-				<td class="num">{{ (row.pageviews|int / row.users|int)|round(1) }}</td>
+				<td class="num">{{ div_or_na(row.pageviews, row.users)|round(1) }}
+        </td>
 			</tr>
 		{% endfor %}
 	</tbody>
