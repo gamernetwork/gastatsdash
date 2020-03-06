@@ -10,23 +10,23 @@ KEY_FILE = 'path/to/keyfile.p12'
 # GA table ids for each site
 TABLES = {
     'site.com': [{'id': 'ga:12345678'}, {'id': 'ga:12345678', 'wait_for_data': False}],
-    'zite.de' : [{'id': 'ga:87654321'}],
-    'sait.fr' : [{'id': 'ga:87655678'}],
+    'zite.de': [{'id': 'ga:87654321'}],
+    'sait.fr': [{'id': 'ga:87655678'}],
 }
-#Extra data
+# Extra data
 ALL_SITES_NAME = "Network"
 
 
-#path names to remove from top articles
-black_list = ["/forum", /login.php", "/cookies.php"]   
+# path names to remove from top articles
+black_list = ["/forum", "/login.php", "/cookies.php"]
 
-#remove homepage etc from lists also - used in getting the articles             
-filter_list= 'ga:pagePathLevel1!=/;ga:pagePath!~/page/*;ga:pagePath!~^/\?.*'
+# remove homepage etc from lists also - used in getting the articles
+filter_list = 'ga:pagePathLevel1!=/;ga:pagePath!~/page/*;ga:pagePath!~^/\?.*'
 for i in black_list:
-  filter = '^' + i + '.*'
-  filter_list += ';ga:pagePath!~%s' %filter
-  
+    filter = '^' + i + '.*'
+    filter_list += ';ga:pagePath!~%s' % filter
+
 ARTICLE_FILTER = filter_list
 
-#Sources to remove from source referral table
+# Sources to remove from source referral table
 SOURCE_BLACK_LIST = ['google', '(direct)']

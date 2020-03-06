@@ -1,9 +1,7 @@
 import os
-import logging, logging.config, logging.handlers
 
 
-          
-#set up logging config
+# set up logging config
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': True,
@@ -15,10 +13,10 @@ LOGGING = {
     },
     'handlers': {
         'file': {
-            'level':'DEBUG',
-            'class':'logging.FileHandler',
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
             'formatter': 'verbose',
-            'filename':'report_generation.log',
+            'filename': 'report_generation.log',
             'mode': 'w',
         }
     },
@@ -26,9 +24,8 @@ LOGGING = {
         'report': {
             'handlers': ['file'],
             'level': 'DEBUG',
-            
         }
-    }  
+    }
 }
 
 SMTP_ADDRESS = 'localhost:25'
