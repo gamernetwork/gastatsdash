@@ -26,7 +26,7 @@ class Analytics(object):
     def __init__(self):
         #credentials = SignedJwtAssertionCredentials(config.CLIENT_EMAIL, PRIVATE_KEY,
             #'https://www.googleapis.com/auth/analytics.readonly')
-        credentials = ServiceAccountCredentials.from_p12_keyfile(config.CLIENT_EMAIL, config.KEY_FILE, scopes='https://www.googleapis.com/auth/analytics.readonly')
+        credentials = ServiceAccountCredentials.from_json_keyfile_name(config.KEY_FILE, scopes='https://www.googleapis.com/auth/analytics.readonly')
         http_auth = credentials.authorize(Http())
         ga_service = build('analytics', 'v3', http=http_auth)
         self.ga = ga_service.data().ga()   

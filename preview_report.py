@@ -1,11 +1,12 @@
 from Statsdash.report import YoutubeReport, AnalyticsCoreReport, AnalyticsSocialReport, AnalyticsSocialExport, AnalyticsYearSocialReport
+from Statsdash.report import AnalyticsCoreReport, AnalyticsSocialReport, AnalyticsSocialExport, AnalyticsYearSocialReport
 import argparse
 #import report_schedule
 
-from datetime import date, timedelta
+from datetime import datetime, date, timedelta
 #from Statdateutils import subtract_one_month
 
-import Statsdash.Youtube.config as yt_config
+#import Statsdash.Youtube.config as yt_config
 import Statsdash.GA.config as ga_config
 import Statsdash.utilities as utils
 import Statsdash.report_schedule as config
@@ -37,8 +38,10 @@ else:
 file_src = args.destination + "/" + file_name
 
 
+date_2_days_ago = date.today() - timedelta(days=2)
+
 monthly_period = utils.StatsRange("period", date(2018, 5, 01), date(2018, 05, 31))
-daily_period = utils.StatsRange("period", date(2018, 6, 5), date(2018, 6, 5))
+daily_period = utils.StatsRange("period", date_2_days_ago, date_2_days_ago)
 weekly_period = utils.StatsRange("period", date(2018, 2, 12), date(2018, 2, 18))
 
 
