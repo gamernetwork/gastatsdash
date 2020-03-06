@@ -1,12 +1,10 @@
-BeautifulSoup==3.2.*
+beautifulsoup4>=4.8,<5.0
 argparse==1.2.*
 cssutils==1.0.*
 google-api-python-client==1.*
-pynliner==0.5.*
 simplejson==3.6.*
 Jinja2==2.8.*
 requests==2.10.*
 premailer
 pygal
 tendo==0.2.*
-oauth2client==2.1.*
