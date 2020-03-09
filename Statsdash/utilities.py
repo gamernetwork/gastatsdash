@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta, date
-import StringIO
+import io
 import pygal
 
 def format_data_rows(results):
@@ -60,9 +60,11 @@ def sort_data(unsorted_list, metric, limit = 10000, reverse=True):
     top_results = sorted_list[:limit]      
     return top_results  
 
+
 def list_search(to_search, key, value):
     """
-    Given a list of dictionaries, returns the dictionary that matches the given key value pair
+    Given a list of dictionaries, returns the dictionary that matches the given
+    key value pair.
     """
     result = [element for element in to_search if element[key] == value]
     if result:
@@ -75,7 +77,7 @@ def aggregate_data(table, aggregate_keys, match_key=None):
     """
     Aggregates data given
     Returns list of dictionaries if aggregating by given dimension key
-    Else returns dictionary of all metrics aggregated 
+    Else returns dictionary of all metrics aggregated
     """
     if match_key:
         new_table = []
@@ -100,8 +102,10 @@ def aggregate_data(table, aggregate_keys, match_key=None):
 
 def add_change(this_period, previous_period, change_keys, label, match_key=None):
     """
-    Adds change data to current period data structure, either by dimension or not
+    Adds change data to current period data structure, either by dimension or
+    not.
     """
+    # TODO improve docstring.
     if match_key:
         for row in this_period:
             try:
@@ -134,6 +138,7 @@ def convert_values_list(id_dict):
     """
     Converts the values of a dictionary to be list format
     """
+    # NOTE wtf?
     for key in id_dict:
         try:
             converted = id_dict[key].split()
@@ -152,7 +157,7 @@ def chart(title, x_labels, data, x_title, y_title):
     for line in data:
         line_chart.add(line, data[line]) 
     
-    imgdata = StringIO.StringIO()
+    imgdata = io.StringIO.StringIO()
     image = line_chart.render_to_png(imgdata)
     imgdata.seek(0)                   
     return imgdata.buf
@@ -356,6 +361,7 @@ class StatsRange(object):
         """
         return cls("One day", date, date)
 
+    # TODO typos
     @classmethod
     def get_one_week_period(cls, date):
         """

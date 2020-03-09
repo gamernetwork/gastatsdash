@@ -5,9 +5,8 @@ from datetime import date, datetime, timedelta
 from render import get_environment
 import smtplib
 from premailer import transform
-import StringIO
-import cStringIO
-import urllib, base64
+import urllib
+import base64
 from Statsdash.config import LOGGING
 
 import config

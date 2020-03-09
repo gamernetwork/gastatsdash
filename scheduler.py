@@ -1,24 +1,22 @@
-import sqlite3, os, traceback
-
-from sqlite3 import OperationalError
 from datetime import date, datetime, timedelta
-import argparse
-import Statsdash.config as config
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from email.mime.image import MIMEImage
+from sqlite3 import OperationalError
+from tendo import singleton
+import argparse
+import logging, logging.config, logging.handlers
+import os
 import smtplib
-
-import Statsdash.config as config
-from Statsdash.report_schedule import reports
-from Statsdash.report import AnalyticsCoreReport, AnalyticsSocialReport, YoutubeReport, AnalyticsSocialExport
-import Statsdash.utilities as utils
-from Statsdash.utilities import find_last_weekday, add_one_month, find_next_weekday
+import sqlite3
+import sys
+import traceback
 
 from Statsdash.config import LOGGING
-import logging, logging.config, logging.handlers
-from tendo import singleton
-import sys
+from Statsdash.report_schedule import reports
+from Statsdash.utilities import add_one_month, find_next_weekday
+import Statsdash.config as config
+import Statsdash.utilities as utils
+
 
 class RunLogger(object):
     """
@@ -31,14 +29,16 @@ class RunLogger(object):
         db_location = os.path.join(config.SCHEDULE_DB_LOCATION, "schedule.db")
         self.conn = sqlite3.connect(db_location)
         try:
+            # Check if the `report_runs` table exists.
             self.conn.execute("SELECT * FROM report_runs LIMIT 1")
         except OperationalError:
+            # Build `report_runs` table if it doesn't exist.
             self.bootstrap_db()
 
     def bootstrap_db(self):
         self.conn.execute(
             "CREATE TABLE report_runs " +
-                "(identifier text unique, last_run datetime)"
+            "(identifier text unique, last_run datetime)"
         )
 
     def get_last_run_end(self, identifier):
@@ -52,7 +52,7 @@ class RunLogger(object):
         c = self.conn.cursor()
         c.execute(
             "SELECT last_run FROM report_runs " +
-                "WHERE identifier='%s'" % identifier
+            "WHERE identifier='%s'" % identifier
         )
         result = c.fetchone()
         if result:
@@ -79,8 +79,9 @@ class RunLogger(object):
         Returns a Date object
         last_run_end == report end date
         """
+        # NOTE whats going on here?
         today = date.today() - timedelta(days=1)
-        now = datetime(today.year, today.month, today.day, 00, 00, 00, 01)  #returns now as datetime with time as 00 00 00 00001
+        now = datetime(today.year, today.month, today.day, 00)
         
         if last_run_end.year == 1:
             if frequency == 'DAILY' or frequency == "WOW_DAILY":
@@ -99,7 +100,8 @@ class RunLogger(object):
             #if last period end was over 2 days ago, set to yesterday 
             next_run = last_run_end + timedelta(days=1)
             if (now - last_run_end).days >= 2:
-              self.override_data = True
+                # NOTE why is this set to True?
+                self.override_data = True
         if frequency == 'WEEKLY':
             weekday = frequency_options.get('weekday', 'Monday')
             # Next run is the next matching weekday *after* the last run
@@ -115,11 +117,13 @@ class RunLogger(object):
             #make sure set to be correct day 
             next_run = next_run.replace(day=day) 
             if (now - next_run).days >= 2:
-              self.override_data = True
+                # NOTE why is this set to True?
+                self.override_data = True
 
         return next_run
 
 
+# NOTE python2
 class Errors(object):
     errors = []
     def get_errors(self):
@@ -161,31 +165,37 @@ def _run(dryrun=False):
     """
     The main loop.  Iterate over our report config and try to run reports that
     are scheduled to run now.
-    """   
+    """
     try:
-        me = singleton.SingleInstance()
+        singleton.SingleInstance()
     except SystemExit:
-        print "** Quitting run at %s" % datetime.now().isoformat()   
+        print("** Quitting run at %s" % datetime.now().isoformat())
         sys.exit(-1)
         
     run_logger = RunLogger()
     logging.config.dictConfig(LOGGING)
     logger = logging.getLogger('report')
 
-    for config in reports:
+    for config in reports:  # TODO fix shadow
         identifier = config['identifier']
         frequency = config['frequency']
+
+        # NOTE Frequency options allow more specific frequency to be specified,
+        # e.g. first Tuesday of every month
         frequency_options = config.get('frequency_options', {})
-        report_class = config['report']
+
         last_run_end = run_logger.get_last_run_end(identifier)
         next_run_date = run_logger.get_next_run(last_run_end, frequency, frequency_options).date()
+
         today = date.today()
         needs_run = next_run_date <= today
-        print "%s next run: %s.  Needs run: %s" % (identifier, next_run_date, needs_run)
+        print("%s next run: %s.  Needs run: %s" % (identifier, next_run_date, needs_run))
+
         if needs_run:
             period = utils.StatsRange.get_period(next_run_date, frequency)
+            # Create report instance with given period.
             report = config["report"](config["sites"], period, config["recipients"], config["frequency"], config["subject"])  
-            if run_logger.override_data == True:
+            if run_logger.override_data:
                 data_available = True
                 no_data_site = report.check_data_availability(override=True)
                 logger.warning("Overriding data availability and sending report anyway")
@@ -195,41 +205,46 @@ def _run(dryrun=False):
                 data_available = report.check_data_availability()
             
             run_logger.override_data = False
-            print "%s next run: %s.  Data available: %s" % (identifier, next_run_date, data_available)
-            if dryrun == True:
-                print "last run's end %s" %(last_run_end)
-                print "period for run: %s - %s" % (period.start_date, period.end_date)               
+            print("%s next run: %s.  Data available: %s" % (
+            identifier, next_run_date, data_available))
+            if dryrun:
+                print("last run's end %s" % (last_run_end))
+                print("period for run: %s - %s" % (
+                period.start_date, period.end_date))
             if data_available:
                 try:
-                    if dryrun == False:
+                    if not dryrun:
                         html = report.generate_html()
                         report.send_email(html)
-                        run_datetime = datetime(year=report.period.end_date.year, 
-                            month=report.period.end_date.month, 
+                        run_datetime = datetime(
+                            year=report.period.end_date.year,
+                            month=report.period.end_date.month,
                             day=report.period.end_date.day,
                             hour=0,
                             minute=0,
                             second=0,
                             microsecond=1
-                        )           
+                        )
                         run_logger.record_run(identifier, run_datetime)
                 except Exception:
-                    print "Error in generating report %s" % identifier
+                    print("Error in generating report %s" % identifier)
                     error_list.add_error("Error in generating report %s : \n %s" % (identifier, traceback.format_exc()))
                     traceback.print_exc()
                     continue
 
 
 def run_schedule(dryrun=False):
-    print "** Running schedule at %s" % datetime.now().isoformat() 
+    print("** Running schedule at %s" % datetime.now().isoformat())
     try:
         _run(dryrun)
     except Exception:
         traceback.print_exc()
-    print "** Finished run at %s" % datetime.now().isoformat()
+    print("** Finished run at %s" % datetime.now().isoformat())
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
+    # TODO improve help text.
     parser.add_argument("-t", "--test", help="test run", action="store_true")
     args = parser.parse_args()
     error_list = Errors()
@@ -240,4 +255,3 @@ if __name__ == '__main__':
     
     if error_list.get_errors():
         error_list.send_errors()
-        

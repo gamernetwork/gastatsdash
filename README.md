@@ -31,12 +31,16 @@ values to those appropriate to you.
 Do the same for each API config.py - `Statsdash/GA/config.py` and/or
 `Statsdash/Youtube/config.py` and change values to those appropriate to you. 
 
-Get your GA table IDs from the Google Analytics backends - look for the view
-IDs.
+Get your GA site view IDs from the Google Analytics backends - it can be a
+little hard to find the view ID so follow these steps:
+
+1. Navigate to the 'Admin' tab.
+1. Select your account, property and view.
+1. Select 'View Settings' in the rightmost column - voilà.
 
 Get your Youtube channel IDs as a content owner from here:
 https://www.youtube.com/analytics or from a channels individual settings page
-here: https://www.youtube.com/account_advanced.
+here: https://www.youtube.com/advanced_settings
 
 To get your content owner ID see below.
 

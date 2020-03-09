@@ -2,7 +2,7 @@
 CLIENT_SECRETS_FILE = 'path/to/file/client_secret_12356-abcdefghijk.apps.googleusercontent.com.json'
 
 # Youtube channel ids 
-CHANNELS = {'channelname1':'U12345678',
+CHANNELS = {'channelname1':'UC0jMXccxfvnwXvTpngFwbNA',
             'channelname2' :'U87654321',
             'channelname3' :'U87655678',
            }
