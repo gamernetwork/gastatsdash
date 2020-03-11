@@ -1,12 +1,12 @@
 #!/usr/bin/python
 
-import config
 import logging
 import logging.config
 import logging.handlers
 
 from Statsdash.config import LOGGING
 from Statsdash.Youtube.analytics import Analytics
+from Statsdash.Youtube import config as config
 import Statsdash.utilities as utils
 
 analytics = Analytics()

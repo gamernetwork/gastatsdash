@@ -1,12 +1,10 @@
-from HTMLParser import HTMLParser
 from datetime import datetime, timedelta
-import logging
 import logging.config
 import logging.handlers
 import re
 
-from analytics import Analytics
-import config
+from Statsdash.GA.analytics import Analytics
+from Statsdash.GA import config
 import Statsdash.utilities as utils
 from Statsdash.config import LOGGING
 

@@ -1,5 +1,4 @@
 from apiclient import discovery
-from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient import errors
 from google.oauth2 import service_account
 from httplib2 import Http
@@ -24,48 +23,39 @@ with open(config.KEY_FILE, 'rb') as f:
     PRIVATE_KEY = f.read()
 
 
-class Analytics(object):
+class Analytics:
+    # MAKE MORE GENERIC/PLUGGABLE
     # TODO add docstring (copy from YouTube?)
     # NOTE should these classes inherit from a base class?
 
+    config = NotImplemented
+
     def __init__(self):
-        credentials = service_account.Credentials.from_service_account_file(
-            config.KEY_FILE,
-            scopes=SCOPES
+        """
+        Initialise credentials.
+        """
+        self.credentials = service_account.Credentials. \
+            from_service_account_file(config.KEY_FILE, scopes=SCOPES)
+
+    def build_apis(self):
+        raise NotImplementedError(
+            'Subclasses of Analytics must implement a build_apis method.'
         )
-        ga_service = discovery.build('analytics', 'v3', credentials=credentials)
-        self.ga = ga_service.data().ga()
 
     def execute_query(self, query):
-        for i in range(1, 6):
-            try:
-                return query.execute()
-            except errors.HttpError as e:
-                error = json.loads(e.content)
-                if i == 5:
-                    logger.warning("Error, request has failed 5 times")
-                    raise
-                if error['error'].get('code') == 500:
-                    logger.warning("500 Error, #%d, trying again...", i)
-                    # NOTE Why random?
-                    time.sleep((2 ** i) + random.random())
-                    continue
-                # TODO merge ifs
-                if error['error'].get('code') == 503:
-                    logger.warning("503 Error, #%d, trying again...", i)
-                    time.sleep((2 ** i) + random.random())
-                    continue
-                else:
-                    raise
-            except Exception as e:
-                logger.warning("Unknown error from GA")
-                logger.warning(f'Type: {str(type(e))} {str(e)}')
-        return None
+        """
+        Try to execute the API query.
+        """
+        try:
+            return query.execute()
+        except errors.HttpError as e:
+            logger.warning(
+                f'HTTP error {e.resp.status} occurred:\n{e.content}'
+            )
 
     def data_available(self, site_id, stats_date):
         # TODO: Persist these results in a cache so we don't smash our rate
         # limit
-
         query = self.ga.get(
             ids=site_id,
             start_date=stats_date,
@@ -141,3 +131,19 @@ class Analytics(object):
                 )
         main_row = utils.aggregate_data(main_row, metrics.split(","), aggregate_key)
         return main_row
+
+
+class GoogleAnalytics(Analytics):
+
+    def __init__(self):
+        super().__init__()
+        ga_service = discovery.build(
+            'analytics',
+            'v3',
+            credentials=self.credentials
+        )
+        self.ga = ga_service.data().ga()
+
+
+class YouTubeAnalytics(Analytics):
+    pass

@@ -4,6 +4,24 @@ import unittest
 
 from utilities import find_last_weekday, find_next_weekday, StatsRange
 from scheduler import RunLogger
+from Statsdash.analytics import GoogleAnalytics
+
+
+class TestGoogleAnalytics(unittest.TestCase):
+
+    def setUp(self):
+        self.ga = GoogleAnalytics()
+
+    def test_run_report(self):
+        pass
+        # ga.run_report()
+
+    def test_rollup_ids(self):
+        TABLES = {
+            'rockpapershotgun.com': [{'id': 'ga:130215556'}],
+        }
+        self.ga.rollup_ids(self.site_ids[site], date.get_start(), date.get_end(), metrics=metrics)
+
 
 
 class TestStatsRange(unittest.TestCase):
