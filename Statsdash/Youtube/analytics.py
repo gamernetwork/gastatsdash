@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-from apiclient.discovery import build
+from apiclient import discovery
 from apiclient.errors import HttpError
 from google.oauth2 import service_account
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -71,32 +71,21 @@ class Analytics(object):
             config.KEY_FILE,
             scopes=SCOPES
         )
-        print('CREDENTIALS')
-        print(credentials)
-        print(credentials.valid)
 
-        if credentials is None or not credentials.valid:
-            raise ImproperlyConfiguredException(
-                "Couldn't find any service account credentials. Please run "
-                "`python create_credentials.py --noauth_local_webserver` first"
-            )
-        # NOTE whats happening here? Might be outdated.
-        http = credentials.authorize(httplib2.Http())
-
-        self.youtube = build(
+        self.youtube = discovery.build(
             YOUTUBE_API_SERVICE_NAME,
             YOUTUBE_API_VERSION,
-            http=http,
+            credentials=credentials,
         )
-        self.youtube_analytics = build(
+        self.youtube_analytics = discovery.build(
             YOUTUBE_ANALYTICS_API_SERVICE_NAME,
             YOUTUBE_ANALYTICS_API_VERSION,
-            http=http,
+            credentials=credentials,
         )
-        self.youtube_partner = build(
+        self.youtube_partner = discovery.build(
             YOUTUBE_PARTNER_API_SERVICE_NAME,
             YOUTUBE_PARTNER_API_VERSION,
-            http=http,
+            credentials=credentials,
         )
 
     def execute_query(self, query):
