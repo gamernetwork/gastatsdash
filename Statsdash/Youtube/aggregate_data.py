@@ -5,11 +5,11 @@ import logging.config
 import logging.handlers
 
 from Statsdash.config import LOGGING
-from Statsdash.Youtube.analytics import Analytics
+from Statsdash.analytics import YouTubeAnalytics
 from Statsdash.Youtube import config as config
 import Statsdash.utilities as utils
 
-analytics = Analytics()
+# analytics = YouTubeAnalytics('')
 channel_ids = config.CHANNELS
 
 logging.config.dictConfig(LOGGING)

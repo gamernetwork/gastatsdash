@@ -2,7 +2,6 @@ from googleapiclient import errors
 import logging.config
 import logging.handlers
 
-import Statsdash.GA.config as config
 from Statsdash.config import LOGGING
 from Statsdash import utils
 
@@ -10,18 +9,19 @@ from Statsdash import utils
 logging.config.dictConfig(LOGGING)
 logger = logging.getLogger('report')
 
-SCOPES = ['https://www.googleapis.com/auth/analytics.readonly', ]
-
-with open(config.KEY_FILE, 'rb') as f:
-    PRIVATE_KEY = f.read()
-
 
 class Analytics:
+    """
+    Base class for wrapper classes around google-api-python-client data
+    resources.
+
+    See https://github.com/googleapis/google-api-python-client/blob/master/docs/dyn/index.md
+    """
 
     identifier = NotImplemented  # Used for logs, e.g. 'Google Analytics'.
 
     def __init__(self, data_resource):
-        self.data_resource = data_resource  # the API resource
+        self.data_resource = data_resource  # the API resource to wrap.
 
     def get_data(self, ids, start, end, metrics, aggregate_key=None, **kwargs):
         """
@@ -186,19 +186,24 @@ class YouTubeAnalytics(Analytics):
         super().__init__(data_resource)
         self.content_owner_id = content_owner_id
 
-    def data_available(self, channel_id, stats_date):
-        # NOTE make metrics constant?
-        filters = f'channel=={channel_id}'
-        results = self._run_report(channel_id, stats_date, stats_date,
+    def data_available(self, _id, stats_date):
+        filters = f'channel=={_id}'
+        results = self._run_report(_id, stats_date, stats_date,
                                    self.Metrics.pageviews, filters=filters)
-        return bool(results.get('rows'))
+        # TODO duplication
+        rows = results.get('rows')
+        if not bool(rows):
+            logger.info(f'ID {_id} returned no rows for '
+                        f'data_available check on {stats_date}')
+            return False
+        return True
 
     def _run_report(self, _id, start_date, end_date, metrics, **kwargs):
-        filters = self._prepare_filters(_id, kwargs.get('filters'))
+        filters = self._prepare_filters(_id, kwargs.pop('filters', None))
         query = self.data_resource.query(
             ids=f'contentowner=={self.content_owner_id}',
-            startdate=start_date,
-            enddate=end_date,
+            startDate=start_date,
+            endDate=end_date,
             metrics=metrics,
             filters=filters,
             **kwargs,

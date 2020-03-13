@@ -1,12 +1,7 @@
 from datetime import date, datetime, timedelta
 from email.mime.image import MIMEImage
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
-from premailer import transform
-import base64
-import logging, logging.config, logging.handlers
+import logging.config, logging.handlers
 import smtplib
-import urllib
 
 from Statsdash.config import LOGGING
 from Statsdash.GA.aggregate_data import AnalyticsData
