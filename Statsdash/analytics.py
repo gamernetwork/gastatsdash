@@ -1,3 +1,4 @@
+from pprint import pprint as pp
 from googleapiclient import errors
 import logging.config
 import logging.handlers
@@ -169,7 +170,13 @@ class GoogleAnalytics(Analytics):
         """
         # NOTE we're running this multiple times per site.
         kwargs['include_empty_rows'] = True  # always True
-        query = self.data_resource.get(view_id, start, end, metrics, **kwargs)
+        query = self.data_resource.get(
+            ids=view_id,
+            start_date=start,
+            end_date=end,
+            metrics=metrics,
+            **kwargs
+        )
         return self._execute_query(query)
 
 

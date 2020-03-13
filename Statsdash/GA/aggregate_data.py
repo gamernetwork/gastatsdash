@@ -1,16 +1,26 @@
 from datetime import datetime, timedelta
+from google.oauth2 import service_account
+from googleapiclient.discovery import build
 import logging.config
 import logging.handlers
 import re
 
 from Statsdash.analytics import GoogleAnalytics
-from Statsdash.GA.analytics import Analytics
 from Statsdash.GA import config
 import Statsdash.utilities as utils
 from Statsdash.config import LOGGING
 
+# TODO move this somewhere else?
+SCOPES = ['https://www.googleapis.com/auth/analytics.readonly', ]
+credentials = service_account.Credentials.from_service_account_file(
+    config.KEY_FILE,
+    scopes=SCOPES
+)
+service = build('analytics', 'v3', credentials=credentials)
+resource = service.data().ga()
+
 site_ids = config.TABLES
-analytics = Analytics()
+analytics = GoogleAnalytics(resource)
 
 logging.config.dictConfig(LOGGING)
 logger = logging.getLogger('report')

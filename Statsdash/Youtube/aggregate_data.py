@@ -1,15 +1,32 @@
 #!/usr/bin/python
 
-import logging
+from google.oauth2 import service_account
+from googleapiclient.discovery import build
 import logging.config
 import logging.handlers
 
 from Statsdash.config import LOGGING
 from Statsdash.analytics import YouTubeAnalytics
-from Statsdash.Youtube import config as config
+from Statsdash.Youtube import config
 import Statsdash.utilities as utils
 
-# analytics = YouTubeAnalytics('')
+SCOPES = [
+    "https://www.googleapis.com/auth/youtube.readonly",
+    "https://www.googleapis.com/auth/yt-analytics.readonly",
+]
+credentials = service_account.Credentials.from_service_account_file(
+    config.KEY_FILE,
+    scopes=SCOPES
+)
+YOUTUBE_ANALYTICS_API_SERVICE_NAME = "youtubeAnalytics"
+YOUTUBE_ANALYTICS_API_VERSION = "v2"
+service = build(
+    YOUTUBE_ANALYTICS_API_SERVICE_NAME,
+    YOUTUBE_ANALYTICS_API_VERSION,
+    credentials=credentials,
+)
+resource = service.reports()
+analytics = YouTubeAnalytics(resource, config.CONTENT_OWNER_ID)
 channel_ids = config.CHANNELS
 
 logging.config.dictConfig(LOGGING)

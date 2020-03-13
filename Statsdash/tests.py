@@ -47,7 +47,7 @@ class TestGoogleAnalytics(unittest.TestCase):
             'v3',
             http=http,
             developerKey=api_key,
-        )
+        ).data().ga()
         self.analytics = GoogleAnalytics(service)
         self._id = 'ga:123456789'
         self.stats_date = '2020-03-12'
