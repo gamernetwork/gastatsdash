@@ -1,20 +1,20 @@
+from datetime import date, datetime, timedelta
+from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from email.mime.image import MIMEImage
-from datetime import date, datetime, timedelta
-from render import get_environment
-import smtplib
 from premailer import transform
-import urllib
 import base64
-from Statsdash.config import LOGGING
-
-import config
-from Statsdash.Youtube.aggregate_data import YoutubeData
-from Statsdash.GA.aggregate_data import AnalyticsData
-import Statsdash.utilities as utils
-import Statsdash.GA.config as ga_config
 import logging, logging.config, logging.handlers
+import smtplib
+import urllib
+
+from Statsdash.config import LOGGING
+from Statsdash.GA.aggregate_data import AnalyticsData
+from Statsdash.render import get_environment
+from Statsdash.Youtube.aggregate_data import YoutubeData
+from Statsdash import config
+import Statsdash.GA.config as ga_config
+import Statsdash.utilities as utils
 
 logging.config.dictConfig(LOGGING)
 logger = logging.getLogger('report')
@@ -80,22 +80,23 @@ class Report(object):
         """
         Send html email using config parameters
         """
-        html = transform(html) #inline css using premailer
-        msg = MIMEMultipart('alternative')
-        msg.set_charset('utf8')
-        msg['Subject'] = self.get_subject()
-        msg['From'] = config.SEND_FROM
-        msg['To'] = ', '.join(self.recipients)
-        text_part = MIMEText("Please open with an HTML-enabled Email client.", 'plain')
-        html_part = MIMEText(html.encode("utf-8"), 'html')
-        
-        msg.attach(text_part)
-        msg.attach(html_part)
-        
-        sender = smtplib.SMTP(config.SMTP_ADDRESS)
-        sender.sendmail(config.SEND_FROM, self.recipients, msg.as_string())
-    
-        sender.quit()
+        pass
+        # html = transform(html) #inline css using premailer
+        # msg = MIMEMultipart('alternative')
+        # msg.set_charset('utf8')
+        # msg['Subject'] = self.get_subject()
+        # msg['From'] = config.SEND_FROM
+        # msg['To'] = ', '.join(self.recipients)
+        # text_part = MIMEText("Please open with an HTML-enabled Email client.", 'plain')
+        # html_part = MIMEText(html.encode("utf-8"), 'html')
+        #
+        # msg.attach(text_part)
+        # msg.attach(html_part)
+        #
+        # sender = smtplib.SMTP(config.SMTP_ADDRESS)
+        # sender.sendmail(config.SEND_FROM, self.recipients, msg.as_string())
+        #
+        # sender.quit()
      
     
 
@@ -268,28 +269,30 @@ class AnalyticsCoreReport(Report):
         """
         Send html email using config parameters
         """
-        html = transform(html) #inline css using premailer
-        msg = MIMEMultipart('alternative')
-        msg.set_charset('utf8')
-        msg['Subject'] = self.get_subject()
-        msg['From'] = config.SEND_FROM
-        msg['To'] = ', '.join(self.recipients)
-        text_part = MIMEText("Please open with an HTML-enabled Email client.", 'plain')
-        html_part = MIMEText(html.encode("utf-8"), 'html')
+        pass
+        # html = transform(html)  # inline css using premailer
+        # msg = MIMEMultipart('alternative')
+        # msg.set_charset('utf8')
+        # msg['Subject'] = self.get_subject()
+        # msg['From'] = config.SEND_FROM
+        # msg['To'] = ', '.join(self.recipients)
 
-
-        if self.imgdata:
-            img_part = MIMEImage(self.imgdata, 'png')
-            img_part.add_header('Content-ID', '<graph>')
-            msg.attach(img_part)
-                    
-        msg.attach(text_part)
-        msg.attach(html_part)
-        
-        sender = smtplib.SMTP(config.SMTP_ADDRESS)
-        sender.sendmail(config.SEND_FROM, self.recipients, msg.as_string())
-    
-        sender.quit()
+        # NOTE disabled for now
+        # text_part = MIMEText("Please open with an HTML-enabled Email client.", 'plain')
+        # html_part = MIMEText(html.encode("utf-8"), 'html')
+        #
+        # if self.imgdata:
+        #     img_part = MIMEImage(self.imgdata, 'png')
+        #     img_part.add_header('Content-ID', '<graph>')
+        #     msg.attach(img_part)
+        #
+        # msg.attach(text_part)
+        # msg.attach(html_part)
+        #
+        # sender = smtplib.SMTP(config.SMTP_ADDRESS)
+        # sender.sendmail(config.SEND_FROM, self.recipients, msg.as_string())
+        #
+        # sender.quit()
         
         
         
@@ -350,14 +353,15 @@ class AnalyticsSocialReport(Report):
         """
         Send html email using config parameters
         """
-        html = transform(html) #inline css using premailer
-        msg = MIMEMultipart('alternative')
-        msg.set_charset('utf8')
-        msg['Subject'] = self.get_subject()
-        msg['From'] = config.SEND_FROM
-        msg['To'] = ', '.join(self.recipients)
-        text_part = MIMEText("Please open with an HTML-enabled Email client.", 'plain')
-        html_part = MIMEText(html.encode("utf-8"), 'html')
+        pass
+        # html = transform(html) #inline css using premailer
+        # msg = MIMEMultipart('alternative')
+        # msg.set_charset('utf8')
+        # msg['Subject'] = self.get_subject()
+        # msg['From'] = config.SEND_FROM
+        # msg['To'] = ', '.join(self.recipients)
+        # text_part = MIMEText("Please open with an HTML-enabled Email client.", 'plain')
+        # html_part = MIMEText(html.encode("utf-8"), 'html')
 
 
         if self.imgdata:
@@ -505,18 +509,19 @@ class AnalyticsSocialExport(Report):
         return csv		
         
     def send_email(self, csv):
-        msg = MIMEMultipart('alternative')
-        msg['Subject'] = self.get_subject()
-        msg['From'] = config.SEND_FROM
-        msg['To'] = ', '.join(self.recipients)
-        
-        attachment= MIMEText(csv)
-        
-        attachment.add_header("Content-Disposition", "attachment", filename="test.csv")
-        msg.attach(attachment)
-        
-        sender = smtplib.SMTP(config.SMTP_ADDRESS)
-        sender.sendmail(config.SEND_FROM, self.recipients, msg.as_string())
-    
-        sender.quit()      		
-		
+        pass
+        # msg = MIMEMultipart('alternative')
+        #
+        # msg['Subject'] = self.get_subject()
+        # msg['From'] = config.SEND_FROM
+        # msg['To'] = ', '.join(self.recipients)
+        #
+        # attachment= MIMEText(csv)
+        #
+        # attachment.add_header("Content-Disposition", "attachment", filename="test.csv")
+        # msg.attach(attachment)
+        #
+        # sender = smtplib.SMTP(config.SMTP_ADDRESS)
+        # sender.sendmail(config.SEND_FROM, self.recipients, msg.as_string())
+        #
+        # sender.quit()

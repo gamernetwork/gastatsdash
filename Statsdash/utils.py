@@ -5,22 +5,51 @@ import pygal
 
 def format_data_rows(results):
     """
-    Returns results from analytics as a list of dictionaries with correct
-    key/value pairs of data
-    """ 
-    rows = []
-        
-    for row in results.get("rows", []):
+    Returns results from analytics as a list of dictionaries with key/value
+    pairs organised by column headers.
+
+    Args:
+        * `data` - `dict` - The analytics data for a view.
+
+    Returns:
+        * `dict`
+    """
+    output = []
+    # NOTE are these checks really necessary? Is rows an empty list when empty?
+    rows = results.get('rows', [])
+    column_headers = results.get('columnHeaders', [])
+    for row in rows:
         data = {}
-        for count, column in enumerate(results.get("columnHeaders", [])):
+        for count, column in enumerate(column_headers):
             data[column['name']] = row[count]
-        rows.append(data)
-    return rows
+        output.append(data)
+    return output
+
+
+def convert_to_floats(row, metrics):
+    """
+    Converts the values of each metrics to float for a given row.
+
+    Args:
+        * `row` - `dict` - The data to be converted.
+        * `metrics` - `list` - The metrics for which the values need to be
+          converted.
+
+    Returns:
+        * `dict`
+    """
+    for metric in metrics:
+        if metric in row:
+            row[metric] = float(row[metric])
+        else:
+            row[metric] = 0.0
+    return row
 
 
 def sig_fig(sf, num):
     condensed_num = "%0.*g" % ((sf), num)
     return float(condensed_num)
+
 
 def change_key_names(rows, changes):
     """
@@ -30,7 +59,8 @@ def change_key_names(rows, changes):
     for row in rows:
         for new, original in changes.items():
             row[new] = row.pop(original)
-    return rows 
+    return rows
+
 
 def percentage(change, total):
     try:
@@ -39,28 +69,24 @@ def percentage(change, total):
         percentage = 0
     return percentage
 
-def convert_to_floats(row, metrics):
-    for metric in metrics:
-        try:
-            row[metric] = float(row[metric])
-        except KeyError:
-            row[metric] = 0.0
-    return row 	
+
 
 def rate_per_1000(metric, comparative):
     try:
-        rate = metric / float(comparative/1000.0)
+        rate = metric / float(comparative / 1000.0)
     except ZeroDivisionError:
         rate = 0
     return rate
 
-def sort_data(unsorted_list, metric, limit = 10000, reverse=True):           
+
+def sort_data(unsorted_list, metric, limit=10000, reverse=True):
     """
     Sorts a list of dictionaries by the "metric" key given
     """
-    sorted_list = sorted(unsorted_list, key = lambda k: k[metric], reverse = reverse)
-    top_results = sorted_list[:limit]      
-    return top_results  
+    sorted_list = sorted(unsorted_list, key=lambda k: k[metric],
+                         reverse=reverse)
+    top_results = sorted_list[:limit]
+    return top_results
 
 
 def list_search(to_search, key, value):
@@ -75,34 +101,47 @@ def list_search(to_search, key, value):
         raise KeyError
 
 
-def aggregate_data(table, aggregate_keys, match_key=None):
+
+def aggregate_data(data, aggregate_keys, match_key):
     """
-    Aggregates data given
-    Returns list of dictionaries if aggregating by given dimension key
-    Else returns dictionary of all metrics aggregated
+    Aggregates data given. Returns dictionary of all metrics aggregated.
+
+    Args:
+        * `data` - `list` - The data rows to be aggregated.
+        * `aggregate_keys` - `list` - Metrics to be aggregated.
+
+    Returns:
+        * `dict`
     """
     if match_key:
-        new_table = []
-        for row in table:
-            try: 
-                result = list_search(new_table, match_key, row[match_key])
-                for key in aggregate_keys:
-                    result[key] += row[key]
-            except KeyError:
-                new_table.append(row)
-    else:
-        new_table = {}
-        for row in table:
-            for key in aggregate_keys:
-                try:
-                    new_table[key] += row[key]
-                except KeyError:
-                    new_table[key] = row[key]
-                    
+        return aggregate_data_by_match_key(data, aggregate_keys, match_key)
+    new_table = {}
+    for row in data:
+        for key in aggregate_keys:
+            if key in new_table:
+                new_table[key] += row[key]
+            else:
+                new_table[key] = row[key]
     return new_table
 
 
-def add_change(this_period, previous_period, change_keys, label, match_key=None):
+def aggregate_data_by_match_key(table, aggregate_keys, match_key):
+    """
+    Aggregates data given by a match key.
+    """
+    new_table = []
+    for row in table:
+        try:
+            result = list_search(new_table, match_key, row[match_key])
+            for key in aggregate_keys:
+                result[key] += row[key]
+        except KeyError:
+            new_table.append(row)
+    return new_table
+
+
+def add_change(this_period, previous_period, change_keys, label,
+               match_key=None):
     """
     Adds change data to current period data structure, either by dimension or
     not.
@@ -111,29 +150,35 @@ def add_change(this_period, previous_period, change_keys, label, match_key=None)
     if match_key:
         for row in this_period:
             try:
-                result = list_search(previous_period, match_key, row[match_key])
+                result = list_search(previous_period, match_key,
+                                     row[match_key])
                 for key in change_keys:
-                    row['%s_figure_%s' % (label, key)]  = result[key]
-                    row['%s_change_%s' % (label, key)]  = row[key] - result[key]
-                    row['%s_percentage_%s' % (label, key)] = percentage(row['%s_change_%s' % (label,key)], result[key])
+                    row['%s_figure_%s' % (label, key)] = result[key]
+                    row['%s_change_%s' % (label, key)] = row[key] - result[key]
+                    row['%s_percentage_%s' % (label, key)] = percentage(
+                        row['%s_change_%s' % (label, key)], result[key])
             except KeyError:
                 for key in change_keys:
-                    row['%s_figure_%s' % (label,key)]  = 0
-                    row['%s_change_%s' % (label,key)]  = 0
+                    row['%s_figure_%s' % (label, key)] = 0
+                    row['%s_change_%s' % (label, key)] = 0
                     row['%s_percentage_%s' % (label, key)] = 0
     else:
         for key in change_keys:
             try:
-                this_period['%s_figure_%s' % (label, key)]  = previous_period[key]
-                this_period['%s_change_%s' % (label, key)]  = this_period[key] - previous_period[key]
-                this_period['%s_percentage_%s' % (label, key)] = percentage(this_period['%s_change_%s' % (label,key)], previous_period[key])       
+                this_period['%s_figure_%s' % (label, key)] = previous_period[
+                    key]
+                this_period['%s_change_%s' % (label, key)] = this_period[key] - \
+                                                             previous_period[
+                                                                 key]
+                this_period['%s_percentage_%s' % (label, key)] = percentage(
+                    this_period['%s_change_%s' % (label, key)],
+                    previous_period[key])
             except KeyError:
-                this_period['%s_figure_%s' % (label,key)]  = 0
-                this_period['%s_change_%s' % (label,key)]  = 0
-                this_period['%s_percentage_%s' % (label, key)] = 0      
-    
-    return this_period               
+                this_period['%s_figure_%s' % (label, key)] = 0
+                this_period['%s_change_%s' % (label, key)] = 0
+                this_period['%s_percentage_%s' % (label, key)] = 0
 
+    return this_period
 
 
 def convert_values_list(id_dict):
@@ -147,35 +192,36 @@ def convert_values_list(id_dict):
         except AttributeError:
             converted = id_dict[key]
         id_dict[key] = converted
-    return id_dict 
+    return id_dict
 
 
 def chart(title, x_labels, data, x_title, y_title):
-    line_chart = pygal.Line(height=500, interpolate='cubic', x_label_rotation=30, stroke_style={"width":2})
+    line_chart = pygal.Line(height=500, interpolate='cubic',
+                            x_label_rotation=30, stroke_style={"width": 2})
     line_chart.title = title
     line_chart.x_title = x_title
     line_chart.y_title = y_title
-    line_chart.x_labels =x_labels
+    line_chart.x_labels = x_labels
     for line in data:
-        line_chart.add(line, data[line]) 
+        line_chart.add(line, data[line])
 
-    # NOTE disabled for the moment.
+        # NOTE disabled for the moment.
     # imgdata = io.StringIO()
     # image = line_chart.render_to_png(imgdata)
     # imgdata.seek(0)
     # return imgdata.buf
-    
-    #line_chart.render_to_png("/var/www/dev/faye/statsdash_reports/social.png")
+
+    # line_chart.render_to_png("/var/www/dev/faye/statsdash_reports/social.png")
 
 
-
-#date utils
+# date utils
 import datetime
 import calendar
 
+
 def get_month_day_range(date):
     """
-    For a date, returns the start and end date of the month specified 
+    For a date, returns the start and end date of the month specified
     """
     first_day = date.replace(day=1)
     last_day = date.replace(day=calendar.monthrange(date.year, date.month)[1])
@@ -185,41 +231,41 @@ def get_month_day_range(date):
 def add_one_month(t):
     """Return a `datetime.date` or `datetime.datetime` (as given) that is
     one month earlier.
-    
+
     Note that the resultant day of the month might change if the following
     month has fewer days:
-    
+
         >>> add_one_month(datetime.date(2010, 1, 31))
         datetime.date(2010, 2, 28)
     """
-    
+
     one_day = datetime.timedelta(days=1)
     one_month_later = t + one_day
 
-    while one_month_later.month == t.month: # advance to start of next month
+    while one_month_later.month == t.month:  # advance to start of next month
         one_month_later += one_day
 
     target_month = one_month_later.month
-    
-    #issue with this conditional when t.day = 28 (i.e. feb, never gets to the end of next month)
-    #while one_month_later.day < 31  ? nope doesnt work if not trying to get the laast of the month 
 
-    while one_month_later.day < t.day:  # advance to appropriate day, needs to always get to the end of the month 
+    # issue with this conditional when t.day = 28 (i.e. feb, never gets to the end of next month)
+    # while one_month_later.day < 31  ? nope doesnt work if not trying to get the laast of the month
+
+    while one_month_later.day < t.day:  # advance to appropriate day, needs to always get to the end of the month
         one_month_later += one_day
         if one_month_later.month != target_month:  # gone too far
             one_month_later -= one_day
             break
-            
 
     return one_month_later
+
 
 def subtract_one_month(t):
     """Return a `datetime.date` or `datetime.datetime` (as given) that is
     one month later.
-    
+
     Note that the resultant day of the month might change if the following
     month has fewer days:
-    
+
         >>> subtract_one_month(datetime.date(2010, 3, 31))
         datetime.date(2010, 2, 28)
     """
@@ -229,19 +275,21 @@ def subtract_one_month(t):
         one_month_earlier -= one_day
     return one_month_earlier
 
+
 WEEKDAY_INDEXES = {
-    'Monday':       0,
-    'Tuesday':      1, 
-    'Wednesday':    2,
-    'Thursday':     3,
-    'Friday':       4,
-    'Saturday':     5, 
-    'Sunday':       6,
+    'Monday': 0,
+    'Tuesday': 1,
+    'Wednesday': 2,
+    'Thursday': 3,
+    'Friday': 4,
+    'Saturday': 5,
+    'Sunday': 6,
 }
+
 
 def find_last_weekday(start_date, weekday):
     """
-    given a starting date and a string weekday, return the date object for the 
+    given a starting date and a string weekday, return the date object for the
     closest date in the past with that weekday.  returns today if that matches.
 
     eg: last_weekday(date(01,01,2015), "Monday")
@@ -257,9 +305,10 @@ def find_last_weekday(start_date, weekday):
         days = 7 - (desired_weekday - current_weekday)
     return start_date - datetime.timedelta(days=days)
 
+
 def find_next_weekday(start_date, weekday, force_future=False):
     """
-    Given a starting date and a string weekday, return the date object for the 
+    Given a starting date and a string weekday, return the date object for the
     closest date in the future with that weekday.  returns today if that matches.
 
     Args:
@@ -284,11 +333,9 @@ def find_next_weekday(start_date, weekday, force_future=False):
     return start_date + datetime.timedelta(days=days)
 
 
-
-    
-#stats range 	
+# stats range
 class StatsRange(object):
-   
+
     def __init__(self, name, start_date, end_date):
         self.name = name
         self.start_date = start_date
@@ -302,7 +349,6 @@ class StatsRange(object):
 
     def get_end(self):
         return self._get_formatted_date(self.end_date)
-         
 
     def days_in_range(self):
         """
@@ -338,23 +384,31 @@ class StatsRange(object):
             previous_end = current_period.start_date - timedelta(days=1)
             return cls("Previous Month", previous_start, previous_end)
         if frequency == "YEARLY":
-            #should it be year-1 or -timedelta(days=365)
-            #previous_start = date(current_period.start_date.year-1, current_period.start_date.month, current_period.start_date.day)
-            #previous_end = add_one_month((previous_start - timedelta(days=1)))
-            #previous_end = date(current_period.end_date.year-1, current_period.end_date.month, current_period.end_date.day)
-            #TO DO : fix this issue properly
-            try: 
-                previous_start = date(current_period.start_date.year-1, current_period.start_date.month, current_period.start_date.day)
+            # should it be year-1 or -timedelta(days=365)
+            # previous_start = date(current_period.start_date.year-1, current_period.start_date.month, current_period.start_date.day)
+            # previous_end = add_one_month((previous_start - timedelta(days=1)))
+            # previous_end = date(current_period.end_date.year-1, current_period.end_date.month, current_period.end_date.day)
+            # TO DO : fix this issue properly
+            try:
+                previous_start = date(current_period.start_date.year - 1,
+                                      current_period.start_date.month,
+                                      current_period.start_date.day)
             except ValueError:
-                #leap year!
-                previous_start = date(current_period.start_date.year-1, current_period.start_date.month, current_period.start_date.day-1)         
-                
-            try: 
-                previous_end = date(current_period.end_date.year-1, current_period.end_date.month, current_period.end_date.day)
+                # leap year!
+                previous_start = date(current_period.start_date.year - 1,
+                                      current_period.start_date.month,
+                                      current_period.start_date.day - 1)
+
+            try:
+                previous_end = date(current_period.end_date.year - 1,
+                                    current_period.end_date.month,
+                                    current_period.end_date.day)
             except ValueError:
-                #leap year!
-                previous_end = date(current_period.end_date.year-1, current_period.end_date.month, current_period.end_date.day-1)
-                       
+                # leap year!
+                previous_end = date(current_period.end_date.year - 1,
+                                    current_period.end_date.month,
+                                    current_period.end_date.day - 1)
+
             return cls("Period Last Year", previous_start, previous_end)
 
     @classmethod
@@ -371,33 +425,43 @@ class StatsRange(object):
         Return instantiated one day period for date.
         """
         date = date - timedelta(days=1)
-        return cls("One week", date-timedelta(days=6), date)
+        return cls("One week", date - timedelta(days=6), date)
 
     @classmethod
     def get_one_month_period(cls, date):
         """
         Return instantiated one day period for date.
         """
-        return cls("One month", subtract_one_month(date), date - timedelta(days=1))
-        
-        
+        return cls("One month", subtract_one_month(date),
+                   date - timedelta(days=1))
+
+
 def list_of_months(today, num_years):
     """
-    Return a list of monthly stats ranges for the amount of years specified 
+    Return a list of monthly stats ranges for the amount of years specified
     """
-    #find last day of month??????
-    #today = self.period.end_date
-    start_month = date(today.year-num_years, today.month, 1)
-    end_month = today + timedelta(days=1) #first of next month so includes this month
+    # find last day of month??????
+    # today = self.period.end_date
+    start_month = date(today.year - num_years, today.month, 1)
+    end_month = today + timedelta(
+        days=1)  # first of next month so includes this month
     current = start_month
     month_stats_range = []
     while (current.year, current.month) != (end_month.year, end_month.month):
         start_date = current
         end_date = get_month_day_range(current)[1]
-        name =  start_date.strftime("%b-%Y")
+        name = start_date.strftime("%b-%Y")
         month_stats_range.append(StatsRange(name, start_date, end_date))
-        current = add_one_month(start_date)  
-        
+        current = add_one_month(start_date)
+
     return month_stats_range
+
+
+
+
+
+
+
+
 
 

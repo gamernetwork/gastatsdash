@@ -215,7 +215,7 @@ def _run(dryrun=False):
                 try:
                     if not dryrun:
                         html = report.generate_html()
-                        report.send_email(html)
+                        # report.send_email(html)
                         run_datetime = datetime(
                             year=report.period.end_date.year,
                             month=report.period.end_date.month,

@@ -15,6 +15,7 @@ TABLES = {
 }
 # Extra data
 ALL_SITES_NAME = "Network"
+ALL_NETWORK_SITES = False
 
 
 # path names to remove from top articles

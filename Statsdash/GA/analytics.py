@@ -1,24 +1,23 @@
 from apiclient import discovery
-from google_auth_oauthlib.flow import InstalledAppFlow
-from googleapiclient import errors
 from google.oauth2 import service_account
-from httplib2 import Http
+from googleapiclient import errors
 import json
-import logging
 import logging.config
 import logging.handlers
+from pprint import pprint
 import random
 import time
 
-# TODO fix imports
-import Statsdash.GA.config as config
 from Statsdash.config import LOGGING
+from Statsdash.GA import config
 import Statsdash.utilities as utils
 
 logging.config.dictConfig(LOGGING)
 logger = logging.getLogger('report')
 
+
 SCOPES = ['https://www.googleapis.com/auth/analytics.readonly', ]
+
 
 with open(config.KEY_FILE, 'rb') as f:
     PRIVATE_KEY = f.read()
@@ -63,20 +62,14 @@ class Analytics(object):
         return None
 
     def data_available(self, site_id, stats_date):
+        """
+        TODO
+        """
         # TODO: Persist these results in a cache so we don't smash our rate
         # limit
+        results = self._get_results(site_id, stats_date)
+        pprint(results)
 
-        query = self.ga.get(
-            ids=site_id,
-            start_date=stats_date,
-            end_date=stats_date,
-            metrics="ga:pageviews",
-            dimensions="ga:dateHour",
-            include_empty_rows=True,
-        )
-        results = query.execute()
-
-        # NOTE why 24?
         try:
             data_available = len(results['rows']) == 24
             # TODO don't use try except.
@@ -86,6 +79,17 @@ class Analytics(object):
         if not data_available:
             logger.info("site_id %s data_available check on %s returned rows: %s" % (site_id, stats_date, results['rows']))
         return data_available
+
+    def _get_results(self, site_id, stats_date):
+        query = self.ga.get(
+            ids=site_id,
+            start_date=stats_date,
+            end_date=stats_date,
+            metrics="ga:pageviews",
+            dimensions="ga:dateHour",
+            include_empty_rows=True,
+        )
+        return query.execute()
 
     def run_report(self, site_id, start, end, metrics=None, dimensions=None,
                    filters=None, sort=None, max_results=None):

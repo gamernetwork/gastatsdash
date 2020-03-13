@@ -3,6 +3,7 @@ import logging.config
 import logging.handlers
 import re
 
+from Statsdash.analytics import GoogleAnalytics
 from Statsdash.GA.analytics import Analytics
 from Statsdash.GA import config
 import Statsdash.utilities as utils
@@ -43,6 +44,8 @@ class AnalyticsData(object):
         )
         analytics_populated_time = period_end_time + timedelta(hours=1)
         data_possibly_available = datetime.now() > analytics_populated_time
+        # TODO remove
+        data_possibly_available = True
         if not data_possibly_available:
             return {'result': False, 'site': ['Too early for data to be available!']}
         if len(self.sites) == 1:
@@ -64,9 +67,11 @@ class AnalyticsData(object):
 
     def _remove_ga_names(self, rows):
         for row in rows:
-            for key in row.keys():
-                new = key.split("ga:")[1]
-                row[new] = row.pop(key)
+            keys = list(row.keys())
+            for key in keys:
+                assert key.startswith('ga:')
+                new_key = key[3:]
+                row[new_key] = row.pop(key)
         return rows
 
     def summary_table(self):

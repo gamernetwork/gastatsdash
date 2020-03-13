@@ -1,6 +1,7 @@
 -e .
 argparse==1.2.*
 beautifulsoup4>=4.8,<5.0
+cairosvg
 cssutils==1.0.*
 google-api-python-client==1.*
 google-auth
