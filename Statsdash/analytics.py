@@ -195,7 +195,7 @@ class YouTubeAnalytics(Analytics):
 
     def _run_report(self, _id, start_date, end_date, metrics, **kwargs):
         filters = self._prepare_filters(_id, kwargs.get('filters'))
-        analytics_query_response = self.data_resource.query(
+        query = self.data_resource.query(
             ids=f'contentowner=={self.content_owner_id}',
             startdate=start_date,
             enddate=end_date,
@@ -203,7 +203,7 @@ class YouTubeAnalytics(Analytics):
             filters=filters,
             **kwargs,
         )
-        return self._execute_query(analytics_query_response)
+        return self._execute_query(query)
 
     def _prepare_filters(self, _id, filters):
         """
@@ -217,44 +217,40 @@ class YouTubeAnalytics(Analytics):
         return 'channel==%s' % _id
 
 
-class YouTubeData(Analytics):
+class YouTubeChannels(Analytics):
     """
-    Wrapper class for YouTube Data API.
+    Wrapper class for YouTube Data API Channels resource.
     """
-    def rollup_stats(self, ids):
-        # TODO add docstring
-        id_combo = ",".join(ids)
-        results = self._get_stats(id_combo)
+    def get_data(self, ids, **kwargs):
+        id_combo = ','.join(ids)
+        results = self._run_report(id_combo)
         stats = {}
-        for row in results:
-            row["statistics"] = utils.convert_to_floats(
-                row["statistics"],
-                row["statistics"].keys()
-            )
-            for key in row['statistics']:
-                try:
-                    stats[key] += row["statistics"][key]
-                # TODO don't use KeyError, just check if key in dict?
-                except:
-                    stats[key] = row["statistics"][key]
+        for row in results:  # TODO k, v refactor?
+            metrics = row['statistics'].keys()
+            data = row['statistics']
+            data = utils.convert_to_floats(metrics, data)
+            for metric in data:
+                if metric in data:
+                    stats[metric] += data[metric]
+                else:
+                    stats[metric] = data[metric]
         return stats
 
-    # TODO make private (only used by roll up stats)
-    def _get_stats(self, id):
-        # TODO add docstring.
-        subs = self.youtube.channels().list(
-            part="statistics",
-            id=id,
+    def _run_report(self, _id, **kwargs):
+        query = self.data_resource.list(
+            id=_id,
+            part='statistics',
+            **kwargs,
         )
-        return self._execute_query(subs)['items']
+        return self._execute_query(query)
 
-
-    def get_video(self, id):
-        """
-        Returns info on video with specified id.
-        """
-        video_results = self.youtube.videos().list(
-            id=id,
-            part="snippet"
-        )
-        return self._execute_query(video_results)
+    #
+    # def get_video(self, id):
+    #     """
+    #     Returns info on video with specified id.
+    #     """
+    #     video_results = self.youtube.videos().list(
+    #         id=id,
+    #         part="snippet"
+    #     )
+    #     return self._execute_query(video_results)
