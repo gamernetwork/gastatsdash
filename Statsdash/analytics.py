@@ -28,7 +28,6 @@ class GoogleAnalytics(Analytics):
     """
     Wrapper class for Google Analytics Management API.
     """
-
     def __init__(self, api):
         self.api = api
 
@@ -57,7 +56,6 @@ class GoogleAnalytics(Analytics):
         if not data_available:
             logger.info(f'view_id {view_id} data_available check on '
                         f'{stats_date} returned rows: {rows}')
-
         return data_available
 
     def rollup_ids(self, view_ids, start, end, metrics, aggregate_key=None, **kwargs):
@@ -167,5 +165,130 @@ class GoogleAnalytics(Analytics):
             )
 
 
+# TODO split this into separate classes
 class YouTubeAnalytics(Analytics):
-    pass
+    """
+    Wrapper class for YouTube analytics APIs.
+    """
+    youtube = None
+    youtube_analytics = None
+
+    def __init__(self):
+        """
+        Initialise credentials and build api object to query.
+        """
+        credentials = service_account.Credentials.from_service_account_file(
+            config.KEY_FILE,
+            scopes=SCOPES
+        )
+
+        self.youtube = build(
+            YOUTUBE_API_SERVICE_NAME,
+            YOUTUBE_API_VERSION,
+            credentials=credentials,
+        )
+        self.youtube_analytics = discovery.build(
+            YOUTUBE_ANALYTICS_API_SERVICE_NAME,
+            YOUTUBE_ANALYTICS_API_VERSION,
+            credentials=credentials,
+        )
+        self.report_resource = self.youtube_analytics.reports()
+
+    def execute_query(self, query):
+        """
+        Try to execute the API query.
+        """
+        try:
+            results = query.execute()
+            return results
+        except errors.HttpError as e:
+            logger.warning(
+                "HTTP error %d occurred:\n%s" % (e.resp.status, e.content)
+            )
+
+    def data_available(self, view_id, stats_date):
+        # NOTE make metrics constant?
+        results = self._run_report(view_id, stats_date, stats_date,
+                                   'views', dimensions='ga:dateHour')
+        return bool(results.get('rows'))
+
+    def _run_report(self, channel_id, start_date, end_date, metrics, **kwargs):
+        analytics_query_response = self.youtube_analytics.reports().query(
+            ids='contentowner==%s' % config.content_owner_id,
+            startdate=start_date,
+            enddate=end_date,
+            metrics=metrics,
+            filters='channel==%s' % channel_id,
+            **kwargs,
+        )
+        return self.execute_query(analytics_query_response)
+
+    # TODO make private (only used by roll up stats)
+    def get_stats(self, id):
+        # TODO add docstring.
+        subs = self.youtube.channels().list(
+            part="statistics",
+            id=id,
+        )
+        return self.execute_query(subs)['items']
+
+    def rollup_stats(self, ids):
+        # TODO add docstring
+        id_combo = ",".join(ids)
+        results = self.get_stats(id_combo)
+        stats = {}
+        for row in results:
+            row["statistics"] = utils.convert_to_floats(
+                row["statistics"],
+                row["statistics"].keys()
+            )
+            for key in row['statistics']:
+                try:
+                    stats[key] += row["statistics"][key]
+                # TODO don't use KeyError, just check if key in dict?
+                except:
+                    stats[key] = row["statistics"][key]
+        return stats
+
+
+    def rollup_ids(self, ids, start, end, metrics,
+                   dimensions=None, filters=None, sort=None, max_results=None,
+                   aggregate_key=None):
+        # TODO docstring
+        # TODO this shouldn't be called main_row
+        main_row = []
+        for id in ids:
+            if filters:
+                filter = filters + ";channel==%s" % id
+            else:
+                filter = "channel==%s" % id
+            # TODO use **kwargs?
+            results = self._run_report(
+                start, end, metrics=metrics, dimensions=dimensions,
+                filters=filter, max_results=max_results, sort=sort
+            )
+            rows = utils.format_data_rows(results)
+            if rows:
+                for row in rows:
+                    row = utils.convert_to_floats(row, metrics.split(","))
+                # NOTE whats happening here?
+                main_row.extend(rows)
+            else:
+                # TODO f string
+                logger.debug(f'No data for {id} on {start} - {end}')
+        main_row = utils.aggregate_data(
+            main_row,
+            metrics.split(","),
+            aggregate_key
+        )
+        return main_row
+
+    def get_video(self, id):
+        """
+        Returns info on video with specified id.
+        """
+        video_results = self.youtube.videos().list(
+            id=id,
+            part="snippet"
+        )
+        return self.execute_query(video_results)
