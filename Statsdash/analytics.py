@@ -17,17 +17,45 @@ with open(config.KEY_FILE, 'rb') as f:
 
 
 class Analytics:
-    # MAKE MORE GENERIC/PLUGGABLE
-    # TODO add docstring (copy from YouTube?)
-    # NOTE should these classes inherit from a base class?
 
-    config = NotImplemented
+    identifier = NotImplemented
+
+    def _execute_query(self, query):
+        """
+        Wrapper to run `query.execute()` method. Calls the query object's
+        execute method to send the query to API servers.
+
+        Args:
+            * `query` - `str` - The query object to be executed.
+
+        Returns:
+            * `dict`
+
+        Raises:
+            * `HttpError` if http error occurs.
+            * `Exception` if any other error occurs during the execution.
+        """
+        # TODO we might need a wait for it type wrapper method.
+        # https://stackoverflow.com/questions/41713234/better-way-to-write-a-polling-function-in-python
+        try:
+            return query.execute()
+        except errors.HttpError as e:
+            logger.warning(
+                f'HTTP error {e.resp.status} occurred:\n{e.content}'
+            )
+        except Exception as e:
+            logger.warning(
+                f'Unknown error from {self.identifier}\nType: {str(type(e))} '
+                f'{str(e)}'
+            )
 
 
 class GoogleAnalytics(Analytics):
     """
     Wrapper class for Google Analytics Management API.
     """
+    identifier = 'Google Analytics'
+
     def __init__(self, api):
         self.api = api
 
@@ -135,35 +163,6 @@ class GoogleAnalytics(Analytics):
         query = self.ga.get(view_id, start, end, metrics, **kwargs)
         return self._execute_query(query)
 
-    def _execute_query(self, query):
-        """
-        Wrapper to run `query.execute()` method. Calls the query object's
-        execute method to send the query to Google Analytics servers.
-
-        Args:
-            * `query` - `str` - Unique table ID for retrieving Analytics
-            data.
-
-        Returns:
-            * `dict`
-
-        Raises:
-            * `HttpError` if http error occurs.
-            * `Exception` if any other error occurs during the execution.
-        """
-        # TODO we might need a wait for it type wrapper method.
-        # https://stackoverflow.com/questions/41713234/better-way-to-write-a-polling-function-in-python
-        try:
-            return query.execute()
-        except errors.HttpError as e:
-            logger.warning(
-                f'HTTP error {e.resp.status} occurred:\n{e.content}'
-            )
-        except Exception as e:
-            logger.warning(
-                f'Unknown error from GA\nType: {str(type(e))} {str(e)}'
-            )
-
 
 # TODO split this into separate classes
 class YouTubeAnalytics(Analytics):
@@ -194,48 +193,72 @@ class YouTubeAnalytics(Analytics):
         )
         self.report_resource = self.youtube_analytics.reports()
 
-    def execute_query(self, query):
-        """
-        Try to execute the API query.
-        """
-        try:
-            results = query.execute()
-            return results
-        except errors.HttpError as e:
-            logger.warning(
-                "HTTP error %d occurred:\n%s" % (e.resp.status, e.content)
-            )
-
-    def data_available(self, view_id, stats_date):
+    def data_available(self, channel_id, stats_date):
         # NOTE make metrics constant?
-        results = self._run_report(view_id, stats_date, stats_date,
-                                   'views', dimensions='ga:dateHour')
+        filters = f'channel=={channel_id}'
+        results = self._run_report(stats_date, stats_date, 'views',
+                                   dimensions='ga:dateHour', filters=filters)
         return bool(results.get('rows'))
 
-    def _run_report(self, channel_id, start_date, end_date, metrics, **kwargs):
+    def rollup_ids(self, ids, start, end, metrics,
+                   dimensions=None, filters=None, sort=None, max_results=None,
+                   aggregate_key=None):
+        """
+        Fetches analytics data for all the given YouTube IDs, reformats and
+        aggregates the data and returns them as a single dict.
+
+        Returns:
+            * `list` of reformatted data for each YouTube ID.
+        """
+        # output = []
+        # all_reports = self._fetch_multiple(view_ids, start, end, metrics, **kwargs)
+        # for report in all_reports:
+        #     formatted_data = utils.format_data_rows(report)
+        #     for row in formatted_data:
+        #         # TODO we shouldn't use split all the time like this.
+        #         utils.convert_to_floats(row, metrics.split(","))
+        #     output.extend(formatted_data)
+        # return utils.aggregate_data(output, metrics.split(","), aggregate_key)
+
+        # TODO docstring
+        # TODO this shouldn't be called main_row
+        output = []
+        for id in ids:
+            # get filters method?
+            if filters:
+                filter = filters + ";channel==%s" % id
+            else:
+                filter = "channel==%s" % id
+            # TODO use **kwargs?
+            results = self._run_report(
+                start, end, metrics=metrics, dimensions=dimensions,
+                filters=filter, max_results=max_results, sort=sort
+            )
+            formatted_data = utils.format_data_rows(results)
+            for row in formatted_data:
+                utils.convert_to_floats(row, metrics.split(","))
+            output.extend(formatted_data)
+        return utils.aggregate_data(output, metrics.split(","), aggregate_key)
+
+    def _run_report(self, start_date, end_date, metrics, **kwargs):
         analytics_query_response = self.youtube_analytics.reports().query(
             ids='contentowner==%s' % config.content_owner_id,
             startdate=start_date,
             enddate=end_date,
             metrics=metrics,
-            filters='channel==%s' % channel_id,
             **kwargs,
         )
-        return self.execute_query(analytics_query_response)
+        return self._execute_query(analytics_query_response)
 
-    # TODO make private (only used by roll up stats)
-    def get_stats(self, id):
-        # TODO add docstring.
-        subs = self.youtube.channels().list(
-            part="statistics",
-            id=id,
-        )
-        return self.execute_query(subs)['items']
 
+class YouTubeData(Analytics):
+    """
+    Wrapper class for YouTube Data API.
+    """
     def rollup_stats(self, ids):
         # TODO add docstring
         id_combo = ",".join(ids)
-        results = self.get_stats(id_combo)
+        results = self._get_stats(id_combo)
         stats = {}
         for row in results:
             row["statistics"] = utils.convert_to_floats(
@@ -250,38 +273,15 @@ class YouTubeAnalytics(Analytics):
                     stats[key] = row["statistics"][key]
         return stats
 
-
-    def rollup_ids(self, ids, start, end, metrics,
-                   dimensions=None, filters=None, sort=None, max_results=None,
-                   aggregate_key=None):
-        # TODO docstring
-        # TODO this shouldn't be called main_row
-        main_row = []
-        for id in ids:
-            if filters:
-                filter = filters + ";channel==%s" % id
-            else:
-                filter = "channel==%s" % id
-            # TODO use **kwargs?
-            results = self._run_report(
-                start, end, metrics=metrics, dimensions=dimensions,
-                filters=filter, max_results=max_results, sort=sort
-            )
-            rows = utils.format_data_rows(results)
-            if rows:
-                for row in rows:
-                    row = utils.convert_to_floats(row, metrics.split(","))
-                # NOTE whats happening here?
-                main_row.extend(rows)
-            else:
-                # TODO f string
-                logger.debug(f'No data for {id} on {start} - {end}')
-        main_row = utils.aggregate_data(
-            main_row,
-            metrics.split(","),
-            aggregate_key
+    # TODO make private (only used by roll up stats)
+    def _get_stats(self, id):
+        # TODO add docstring.
+        subs = self.youtube.channels().list(
+            part="statistics",
+            id=id,
         )
-        return main_row
+        return self._execute_query(subs)['items']
+
 
     def get_video(self, id):
         """
@@ -291,4 +291,4 @@ class YouTubeAnalytics(Analytics):
             id=id,
             part="snippet"
         )
-        return self.execute_query(video_results)
+        return self._execute_query(video_results)

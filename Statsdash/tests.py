@@ -121,7 +121,8 @@ class TestGoogleAnalytics(unittest.TestCase):
         query.execute.side_effect = e
         self.analytics._execute_query(query)
         mock_logger.warning.assert_called_with(
-            f'Unknown error from GA\nType: {str(type(e))} {str(e)}'
+            f'Unknown error from Google Analytics\nType: {str(type(e))} '
+            f'{str(e)}'
         )
 
     def test_execute_no_exception(self):
