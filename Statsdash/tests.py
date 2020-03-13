@@ -161,23 +161,23 @@ class TestGoogleAnalytics(unittest.TestCase):
         )
 
     @patch('Statsdash.analytics.GoogleAnalytics._run_report')
-    def test_rollup_ids_one_metric(self, mock_query_result):
+    def test_get_data_one_metric(self, mock_query_result):
         """
         Returns a single dict with the aggregated pageviews.
         """
         mock_query_result.return_value = mock_repsonses.response_ready
-        aggregated_data = self.analytics.rollup_ids(
+        aggregated_data = self.analytics.get_data(
             [self.view_id], self.stats_date, self.stats_date, 'ga:pageviews')
         self.assertEqual(aggregated_data, {'ga:pageviews': 126070.0})
 
     @patch('Statsdash.analytics.GoogleAnalytics._run_report')
-    def test_rollup_ids_two_metrics(self, mock_query_result):
+    def test_get_data_two_metrics(self, mock_query_result):
         """
         Returns a single dict with the aggregated pageviews and dateHour.
         """
         mock_query_result.return_value = mock_repsonses.response_ready
         metrics = 'ga:pageviews,ga:dateHour'
-        aggregated_data = self.analytics.rollup_ids(
+        aggregated_data = self.analytics.get_data(
             [self.view_id], self.stats_date, self.stats_date, metrics)
         self.assertEqual(
             aggregated_data,
@@ -188,12 +188,12 @@ class TestGoogleAnalytics(unittest.TestCase):
     # TODO test match key.
 
     @patch('Statsdash.analytics.GoogleAnalytics._run_report')
-    def test_rollup_ids_no_data(self, mock_query_result):
+    def test_get_data_no_data(self, mock_query_result):
         """
         Returns an empty dict if no rows in response.
         """
         mock_query_result.return_value = mock_repsonses.response_no_rows
-        aggregated_data = self.analytics.rollup_ids(
+        aggregated_data = self.analytics.get_data(
             [self.view_id], self.stats_date, self.stats_date, 'ga:pageviews')
         self.assertEqual(aggregated_data, {})
 
