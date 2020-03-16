@@ -1,11 +1,9 @@
-from pprint import pprint as pp
 from googleapiclient import errors
 import logging.config
 import logging.handlers
 
 from Statsdash.config import LOGGING
-from Statsdash import utils
-
+from Statsdash.utils import utils
 
 logging.config.dictConfig(LOGGING)
 logger = logging.getLogger('report')
@@ -55,8 +53,9 @@ class Analytics:
         """
         all_reports = []
         for _id in ids:
+            # TODO replace with _id with ids
             results = self._run_report(_id, start, end, metrics, **kwargs)
-            if results.get('rows'):
+            if results:
                 all_reports.append(results)
             else:
                 self._log_no_data(_id, start, end, metrics, **kwargs)

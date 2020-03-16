@@ -11,6 +11,7 @@ mock
 oauthlib
 premailer
 pygal
+python-dateutil
 requests==2.10.*
 simplejson==3.6.*
 tendo==0.2.*

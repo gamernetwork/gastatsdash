@@ -261,6 +261,7 @@ class AnalyticsCoreReport(Report):
         
         
     def send_email(self, html):
+        # TODO use mailcatcher smtp.
         """
         Send html email using config parameters
         """
