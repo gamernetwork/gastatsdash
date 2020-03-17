@@ -120,7 +120,15 @@ class GoogleAnalytics(Analytics):
     identifier = 'Google Analytics'
 
     class Metrics:
-        pageviews = 'ga:pageviews'
+        """
+        Constants for metric identifiers. First value is metric identifier as
+        Google expects it. Second value is our identifier for the metric.
+        """
+        pageviews = ('ga:pageviews', 'pageviews')
+        users = ('ga:users', 'users')
+        sessions = ('ga:sessions', 'sessions')
+        pv_per_sessions = ('ga:pageviewsPerSession', 'pv_per_session')
+        avg_session_time = ('ga:avgSessionDuration', 'avg_session_time')
 
     class Dimensions:
         date_hour = 'ga:dateHour'
@@ -137,7 +145,7 @@ class GoogleAnalytics(Analytics):
             _id,
             stats_date,
             stats_date,
-            self.Metrics.pageviews,
+            self.Metrics.pageviews[0],
             dimensions=self.Dimensions.date_hour
         )
         rows = results.get('rows')
@@ -169,6 +177,9 @@ class GoogleAnalytics(Analytics):
         """
         # NOTE we're running this multiple times per site.
         kwargs['include_empty_rows'] = True  # always True
+        # TODO fix hack
+        if type(view_id) == dict:
+            view_id = view_id.values()
         query = self.data_resource.get(
             ids=view_id,
             start_date=start,
@@ -195,7 +206,7 @@ class YouTubeAnalytics(Analytics):
     def data_available(self, _id, stats_date):
         filters = f'channel=={_id}'
         results = self._run_report(_id, stats_date, stats_date,
-                                   self.Metrics.pageviews, filters=filters)
+                                   self.Metrics.pageviews[0], filters=filters)
         # TODO duplication
         rows = results.get('rows')
         if not bool(rows):
@@ -265,3 +276,29 @@ class YouTubeChannels(Analytics):
     #         part="snippet"
     #     )
     #     return self._execute_query(video_results)
+
+
+def google_metrics(metrics):
+    """
+    Gets the Google identifier for an iterable of metrics.
+
+    Args:
+        * `metrics` - `list` - a list of metrics
+
+    Returns:
+        `list`
+    """
+    return [m[0] for m in metrics]
+
+
+def our_metrics(metrics):
+    """
+    Gets the our identifier for an iterable of metrics.
+
+    Args:
+        * `metrics` - `list` - a list of metrics
+
+    Returns:
+        `list`
+    """
+    return [m[1] for m in metrics]

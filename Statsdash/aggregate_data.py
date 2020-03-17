@@ -5,10 +5,11 @@ import logging.config
 import logging.handlers
 import re
 
-from Statsdash.analytics import GoogleAnalytics
+from Statsdash.analytics import GoogleAnalytics, google_metrics, our_metrics
 from Statsdash.GA import config
-import Statsdash.utilities as utils
+from Statsdash.utils import utils
 from Statsdash.config import LOGGING
+from Statsdash.stats_range import StatsRange
 
 # TODO move this somewhere else?
 SCOPES = ['https://www.googleapis.com/auth/analytics.readonly', ]
@@ -19,141 +20,29 @@ credentials = service_account.Credentials.from_service_account_file(
 service = build('analytics', 'v3', credentials=credentials)
 resource = service.data().ga()
 
-site_ids = config.TABLES
 analytics = GoogleAnalytics(resource)
 
 logging.config.dictConfig(LOGGING)
 logger = logging.getLogger('report')
 
-
-class SummaryTable:
-    """
-    Gets the analytics data for the current period, previous period and yearly.
-    """
-
-    def __init__(self, analytics, sites, metrics, site_ids, period, frequency):
-        """
-
-        """
-        self.analytics = analytics
-        self.sites = sites
-        self.metrics = metrics
-        self.site_ids = site_ids
-        self.period = period
-        self.frequency = frequency
-        self.previous = utils.StatsRange.get_previous_period(self.period, self.frequency)
-        self.yearly = utils.StatsRange.get_previous_period(self.period, "YEARLY")
-
-    # TODO test
-    def get_data_for_period(self, period):
-        """
-
-
-        """
-        all_rows = []
-        for site in self.sites:
-            rows = [
-                analytics.get_data(
-                    self.site_ids[site],
-                    period.get_start(),
-                    period.get_end(),
-                    metrics=self.metrics
-                )
-            ]
-            if rows:
-                rows = self._remove_ga_names(rows)
-                rows = utils.change_key_names(
-                    rows,
-                    # TODO define before.
-                    {"pv_per_session": "pageviewsPerSession", "avg_session_time": "avgSessionDuration"}
-                )
-
-                all_rows.extend(rows)
-            else:
-                logger.debug(f'No data for site {site} on {period.get_start()} - {period.get_end()}')
-            return all_rows
-
-
-    def get_all_rows(self):
-        # TODO don't use dict
-        data = {}
-        for count, date in enumerate(self.date_list):
-            all_rows = []
-            for site in self.sites:
-                rows = [
-                    analytics.get_data(
-                        self.site_ids[site],
-                        date.get_start(),
-                        date.get_end(),
-                        metrics=self.metrics)
-                ]
-                if rows:
-                    rows = self._remove_ga_names(rows)
-                    rows = utils.change_key_names(
-                        rows,
-                        # TODO define before.
-                        {"pv_per_session": "pageviewsPerSession", "avg_session_time": "avgSessionDuration"}
-                    )
-
-                    all_rows.extend(rows)
-                else:
-                    logger.debug(f'No data for site {site} on {date.get_start()} - {date.get_end()}')
-            # TODO test
-            aggregate = utils.aggregate_data(
-                all_rows,
-                ["pageviews", "users", "sessions", "pv_per_session", "avg_session_time"]
-            )
-            data[count] = aggregate
-        return data
-
-    def get_table(self):
-        # NOTE if it requires three periods then the number of ranges shouldn't be configurable.
-        data = self.get_all_rows()
-
-        for period in data:
-            data[period]['pv_per_session'] = data[period].get('pv_per_session', 0) / len(self.sites)
-            data[period]['avg_session_time'] = (data[period].get('avg_session_time', 0) / len(self.sites)) / 60.0
-
-        this_period = utils.add_change(
-            data[0],
-            data[1],
-            ["pageviews", "users", "sessions", "pv_per_session", "avg_session_time"],
-            # NOTE shouldn't be using these string literals.
-            "previous"
-        )
-        this_period = utils.add_change(
-            this_period,
-            data[2],
-            ["pageviews", "users", "sessions", "pv_per_session", "avg_session_time"],
-            "yearly"
-        )
-        return this_period
-
-    # TODO move to utils
-    def _remove_ga_names(self, rows):
-        for row in rows:
-            keys = list(row.keys())
-            for key in keys:
-                assert key.startswith('ga:')
-                new_key = key[3:]
-                row[new_key] = row.pop(key)
-        return rows
+Metrics = GoogleAnalytics.Metrics
 
 
 # TODO use base class for this and YouTube
 class AnalyticsData:
 
-    def __init__(self, sites, period, frequency):
-        self.sites = sites
+    def __init__(self, site_tables, period, frequency):
+        self.sites = site_tables.keys()
         self.period = period
         self.frequency = frequency
         # shouldn't be implicit
-        self.previous = utils.StatsRange.get_previous_period(self.period, self.frequency)
-        self.yearly = utils.StatsRange.get_previous_period(self.period, "YEARLY")
+        self.previous = StatsRange.get_previous_period(self.period, self.frequency)
+        self.yearly = StatsRange.get_previous_period(self.period, "YEARLY")
 
         self.date_list = [self.period, self.previous, self.yearly]
 
-        self.site_ids = site_ids
+        # TODO rename attribute
+        self.site_ids = site_tables
 
     def check_available_data(self):
         run_report = {"result": True, "site": []}
@@ -218,7 +107,6 @@ class AnalyticsData:
 
                     totals.extend(rows)
                 else:
-                    # print "No data for site " + site + " on " + date.get_start() + " - " + date.get_end()
                     logger.debug(
                         "No data for site " + site + " on " + date.get_start() + " - " + date.get_end())
 
@@ -337,7 +225,7 @@ class AnalyticsData:
         Return top articles as a list of dictionaries
         Each dictionary has the pageviews, page title, page path and host name
         """
-        article_previous = utils.StatsRange.get_previous_period(self.period, "DAILY")  # how to do this
+        article_previous = StatsRange.get_previous_period(self.period, "DAILY")  # how to do this
         data = {}
         for count, date in enumerate([self.period, article_previous]):
             articles = []
@@ -712,3 +600,118 @@ class AnalyticsData:
 
         chart = utils.chart("Social Data", x_labels, graph_data, "Day", "Number")
         return chart
+
+
+class SummaryData(AnalyticsData):
+
+    metrics = [
+        Metrics.pageviews,
+        Metrics.users,
+        Metrics.sessions,
+        Metrics.pv_per_sessions,
+        Metrics.avg_session_time,
+    ]
+
+    def __init__(self, site_tables, period, frequency):
+        self.sites = site_tables.keys()
+        self.frequency = frequency
+        self.periods = [
+            period,
+            StatsRange.get_previous_period(period, self.frequency),
+            StatsRange.get_previous_period(period, "YEARLY"),  # remove literal
+        ]
+
+        self.date_list = [self.period, self.previous, self.yearly]
+
+        # TODO rename attribute
+        self.site_ids = site_tables
+
+    # TODO test
+    def get_table(self):
+        """
+
+        """
+        period_data = []
+        for period in self.periods:
+            period_data.append(self._get_data_for_period(period))
+        return self._join_periods(period_data)
+
+    def _join_periods(self, data):
+        """
+        Gets the data for each period and combines them into a single dict.
+
+        Args:
+            * `data` - `list` - an executed query for each period.
+
+        Returns:
+            * `dict`
+        """
+        change_previous = utils.get_change(
+            data[0],
+            data[1],
+            our_metrics(self.metrics),
+            'previous'
+        )
+        change_yearly = utils.get_change(
+            data[0],
+            data[2],
+            our_metrics(self.metrics),
+            'yearly'
+        )
+        data[0].update(change_previous)
+        data[0].update(change_yearly)
+        return data[0]
+
+    def _get_data_for_period(self, period):
+        """
+        Gets the analytics data for the given period and prepares it for the
+        table: renames the keys for each metric, aggregates the data for each
+        site, and gets the average for values where appropriate.
+
+        Args:
+            * `period` - `StatsRange`
+
+        Returns:
+            * `dict`
+        """
+        all_sites_data = []
+        for site in self.sites:
+            data = analytics.get_data(
+                self.site_ids[site],
+                period.get_start(),
+                period.get_end(),
+                metrics=','.join(google_metrics(self.metrics)),
+            )
+            if data:
+                self._rename_data(data)
+                all_sites_data.append(data)
+            else:
+                logger.debug(
+                    f'No data for site {site} on {period.get_start()} - '
+                    f'{period.get_end()}'
+                )
+        aggregated_data = utils.aggregate_data(all_sites_data, our_metrics(self.metrics))
+        return self._apply_averages(aggregated_data)
+
+    def _rename_data(self, data):
+        replacements = [(m[0], m[1]) for m in self.metrics]
+        data = utils.change_key_names(data, replacements)
+        return data
+
+    def _apply_averages(self, data):
+        """
+        Get average for metrics which are averages.
+
+        Args:
+            * `data` - `dict` - analytics data blob (after rename).
+
+        Returns:
+            * `dict`
+        """
+        len_sites = len(self.sites)
+        # TODO metrics could be turned into classes. Each class could handle average.
+        av = data.get(Metrics.pv_per_sessions[1], 0) / len_sites
+        data[Metrics.pv_per_sessions[1]] = av
+        av = data.get(Metrics.avg_session_time[1], 0) / len_sites / 60.0
+        data[Metrics.avg_session_time[1]] = av
+        return data

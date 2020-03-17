@@ -6,7 +6,7 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from googleapiclient.http import HttpMock
 
-from Statsdash import mock_repsonses
+from Statsdash import mock_responses
 from Statsdash.analytics import GoogleAnalytics, YouTubeAnalytics
 
 
@@ -32,7 +32,7 @@ class TestGoogleAnalytics(unittest.TestCase):
         """
         Data is available if there are 24 rows available.
         """
-        mock_query_result.return_value = mock_repsonses.response_ready
+        mock_query_result.return_value = mock_responses.response_ready
         self.assertTrue(
             self.analytics.data_available('ga:123456789', '2020-03-12')
         )
@@ -44,14 +44,14 @@ class TestGoogleAnalytics(unittest.TestCase):
         Data is not available when there are fewer than 24 rows available.
         Message added to logger.
         """
-        mock_query_result.return_value = mock_repsonses.response_not_ready
+        mock_query_result.return_value = mock_responses.response_not_ready
         self.assertFalse(
             self.analytics.data_available(self._id, self.stats_date)
         )
         mock_logger.info.assert_called_with(
             f'ID {self._id} data_available check on '
             f'{self.stats_date} returned rows: '
-            f'{mock_repsonses.response_not_ready["rows"]}'
+            f'{mock_responses.response_not_ready["rows"]}'
         )
 
     @patch('Statsdash.analytics.GoogleAnalytics._run_report')
@@ -60,7 +60,7 @@ class TestGoogleAnalytics(unittest.TestCase):
         """
         Data is not available when there are no rows. Message added to logger.
         """
-        mock_query_result.return_value = mock_repsonses.response_no_rows
+        mock_query_result.return_value = mock_responses.response_no_rows
         self.assertFalse(
             self.analytics.data_available(self._id, self.stats_date)
         )
@@ -114,7 +114,7 @@ class TestGoogleAnalytics(unittest.TestCase):
         """
 
         """
-        mock_query_result.return_value = mock_repsonses.response_ready
+        mock_query_result.return_value = mock_responses.response_ready
         all_reports = self.analytics._fetch_multiple(
             ['1', '2'], self.stats_date, self.stats_date, 'ga:pageviews')
         self.assertEqual(len(all_reports), 2)
@@ -125,7 +125,7 @@ class TestGoogleAnalytics(unittest.TestCase):
         """
         Fetch multiple adds a message to the log when a report has no rows.
         """
-        mock_query_result.return_value = mock_repsonses.response_no_rows
+        mock_query_result.return_value = mock_responses.response_no_rows
         all_reports = self.analytics._fetch_multiple(
             [self._id], self.stats_date, self.stats_date, 'ga:pageviews')
         self.assertEqual(len(all_reports), 0)
@@ -139,7 +139,7 @@ class TestGoogleAnalytics(unittest.TestCase):
         """
         Returns a single dict with the aggregated pageviews.
         """
-        mock_query_result.return_value = mock_repsonses.response_ready
+        mock_query_result.return_value = mock_responses.response_ready
         aggregated_data = self.analytics.get_data(
             [self._id], self.stats_date, self.stats_date, 'ga:pageviews')
         self.assertEqual(aggregated_data, {'ga:pageviews': 126070.0})
@@ -149,7 +149,7 @@ class TestGoogleAnalytics(unittest.TestCase):
         """
         Returns a single dict with the aggregated pageviews and dateHour.
         """
-        mock_query_result.return_value = mock_repsonses.response_ready
+        mock_query_result.return_value = mock_responses.response_ready
         metrics = 'ga:pageviews,ga:dateHour'
         aggregated_data = self.analytics.get_data(
             [self._id], self.stats_date, self.stats_date, metrics)
@@ -166,7 +166,7 @@ class TestGoogleAnalytics(unittest.TestCase):
         """
         Returns an empty dict if no rows in response.
         """
-        mock_query_result.return_value = mock_repsonses.response_no_rows
+        mock_query_result.return_value = mock_responses.response_no_rows
         aggregated_data = self.analytics.get_data(
             [self._id], self.stats_date, self.stats_date, 'ga:pageviews')
         self.assertEqual(aggregated_data, {})
@@ -195,7 +195,7 @@ class TestYouTubeAnalytics(unittest.TestCase):
         Data is available if there are any rows.
         """
         # TODO replace this with YouTube Analytics API response
-        mock_query_result.return_value = mock_repsonses.response_ready
+        mock_query_result.return_value = mock_responses.response_ready
         self.assertTrue(
             self.analytics.data_available(self._id, '2020-03-12')
         )
@@ -206,7 +206,7 @@ class TestYouTubeAnalytics(unittest.TestCase):
         """
         Data is not available when there are no rows. Message added to logger.
         """
-        mock_query_result.return_value = mock_repsonses.response_no_rows
+        mock_query_result.return_value = mock_responses.response_no_rows
         self.assertFalse(
             self.analytics.data_available(self._id, self.stats_date)
         )
@@ -260,7 +260,7 @@ class TestYouTubeAnalytics(unittest.TestCase):
         """
 
         """
-        mock_query_result.return_value = mock_repsonses.response_ready
+        mock_query_result.return_value = mock_responses.response_ready
         all_reports = self.analytics._fetch_multiple(
             ['1', '2'],
             self.stats_date,
@@ -275,7 +275,7 @@ class TestYouTubeAnalytics(unittest.TestCase):
         """
         Fetch multiple adds a message to the log when a report has no rows.
         """
-        mock_query_result.return_value = mock_repsonses.response_no_rows
+        mock_query_result.return_value = mock_responses.response_no_rows
         all_reports = self.analytics._fetch_multiple(
             [self._id],
             self.stats_date,
@@ -295,7 +295,7 @@ class TestYouTubeAnalytics(unittest.TestCase):
     #     """
     #     Returns a single dict with the aggregated pageviews.
     #     """
-    #     mock_query_result.return_value = mock_repsonses.response_ready
+    #     mock_query_result.return_value = mock_responses.response_ready
     #     aggregated_data = self.analytics.get_data(
     #         [self._id], self.stats_date, self.stats_date, 'ga:pageviews')
     #     self.assertEqual(aggregated_data, {'ga:pageviews': 126070.0})
@@ -305,7 +305,7 @@ class TestYouTubeAnalytics(unittest.TestCase):
     #     """
     #     Returns a single dict with the aggregated pageviews and dateHour.
     #     """
-    #     mock_query_result.return_value = mock_repsonses.response_ready
+    #     mock_query_result.return_value = mock_responses.response_ready
     #     metrics = 'ga:pageviews,ga:dateHour'
     #     aggregated_data = self.analytics.get_data(
     #         [self._id], self.stats_date, self.stats_date, metrics)
@@ -322,7 +322,7 @@ class TestYouTubeAnalytics(unittest.TestCase):
     #     """
     #     Returns an empty dict if no rows in response.
     #     """
-    #     mock_query_result.return_value = mock_repsonses.response_no_rows
+    #     mock_query_result.return_value = mock_responses.response_no_rows
     #     aggregated_data = self.analytics.get_data(
     #         [self._id], self.stats_date, self.stats_date, 'ga:pageviews')
     #     self.assertEqual(aggregated_data, {})

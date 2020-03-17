@@ -51,15 +51,34 @@ def sig_fig(sf, num):
     return float(condensed_num)
 
 
-def change_key_names(rows, changes):
+# TODO test
+def change_key_names(data, changes):
     """
-    Renames the keys specified in rows
-    Where changes = {new:original, new:original}
+    Renames the keys specified in rows.
     """
-    for row in rows:
-        for new, original in changes.items():
-            row[new] = row.pop(original)
-    return rows
+    for original, new in changes:
+        data[new] = data.pop(original)
+    return data
+
+
+# TODO test
+def remove_prefix_from_keys(data, prefix):
+    """
+    Removed the `prefix` from each key in `data`.
+
+    Args:
+        * `data` - `dict` - An analytics data blob.
+        * `prefix` - `string` - The prefix to be removed from each key.
+
+    Returns:
+        * `dict`
+    """
+    keys = list(data.keys())
+    for key in keys:
+        assert key.startswith(prefix)
+        new_key = key[3:]
+        data[new_key] = data.pop(key)
+    return data
 
 
 def percentage(change, total):
@@ -102,7 +121,7 @@ def list_search(to_search, key, value):
 
 
 
-def aggregate_data(data, aggregate_keys, match_key):
+def aggregate_data(data, aggregate_keys, match_key=None):
     """
     Aggregates data given. Returns dictionary of all metrics aggregated.
 
@@ -140,45 +159,17 @@ def aggregate_data_by_match_key(table, aggregate_keys, match_key):
     return new_table
 
 
-def add_change(this_period, previous_period, change_keys, label,
-               match_key=None):
-    """
-    Adds change data to current period data structure, either by dimension or
-    not.
-    """
-    # TODO improve docstring.
-    if match_key:
-        for row in this_period:
-            try:
-                result = list_search(previous_period, match_key,
-                                     row[match_key])
-                for key in change_keys:
-                    row['%s_figure_%s' % (label, key)] = result[key]
-                    row['%s_change_%s' % (label, key)] = row[key] - result[key]
-                    row['%s_percentage_%s' % (label, key)] = percentage(
-                        row['%s_change_%s' % (label, key)], result[key])
-            except KeyError:
-                for key in change_keys:
-                    row['%s_figure_%s' % (label, key)] = 0
-                    row['%s_change_%s' % (label, key)] = 0
-                    row['%s_percentage_%s' % (label, key)] = 0
-    else:
-        for key in change_keys:
-            try:
-                this_period['%s_figure_%s' % (label, key)] = previous_period[
-                    key]
-                this_period['%s_change_%s' % (label, key)] = this_period[key] - \
-                                                             previous_period[
-                                                                 key]
-                this_period['%s_percentage_%s' % (label, key)] = percentage(
-                    this_period['%s_change_%s' % (label, key)],
-                    previous_period[key])
-            except KeyError:
-                this_period['%s_figure_%s' % (label, key)] = 0
-                this_period['%s_change_%s' % (label, key)] = 0
-                this_period['%s_percentage_%s' % (label, key)] = 0
+def get_change(period_a, period_b, change_keys, label, match_key=None):
 
-    return this_period
+    result = {}
+    for key in change_keys:
+        result['%s_figure_%s' % (label, key)] = period_b[key]
+        result['%s_change_%s' % (label, key)] = period_a[key] - period_b[key]
+        result['%s_percentage_%s' % (label, key)] = percentage(
+            result['%s_change_%s' % (label, key)],
+            period_b[key]
+        )
+    return result
 
 
 def convert_values_list(id_dict):
@@ -212,3 +203,4 @@ def chart(title, x_labels, data, x_title, y_title):
     # return imgdata.buf
 
     # line_chart.render_to_png("/var/www/dev/faye/statsdash_reports/social.png")
+

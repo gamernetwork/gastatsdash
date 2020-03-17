@@ -2,92 +2,63 @@ from datetime import datetime, date, timedelta
 import unittest
 from unittest.mock import patch
 
-from googleapiclient.discovery import build
-from googleapiclient.http import HttpMock
-
 from scheduler import RunLogger
-from Statsdash.aggregate_data import AnalyticsData, SummaryTable
-from Statsdash.analytics import GoogleAnalytics, YouTubeAnalytics
-from Statsdash import mock_repsonses
-from Statsdash.utils import utils
+from Statsdash.aggregate_data import SummaryData
+from Statsdash import mock_responses
 from Statsdash.stats_range import StatsRange
 
 
+class TestAnalyticsData(unittest.TestCase):
 
-class TestSummaryTable(unittest.TestCase):
+    @patch('Statsdash.GA.config.TABLES')
+    def setUp(self, mock_tables):
 
-    def setUp(self):
-        analytics_discovery = \
-            '/Users/john/src/gastatsdash/analytics-discovery.json'
-        http = HttpMock(analytics_discovery, {'status': '200'})
-        api_key = 'test_api_key'
-        service = build(
-            'analytics',
-            'v3',
-            http=http,
-            developerKey=api_key,
-        ).data().ga()
-        analytics = GoogleAnalytics(service)
+        self.period = StatsRange(
+            'Month to date Aggregate',
+            date(2020, 3, 12),
+            date(2020, 3, 13)
+        )
 
-        period = StatsRange('Month to date Aggregate', date(2020, 3, 12), date(2020, 3, 13))
-        previous = StatsRange.get_previous_period(period, 'MONTHLY')
-        yearly = StatsRange.get_previous_period(period, 'YEARLY')
-        date_range = [period, previous, yearly]
-
-        sites = ['rockpapershotgun.com']
-        site_ids = {'rockpapershotgun.com': 'ga:123456789'}
-        metrics = 'ga:pageviews,ga:users,ga:sessions,ga:pageviewsPerSession,ga:avgSessionDuration'
-
-        self.table = SummaryTable(analytics, sites, metrics, site_ids, date_range)
-        self.analytics_data = AnalyticsData(sites, period, 'MONTHLY')
+        self.site_tables = {
+            'fake.site1.com': [{'id': 'ga:12345678'}],
+            'fake.site2.com': [{'id': 'ga:87654321'}],
+        }
+        self.summary_data = SummaryData(self.site_tables, self.period, 'MONTHLY')
 
     @patch('Statsdash.analytics.GoogleAnalytics._run_report')
-    def test_comparison(self, mock_query_result):
+    def test_get_data_for_period(self, mock_query_result):
         """
-        todo
+        Gets the values for each site and adds them together.
+        Also get the averages for values where appropriate.
         """
-        mock_response = {
+        mock_query_result.return_value = mock_responses.get_data_for_period_mock
+        result = self.summary_data._get_data_for_period(self.period)
+        self.assertEqual(result['pageviews'], 24640)
+        self.assertEqual(result['users'], 1420)
+        self.assertEqual(result['sessions'], 2400)
+        self.assertEqual(result['pv_per_session'], 6)
+        self.assertEqual(result['avg_session_time'], .5)
 
-        }
-        expected_outcome = {
-            'pageviews': 1512840.0,
-            'users': 0.0,
-            'sessions': 0.0,
-            'pv_per_session': 0.0,
-            'avg_session_time': 0.0,
-            'previous_figure_pageviews': 1512840.0,
-            'previous_change_pageviews': 0.0,
-            'previous_percentage_pageviews': 0.0,
-            'previous_figure_users': 0.0,
-            'previous_change_users': 0.0,
-            'previous_percentage_users': 0,
-            'previous_figure_sessions': 0.0,
-            'previous_change_sessions': 0.0,
-            'previous_percentage_sessions': 0,
-            'previous_figure_pv_per_session': 0.0,
-            'previous_change_pv_per_session': 0.0,
-            'previous_percentage_pv_per_session': 0,
-            'previous_figure_avg_session_time': 0.0,
-            'previous_change_avg_session_time': 0.0,
-            'previous_percentage_avg_session_time': 0,
-            'yearly_figure_pageviews': 1512840.0,
-            'yearly_change_pageviews': 0.0,
-            'yearly_percentage_pageviews': 0.0,
-            'yearly_figure_users': 0.0,
-            'yearly_change_users': 0.0,
-            'yearly_percentage_users': 0,
-            'yearly_figure_sessions': 0.0,
-            'yearly_change_sessions': 0.0,
-            'yearly_percentage_sessions': 0,
-            'yearly_figure_pv_per_session': 0.0,
-            'yearly_change_pv_per_session': 0.0,
-            'yearly_percentage_pv_per_session': 0,
-            'yearly_figure_avg_session_time': 0.0,
-            'yearly_change_avg_session_time': 0.0,
-            'yearly_percentage_avg_session_time': 0
-        }
-        mock_query_result.return_value = mock_repsonses.response_ready
-        print(self.table.get_table())
+    @patch('Statsdash.analytics.GoogleAnalytics._run_report')
+    @patch('Statsdash.aggregate_data.logger')
+    def test_get_data_for_period_logger(self, mock_logger, mock_query_result):
+        mock_query_result.return_value = {}
+        self.summary_data._get_data_for_period(self.period)
+        mock_logger.debug.assert_called_with(
+            'No data for site fake.site2.com on 2020-03-12 - 2020-03-13'
+        )
+        self.assertEqual(mock_logger.debug.call_count, 2)
+
+    def test_get_table(self):
+        data_1 = {'pageviews': 24640.0, 'users': 1420.0, 'sessions': 2400.0,
+                  'pv_per_session': 6.0, 'avg_session_time': 0.5}
+        data_2 = {'pageviews': 24400.0, 'users': 1200.0, 'sessions': 600.0,
+                  'pv_per_session': 12.0, 'avg_session_time': 0.8}
+        data_3 = {'pageviews': 15000.0, 'users': 800.0, 'sessions': 1200.0,
+                  'pv_per_session': 8.0, 'avg_session_time': 0.2}
+        all_periods = [data_1, data_2, data_3]
+        result = self.summary_data.get_table(all_periods)
+        print(result)
 
 
 class TestDateUtils(unittest.TestCase):
