@@ -62,6 +62,20 @@ def change_key_names(data, changes):
 
 
 # TODO test
+def prefix_keys(data, prefix):
+    """
+    Adds a prefix to every key in a dict.
+
+    Args:
+        * `data` - `dict`
+        * `prefix` - `string` - string to be prefixed to every key in `data`.
+
+    Returns:
+        * `dict`
+    """
+    return {prefix + k: v for k, v in data.items()}
+
+# TODO test
 def remove_prefix_from_keys(data, prefix):
     """
     Removed the `prefix` from each key in `data`.
@@ -97,10 +111,17 @@ def rate_per_1000(metric, comparative):
         rate = 0
     return rate
 
-
+# TODO test
 def sort_data(unsorted_list, metric, limit=10000, reverse=True):
     """
-    Sorts a list of dictionaries by the "metric" key given
+    Sorts a list of dictionaries by the 'metric' key given.
+
+    Args:
+        * `unsorted_list` - `list` - list of dicts to be sorted.
+        * `metric` - `string` - key by which to sort the dicts.
+        * `[limit]` - `int` - Max number of dict that wil be included in the
+          resulting list
+        * `[reverse]` - `bool` - Whether the sorting should be reversed.
     """
     sorted_list = sorted(unsorted_list, key=lambda k: k[metric],
                          reverse=reverse)

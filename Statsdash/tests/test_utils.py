@@ -32,3 +32,23 @@ class TestUtils(unittest.TestCase):
             'figure_bananas': 8, 'change_bananas': 0, 'percentage_bananas': 0.0
         }
         self.assertEqual(result, expected_result)
+
+    def test_sort_data(self):
+        data_a = {'apples': 10, 'bananas': 8, 'pears': 6}
+        data_b = {'apples': 5, 'bananas': 8, 'pears': 7}
+
+        result = utils.sort_data([data_a, data_b], 'apples')
+        self.assertEqual(result[0], data_a)
+        self.assertEqual(result[1], data_b)
+
+        result = utils.sort_data([data_a, data_b], 'pears')
+        self.assertEqual(result[0], data_b)
+        self.assertEqual(result[1], data_a)
+
+        result = utils.sort_data([data_a, data_b], 'pears', limit=1)
+        self.assertEqual(result[0], data_b)
+        self.assertEqual(len(result), 1)
+
+        result = utils.sort_data([data_a, data_b], 'pears', reverse=False)
+        self.assertEqual(result[0], data_a)
+        self.assertEqual(result[1], data_b)
