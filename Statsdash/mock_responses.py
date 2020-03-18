@@ -118,7 +118,7 @@ response_no_rows = {
     'totalResults': 0,
     'totalsForAllResults': {'ga:pageviews': '0'}
 },
-get_data_for_period_mock = {
+get_data_for_period_mock_1 = {
     'columnHeaders': [
         {
             'columnType': 'DIMENSION',
@@ -153,6 +153,45 @@ get_data_for_period_mock = {
     ],
     'rows': [
         ['2020031200', '7260', '350', '400', '2', '15'],
+        ['2020031201', '5060', '360', '800', '4', '15'],
+    ]
+}
+
+get_data_for_period_mock_2 = {
+    'columnHeaders': [
+        {
+            'columnType': 'DIMENSION',
+            'dataType': 'STRING',
+            'name': 'ga:dateHour'
+        },
+        {
+            'columnType': 'METRIC',
+            'dataType': 'INTEGER',
+            'name': 'ga:pageviews'
+        },
+        {
+            'columnType': 'METRIC',
+            'dataType': 'INTEGER',
+            'name': 'ga:users'
+        },
+        {
+            'columnType': 'METRIC',
+            'dataType': 'INTEGER',
+            'name': 'ga:sessions'
+        },
+        {
+            'columnType': 'METRIC',
+            'dataType': 'INTEGER',
+            'name': 'ga:pageviewsPerSession'
+        },
+        {
+            'columnType': 'METRIC',
+            'dataType': 'INTEGER',
+            'name': 'ga:avgSessionDuration'
+        },
+    ],
+    'rows': [
+        ['2020031200', '3890', '125', '250', '10', '5'],
         ['2020031201', '5060', '360', '800', '4', '15'],
     ]
 }

@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from html.parser import HTMLParser
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 import logging.config
@@ -26,6 +27,7 @@ logging.config.dictConfig(LOGGING)
 logger = logging.getLogger('report')
 
 Metrics = GoogleAnalytics.Metrics
+Dimensions = GoogleAnalytics.Dimensions
 
 
 # TODO use base class for this and YouTube
@@ -601,20 +603,44 @@ Metrics = GoogleAnalytics.Metrics
 #         chart = utils.chart("Social Data", x_labels, graph_data, "Day", "Number")
 #         return chart
 
+#
+# def _get_title(self, path, title):
+#     """
+#     Checks if the article path includes 'amp' making it an AMP article, and
+#     appends this to the name so easier to see in report
+#     """
+#     # NOTE title/docstring confusion
+#     exp = "/amp/"
+#     regex = re.compile(exp)
+#     m = regex.search(path + "/")
+#     if m:
+#         title = title + " (AMP)"
+#         # amp articles come with html characters
+#         h = HTMLParser()
+#         title = h.unescape(title)
+#         return title
+#     else:
+#         return title
+
 
 class AnalyticsData:
 
     metrics = []
+    dimensions = []
+    aggregate_key = None
+    filters = None
     match_key = None
+    sort_by = None
 
     def __init__(self, site_tables, period, frequency):
         self.sites = site_tables.keys()
         self.frequency = frequency
-        self.periods = [
-            period,
-            StatsRange.get_previous_period(period, self.frequency),
-            StatsRange.get_previous_period(period, "YEARLY"),  # remove literal
-        ]
+        # TODO pass name into get_pervious_period
+        previous_period = StatsRange.get_previous_period(period, self.frequency)  # remove literal
+        previous_period.name = 'previous'
+        yearly_period = StatsRange.get_previous_period(period, "YEARLY")
+        yearly_period.name = 'yearly'
+        self.periods = [period, previous_period, yearly_period]
         # TODO rename attribute
         self.site_ids = site_tables
 
@@ -639,26 +665,20 @@ class AnalyticsData:
         Returns:
             * `dict`
         """
-        current, previous, yearly = data
-        change_previous = utils.get_change(
-            current,
-            previous,
-            our_metrics(self.metrics),
-            match_key=self.match_key
-        )
-        change_previous = utils.prefix_keys(change_previous, 'previous_')
-
-        change_yearly = utils.get_change(
-            current,
-            yearly,
-            our_metrics(self.metrics),
-            match_key=self.match_key
-        )
-        change_yearly = utils.prefix_keys(change_yearly, 'yearly_')
-
-        current.update(change_previous)
-        current.update(change_yearly)
-        return current
+        current_period_data = data[0]
+        result = current_period_data
+        for i in range(1, len(data)):
+            comparison_period_data = data[i]
+            period = self.periods[i]
+            change = utils.get_change(
+                current_period_data,
+                comparison_period_data,
+                our_metrics(self.metrics),
+                match_key=self.match_key
+            )
+            change = utils.prefix_keys(change, period.name + '_')
+            result.update(change)
+        return result
 
     def _get_data_for_period(self, period):
         """
@@ -678,7 +698,12 @@ class AnalyticsData:
                 self.site_ids[site],
                 period.get_start(),
                 period.get_end(),
+                # TODO rename method.
                 metrics=','.join(google_metrics(self.metrics)),
+                dimensions=','.join(google_metrics(self.dimensions)),
+                filters=self.filters,
+                sort=self.sort_by,
+                aggregate_key=self.aggregate_key,
             )
             if data:
                 self._format_data(data, site)
@@ -699,10 +724,42 @@ class AnalyticsData:
         )
 
     def _format_data(self, data, site):
-        replacements = [(m[0], m[1]) for m in self.metrics]
+        replacements = [(c[0], c[1]) for c in self.metrics + self.dimensions]
         data = utils.change_key_names(data, replacements)
         return data
 
+    def _remove_query_string(self, path):
+        """
+        Removes any queries attached to the end of a page path, so aggregation
+        can be accurate.
+        """
+        # TODO finish docstring
+        # NOTE not sure why linter is compaining. Maybe `r`?
+        exp = "^([^\?]+)\?.*"
+        regex = re.compile(exp)
+        m = regex.search(path)
+        if m:
+            new_path = regex.split(path)[1]
+            return new_path
+        else:
+            return path
+
+    def _get_title(self, path, title):
+        """
+        Checks if the article path includes 'amp' making it an AMP article, and
+        appends this to the name so easier to see in report.
+        """
+        # TODO finish docstring
+        # NOTE title/docstring confusion
+        exp = "/amp/"
+        regex = re.compile(exp)
+        m = regex.search(path + "/")
+        if m:
+            title = title + " (AMP)"
+            # amp articles come with html characters
+            h = HTMLParser()
+            title = h.unescape(title)
+        return title
 
 
 class SummaryData(AnalyticsData):
@@ -739,7 +796,6 @@ class SummaryData(AnalyticsData):
         return data
 
 
-
 class SiteSummaryData(AnalyticsData):
 
     metrics = [
@@ -749,90 +805,88 @@ class SiteSummaryData(AnalyticsData):
         Metrics.pv_per_sessions,
         Metrics.avg_session_time,
     ]
+
     match_key = 'site'
 
     def _format_data(self, data, site):
         data = super()._format_data(data, site)
+        # Maybe we could add this by default?
         data['site'] = site
         return data
 
+    # TODO replace with simple sort_by attribute.
     def _get_data_for_period(self, period):
         # sort sites by users
         data = super()._get_data_for_period(period)
-        return utils.sort_data(data, Metrics.users[0])
+        return utils.sort_data(data, Metrics.users[1])
 
-#     for count, date in enumerate(self.date_list):
-#         totals = []
-#         for site in self.sites:
-#             rows = [analytics.get_data(self.site_ids[site], date.get_start(), date.get_end(), metrics=metrics)]
-#             if rows[0]:
-#                 for row in rows:
-#                     row = utils.convert_to_floats(row, metrics.split(","))
-#                     row["ga:site"] = site  # huh?
-#
+
+class ArticleData(AnalyticsData):
+
+    metrics = [
+        Metrics.pageviews,
+    ]
+    dimensions = [
+        Dimensions.title,
+        Dimensions.path,
+        Dimensions.host,
+    ]
+    filters = 'ga:pagePathLevel1!=/;ga:pagePath!~/page/*;ga:pagePath!~^/\?.*'
+    sort_by = '-' + Metrics.pageviews[0]
+    match_key = 'site_path'
+
+    def _format_data(self, data, site):
+        data = super()._format_data(data, site)
+
+        # TODO clean logic
+        path = data['path']
+        title = data['title']
+        new_path = self._remove_query_string(path)
+        new_title = self._get_title(path, title)
+        data['path'] = new_path
+        data['site_path'] = site + new_path
+        data['title'] = new_title
+        data['pageviews'] = float(data['pageviews'])
+        return data
+#     def article_table(self):
+#         """
+#         Return top articles as a list of dictionaries
+#         Each dictionary has the pageviews, page title, page path and host name
+#         """
+#         article_previous = StatsRange.get_previous_period(self.period, "DAILY")  # how to do this
+#         data = {}
+#         for count, date in enumerate([self.period, article_previous]):
+#             articles = []
+#             for site in self.sites:
+#                 rows = analytics.rollup_ids(
+#                     self.site_ids[site],
+#                     date.get_start(),
+#                     date.get_end(),
+#                     metrics="ga:pageviews",
+#                     dimensions="ga:pageTitle,ga:pagePath,ga:hostname",
+#                     filters=config.ARTICLE_FILTER,
+#                     sort="-ga:pageviews",
+#                     aggregate_key="ga:pagePath"
+#                 )
 #                 rows = self._remove_ga_names(rows)
 #                 rows = utils.change_key_names(
 #                     rows,
-#                     {"pv_per_session": "pageviewsPerSession", "avg_session_time": "avgSessionDuration"}
+#                     {"title": "pageTitle", "path": "pagePath", "host": "hostname"}
 #                 )
-#                 totals.extend(rows)
-#             else:
-#                 logger.debug(f'No data for site {site} on {date.get_start()} - {date.get_end()}')
+#                 for row in rows:
+#                     path = row["path"]
+#                     title = row["title"]
+#                     new_path = self._remove_query_string(path)
+#                     new_title = self._get_title(path, title)
+#                     row["path"] = new_path
+#                     row["site_path"] = site + new_path
+#                     row["title"] = new_title
+#                     row["pageviews"] = float(row["pageviews"])
+#                 articles.extend(rows)
+#             aggregated = utils.aggregate_data(articles, ["pageviews"], match_key="site_path")
+#             sorted = utils.sort_data(aggregated, "pageviews", limit=20)
+#             data[count] = sorted
 #
-#         aggregated = utils.aggregate_data(
-#             totals,
-#             ["pageviews", "users", "sessions", "pv_per_session", "avg_session_time"],
-#             match_key="site"
-#         )
-#         # TODO fix
-#         sorted = utils.sort_data(aggregated, "users")
-#         data[count] = sorted
+#         added_change = utils.add_change(data[0], data[1], ["pageviews"], "previous", match_key="site_path")
 #
-#     added_change = utils.add_change(
-#         data[0],
-#         data[1],
-#         ["pageviews", "users", "sessions", "pv_per_session", "avg_session_time"],
-#         "previous",
-#         match_key="site"
-#     )
-#     added_change = utils.add_change(
-#         added_change,
-#         data[2],
-#         ["pageviews", "users", "sessions", "pv_per_session", "avg_session_time"],
-#         "yearly",
-#         match_key="site"
-#     )
-#     return added_change
-#
-# def _remove_query_string(self, path):
-#     """
-#     Removes any queries attached to the end of a page path, so aggregation
-#     can be accurate
-#     """
-#     # NOTE not sure why linter is compaining. Maybe `r`?
-#     exp = "^([^\?]+)\?.*"
-#     regex = re.compile(exp)
-#     m = regex.search(path)
-#     if m:
-#         new_path = regex.split(path)[1]
-#         return new_path
-#     else:
-#         return path
-#
-# def _get_title(self, path, title):
-#     """
-#     Checks if the article path includes 'amp' making it an AMP article, and
-#     appends this to the name so easier to see in report
-#     """
-#     # NOTE title/docstring confusion
-#     exp = "/amp/"
-#     regex = re.compile(exp)
-#     m = regex.search(path + "/")
-#     if m:
-#         title = title + " (AMP)"
-#         # amp articles come with html characters
-#         h = HTMLParser()
-#         title = h.unescape(title)
-#         return title
-#     else:
-#         return title
+#         return added_change

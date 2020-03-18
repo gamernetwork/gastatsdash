@@ -131,7 +131,15 @@ class GoogleAnalytics(Analytics):
         avg_session_time = ('ga:avgSessionDuration', 'avg_session_time')
 
     class Dimensions:
-        date_hour = 'ga:dateHour'
+        """
+        Constants for dimension identifiers. First value is dimension
+        identifier as Google expects it. Second value is our identifier for the
+        dimension.
+        """
+        date_hour = ('ga:dateHour', 'date_hour')
+        title = ('ga:pageTitle', 'title')
+        path = ('ga:pagePath', 'path')
+        host = ('ga:hostname', 'host')
 
     def data_available(self, _id, stats_date):
         """
