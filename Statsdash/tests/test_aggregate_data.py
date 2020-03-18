@@ -1,3 +1,4 @@
+from pprint import pprint
 from datetime import date
 import unittest
 from unittest.mock import patch
@@ -310,3 +311,18 @@ class TestArticleData(unittest.TestCase):
         # self.assertEqual(result[1]['sessions'], 1050)
         # self.assertEqual(result[1]['pv_per_session'], 14)
         # self.assertEqual(result[1]['avg_session_time'], 20)
+
+    def test_sample(self):
+
+        self.period = StatsRange(
+            'Month to date Aggregate',
+            date(2020, 3, 18),
+            date(2020, 3, 18)
+        )
+        self.site_tables = {
+            'rockpapershotgun.com': [{'id': 'ga:130215556'}],
+        }
+        self.site_summary_data = ArticleData(self.site_tables, self.period, 'DAILY')
+        result = self.site_summary_data._get_data_for_period(self.period)
+        pprint(result)
+

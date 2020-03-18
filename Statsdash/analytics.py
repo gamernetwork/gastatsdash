@@ -1,3 +1,4 @@
+from pprint import pprint
 from googleapiclient import errors
 import logging.config
 import logging.handlers
@@ -38,7 +39,8 @@ class Analytics:
                 # TODO we shouldn't use split all the time like this.
                 utils.convert_to_floats(row, metrics.split(","))
             output.extend(formatted_data)
-        return utils.aggregate_data(output, metrics.split(","), aggregate_key)
+
+        return utils.aggregate_data(output, metrics.split(','), aggregate_key)
 
     def _fetch_multiple(self, ids, start, end, metrics, **kwargs):
         """
@@ -187,7 +189,7 @@ class GoogleAnalytics(Analytics):
         kwargs['include_empty_rows'] = True  # always True
         # TODO fix hack
         if type(view_id) == dict:
-            view_id = view_id.values()
+            view_id = list(view_id.values())[0]
         query = self.data_resource.get(
             ids=view_id,
             start_date=start,

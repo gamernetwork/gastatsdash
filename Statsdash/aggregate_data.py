@@ -706,7 +706,7 @@ class AnalyticsData:
                 aggregate_key=self.aggregate_key,
             )
             if data:
-                self._format_data(data, site)
+                data = self._format_all_data(data, site)
                 all_sites_data.append(data)
             else:
                 logger.debug(
@@ -717,11 +717,19 @@ class AnalyticsData:
         return aggregated_data
 
     def _aggregate_data(self, data):
+        print(data)
         return utils.aggregate_data(
             data,
             our_metrics(self.metrics),
             match_key=self.match_key
         )
+
+    def _format_all_data(self, data, site):
+        output = []
+        for item in data:
+            item = self._format_data(item, site)
+            output.append(item)
+        return output
 
     def _format_data(self, data, site):
         replacements = [(c[0], c[1]) for c in self.metrics + self.dimensions]
@@ -834,6 +842,7 @@ class ArticleData(AnalyticsData):
     filters = 'ga:pagePathLevel1!=/;ga:pagePath!~/page/*;ga:pagePath!~^/\?.*'
     sort_by = '-' + Metrics.pageviews[0]
     match_key = 'site_path'
+    aggregate_key = Dimensions.path[0]
 
     def _format_data(self, data, site):
         data = super()._format_data(data, site)
