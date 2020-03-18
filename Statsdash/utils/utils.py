@@ -159,15 +159,29 @@ def aggregate_data_by_match_key(table, aggregate_keys, match_key):
     return new_table
 
 
-def get_change(period_a, period_b, change_keys, label, match_key=None):
+# TODO add matchkey functionality
+def get_change(data_a, data_b, change_keys, match_key=None):
+    """
+    Given two sets of data, gets the change and percentage change between the
+    two data sets for each of the given `change_keys`. Also includes the
+    actual/figure value of `data_b`.
 
+    Args:
+        * `data_a` - `dict` - The first data set being compared.
+        * `data_b` - `dict` - The second data set being compared.
+        * `change_keys` - `list` - A list of strings. The two data sets are
+          compared by these metrics.
+
+    Returns:
+        * `dict`
+    """
     result = {}
     for key in change_keys:
-        result['%s_figure_%s' % (label, key)] = period_b[key]
-        result['%s_change_%s' % (label, key)] = period_a[key] - period_b[key]
-        result['%s_percentage_%s' % (label, key)] = percentage(
-            result['%s_change_%s' % (label, key)],
-            period_b[key]
+        result['figure_%s' % (key)] = data_b[key]
+        result['change_%s' % (key)] = data_a[key] - data_b[key]
+        result['percentage_%s' % (key)] = percentage(
+            result['change_%s' % (key)],
+            data_b[key]
         )
     return result
 

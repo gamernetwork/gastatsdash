@@ -621,8 +621,6 @@ class SummaryData(AnalyticsData):
             StatsRange.get_previous_period(period, "YEARLY"),  # remove literal
         ]
 
-        self.date_list = [self.period, self.previous, self.yearly]
-
         # TODO rename attribute
         self.site_ids = site_tables
 
@@ -646,21 +644,22 @@ class SummaryData(AnalyticsData):
         Returns:
             * `dict`
         """
+        current, previous, yearly = data
         change_previous = utils.get_change(
-            data[0],
-            data[1],
+            current,
+            previous,
             our_metrics(self.metrics),
             'previous'
         )
         change_yearly = utils.get_change(
-            data[0],
-            data[2],
+            current,
+            yearly,
             our_metrics(self.metrics),
             'yearly'
         )
-        data[0].update(change_previous)
-        data[0].update(change_yearly)
-        return data[0]
+        current.update(change_previous)
+        current.update(change_yearly)
+        return current
 
     def _get_data_for_period(self, period):
         """

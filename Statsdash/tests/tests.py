@@ -1,64 +1,7 @@
 from datetime import datetime, date, timedelta
 import unittest
-from unittest.mock import patch
 
 from scheduler import RunLogger
-from Statsdash.aggregate_data import SummaryData
-from Statsdash import mock_responses
-from Statsdash.stats_range import StatsRange
-
-
-class TestAnalyticsData(unittest.TestCase):
-
-    @patch('Statsdash.GA.config.TABLES')
-    def setUp(self, mock_tables):
-
-        self.period = StatsRange(
-            'Month to date Aggregate',
-            date(2020, 3, 12),
-            date(2020, 3, 13)
-        )
-
-        self.site_tables = {
-            'fake.site1.com': [{'id': 'ga:12345678'}],
-            'fake.site2.com': [{'id': 'ga:87654321'}],
-        }
-        self.summary_data = SummaryData(self.site_tables, self.period, 'MONTHLY')
-
-    @patch('Statsdash.analytics.GoogleAnalytics._run_report')
-    def test_get_data_for_period(self, mock_query_result):
-        """
-        Gets the values for each site and adds them together.
-        Also get the averages for values where appropriate.
-        """
-        mock_query_result.return_value = mock_responses.get_data_for_period_mock
-        result = self.summary_data._get_data_for_period(self.period)
-        self.assertEqual(result['pageviews'], 24640)
-        self.assertEqual(result['users'], 1420)
-        self.assertEqual(result['sessions'], 2400)
-        self.assertEqual(result['pv_per_session'], 6)
-        self.assertEqual(result['avg_session_time'], .5)
-
-    @patch('Statsdash.analytics.GoogleAnalytics._run_report')
-    @patch('Statsdash.aggregate_data.logger')
-    def test_get_data_for_period_logger(self, mock_logger, mock_query_result):
-        mock_query_result.return_value = {}
-        self.summary_data._get_data_for_period(self.period)
-        mock_logger.debug.assert_called_with(
-            'No data for site fake.site2.com on 2020-03-12 - 2020-03-13'
-        )
-        self.assertEqual(mock_logger.debug.call_count, 2)
-
-    def test_get_table(self):
-        data_1 = {'pageviews': 24640.0, 'users': 1420.0, 'sessions': 2400.0,
-                  'pv_per_session': 6.0, 'avg_session_time': 0.5}
-        data_2 = {'pageviews': 24400.0, 'users': 1200.0, 'sessions': 600.0,
-                  'pv_per_session': 12.0, 'avg_session_time': 0.8}
-        data_3 = {'pageviews': 15000.0, 'users': 800.0, 'sessions': 1200.0,
-                  'pv_per_session': 8.0, 'avg_session_time': 0.2}
-        all_periods = [data_1, data_2, data_3]
-        result = self.summary_data.get_table(all_periods)
-        print(result)
 
 
 class TestDateUtils(unittest.TestCase):
