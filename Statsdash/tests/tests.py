@@ -197,7 +197,3 @@ class TestNextRun(unittest.TestCase):
 #             runlog.get_last_run.return_value = datetime(2016, 3, 1)
 #             runlog.get_next_run.return_value = datetime(2016, 4, 1)
 #             runlog.record_run.return_value = None
-
-
-if __name__ == '__main__':
-    unittest.main()

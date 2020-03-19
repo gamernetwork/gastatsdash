@@ -195,3 +195,107 @@ get_data_for_period_mock_2 = {
         ['2020031201', '5060', '360', '800', '4', '15'],
     ]
 }
+
+article_query_response_1 = {
+    'columnHeaders': [
+        {
+            'columnType': 'DIMENSION',
+            'dataType': 'STRING',
+            'name': 'ga:pageTitle'
+        },
+        {
+            'columnType': 'DIMENSION',
+            'dataType': 'STRING',
+            'name': 'ga:pagePath'},
+        {
+            'columnType': 'DIMENSION',
+            'dataType': 'STRING',
+            'name': 'ga:hostname'},
+        {
+            'columnType': 'METRIC',
+            'dataType': 'INTEGER',
+            'name': 'ga:pageviews'}
+    ],
+    'containsSampledData': False,
+    'id': 'fakeid',
+    'itemsPerPage': 1000,
+    'kind': 'analytics#gaData',
+    'nextLink': 'fakelink',
+    'query': {
+        'dimensions': 'ga:pageTitle,ga:pagePath,ga:hostname',
+        'end-date': '2020-03-18',
+        'filters': 'ga:pagePathLevel1!=/;ga:pagePath!~/page/*;ga:pagePath!~^/\\?.*',
+        'ids': 'fakeif',
+        'max-results': 1000,
+        'metrics': ['ga:pageviews'],
+        'sort': ['-ga:pageviews'],
+        'start-date': '2020-03-18',
+        'start-index': 1
+    },
+    'rows': [
+        [
+            'Article 1',
+            '/link/to/article-1/',
+            'www.fake.site1.com',
+            '15200'
+        ],
+        [
+            'Article 2',
+            '/link/to/article-2/',
+            'www.fake.site1.com',
+            '16800'
+        ],
+    ]
+}
+
+article_query_response_2 = {
+    'columnHeaders': [
+        {
+            'columnType': 'DIMENSION',
+            'dataType': 'STRING',
+            'name': 'ga:pageTitle'
+        },
+        {
+            'columnType': 'DIMENSION',
+            'dataType': 'STRING',
+            'name': 'ga:pagePath'},
+        {
+            'columnType': 'DIMENSION',
+            'dataType': 'STRING',
+            'name': 'ga:hostname'},
+        {
+            'columnType': 'METRIC',
+            'dataType': 'INTEGER',
+            'name': 'ga:pageviews'}
+    ],
+    'containsSampledData': False,
+    'id': 'fakeid',
+    'itemsPerPage': 1000,
+    'kind': 'analytics#gaData',
+    'nextLink': 'fakelink',
+    'query': {
+        'dimensions': 'ga:pageTitle,ga:pagePath,ga:hostname',
+        'end-date': '2020-03-18',
+        'filters': 'ga:pagePathLevel1!=/;ga:pagePath!~/page/*;ga:pagePath!~^/\\?.*',
+        'ids': 'fakeif',
+        'max-results': 1000,
+        'metrics': ['ga:pageviews'],
+        'sort': ['-ga:pageviews'],
+        'start-date': '2020-03-18',
+        'start-index': 1
+    },
+    'rows': [
+        [
+            'Article 3',
+            '/link/to/article-3/',
+            'www.fake.site2.com',
+            '16800'
+        ],
+        [
+            'Article 4',
+            '/link/to/article-4/',
+            'www.fake.site2.com',
+            '45300'
+        ],
+    ]
+}

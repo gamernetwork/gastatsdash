@@ -1,3 +1,4 @@
+from pprint import pprint
 from datetime import datetime, timedelta
 from html.parser import HTMLParser
 from google.oauth2 import service_account
@@ -682,15 +683,15 @@ class AnalyticsData:
 
     def _get_data_for_period(self, period):
         """
-        Gets the analytics data for the given period and prepares it for the
-        table: renames the keys for each metric, aggregates the data for each
-        site, and gets the average for values where appropriate.
+        Gets the analytics data for each site in `self.site_ids` for the given
+        period and prepares it for the table: renames the keys for each metric,
+        aggregates the data for each site, and gets the average for values where appropriate.
 
         Args:
             * `period` - `StatsRange`
 
         Returns:
-            * `dict`
+            * `list` - data for each site.
         """
         all_sites_data = []
         for site in self.sites:
@@ -705,9 +706,10 @@ class AnalyticsData:
                 sort=self.sort_by,
                 aggregate_key=self.aggregate_key,
             )
+            # data is a list with a dict for each id in site config
             if data:
                 data = self._format_all_data(data, site)
-                all_sites_data.append(data)
+                all_sites_data = all_sites_data + data
             else:
                 logger.debug(
                     f'No data for site {site} on {period.get_start()} - '
@@ -717,12 +719,12 @@ class AnalyticsData:
         return aggregated_data
 
     def _aggregate_data(self, data):
-        print(data)
         return utils.aggregate_data(
             data,
             our_metrics(self.metrics),
             match_key=self.match_key
         )
+
 
     def _format_all_data(self, data, site):
         output = []
@@ -771,7 +773,9 @@ class AnalyticsData:
 
 
 class SummaryData(AnalyticsData):
-
+    """
+    Gets the aggregated analytics data for all sites.
+    """
     metrics = [
         Metrics.pageviews,
         Metrics.users,
@@ -780,9 +784,10 @@ class SummaryData(AnalyticsData):
         Metrics.avg_session_time,
     ]
 
-    def _get_data_for_period(self, period):
-        data = super()._get_data_for_period(period)
+    def _format_data(self, data, site):
+        data = super()._format_data(data, site)
         return self._apply_averages(data)
+
 
     # TODO look closely at this method.
     def _apply_averages(self, data):
@@ -855,47 +860,4 @@ class ArticleData(AnalyticsData):
         data['path'] = new_path
         data['site_path'] = site + new_path
         data['title'] = new_title
-        data['pageviews'] = float(data['pageviews'])
         return data
-#     def article_table(self):
-#         """
-#         Return top articles as a list of dictionaries
-#         Each dictionary has the pageviews, page title, page path and host name
-#         """
-#         article_previous = StatsRange.get_previous_period(self.period, "DAILY")  # how to do this
-#         data = {}
-#         for count, date in enumerate([self.period, article_previous]):
-#             articles = []
-#             for site in self.sites:
-#                 rows = analytics.rollup_ids(
-#                     self.site_ids[site],
-#                     date.get_start(),
-#                     date.get_end(),
-#                     metrics="ga:pageviews",
-#                     dimensions="ga:pageTitle,ga:pagePath,ga:hostname",
-#                     filters=config.ARTICLE_FILTER,
-#                     sort="-ga:pageviews",
-#                     aggregate_key="ga:pagePath"
-#                 )
-#                 rows = self._remove_ga_names(rows)
-#                 rows = utils.change_key_names(
-#                     rows,
-#                     {"title": "pageTitle", "path": "pagePath", "host": "hostname"}
-#                 )
-#                 for row in rows:
-#                     path = row["path"]
-#                     title = row["title"]
-#                     new_path = self._remove_query_string(path)
-#                     new_title = self._get_title(path, title)
-#                     row["path"] = new_path
-#                     row["site_path"] = site + new_path
-#                     row["title"] = new_title
-#                     row["pageviews"] = float(row["pageviews"])
-#                 articles.extend(rows)
-#             aggregated = utils.aggregate_data(articles, ["pageviews"], match_key="site_path")
-#             sorted = utils.sort_data(aggregated, "pageviews", limit=20)
-#             data[count] = sorted
-#
-#         added_change = utils.add_change(data[0], data[1], ["pageviews"], "previous", match_key="site_path")
-#
-#         return added_change

@@ -152,8 +152,9 @@ def aggregate_data(data, aggregate_keys, match_key=None):
         * `aggregate_keys` - `list` - Metrics to be aggregated.
 
     Returns:
-        * `dict`
+        * `list`
     """
+    # TODO finish docstrings.
     if match_key:
         return aggregate_data_by_match_key(data, aggregate_keys, match_key)
     new_table = {}
@@ -163,15 +164,18 @@ def aggregate_data(data, aggregate_keys, match_key=None):
                 new_table[key] += row[key]
             else:
                 new_table[key] = row[key]
-    return new_table
+    if new_table:
+        return [new_table]
+    return None
 
 
-def aggregate_data_by_match_key(table, aggregate_keys, match_key):
+# TODO this method returns a list and the other method returns a dict. Should be consistent
+def aggregate_data_by_match_key(data, aggregate_keys, match_key):
     """
     Aggregates data given by a match key.
     """
     new_table = []
-    for row in table:
+    for row in data:
         try:
             result = list_search(new_table, match_key, row[match_key])
             for key in aggregate_keys:

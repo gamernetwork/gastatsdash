@@ -39,7 +39,6 @@ class Analytics:
                 # TODO we shouldn't use split all the time like this.
                 utils.convert_to_floats(row, metrics.split(","))
             output.extend(formatted_data)
-
         return utils.aggregate_data(output, metrics.split(','), aggregate_key)
 
     def _fetch_multiple(self, ids, start, end, metrics, **kwargs):
