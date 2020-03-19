@@ -261,7 +261,6 @@ class TestArticleData(unittest.TestCase):
                 'site_path': 'fake.site1.com/link/to/article-2/',
                 'title': 'Article 2'
             },
-
             {
                 'host': 'www.fake.site2.com',
                 'pageviews': 16800.0,
@@ -281,15 +280,31 @@ class TestArticleData(unittest.TestCase):
         result = self.article_data._get_data_for_period(self.period)
         self.assertEqual(result, expected_data)
 
-    # @patch('Statsdash.analytics.GoogleAnalytics._run_report')
-    # def test_article_get_table(self, mock_query_result):
-    #
-    #     self.period = StatsRange(
-    #         'Month to date Aggregate',
-    #         date(2020, 3, 18),
-    #         date(2020, 3, 18)
-    #     )
-    #     mock_query_result.return_value = mock_responses.article_query_response_1
-    #     self.article_data = ArticleData(self.site_tables, self.period, 'DAILY')
-    #     result = self.article_data.get_table()
-    #     pprint(result)
+    @patch('Statsdash.analytics.GoogleAnalytics._run_report')
+    def test_article_get_table(self, mock_query_result):
+
+        self.period = StatsRange(
+            'Month to date Aggregate',
+            date(2020, 3, 18),
+            date(2020, 3, 18)
+        )
+        mock_query_result.return_value = mock_responses.article_query_response_1
+        self.article_data = ArticleData(self.site_tables, self.period, 'DAILY')
+        result = self.article_data.get_table()
+        self.assertEqual(len(result), 4)
+        expected_keys = [
+            'pageviews',
+            'title',
+            'path',
+            'host',
+            'site_path',
+            'previous_figure_pageviews',
+            'previous_change_pageviews',
+            'previous_percentage_pageviews',
+            'yearly_figure_pageviews',
+            'yearly_change_pageviews',
+            'yearly_percentage_pageviews',
+        ]
+        for article_data in result:
+            self.assertTrue(all([k in article_data.keys() for k in expected_keys]))
+

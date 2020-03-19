@@ -117,7 +117,8 @@ response_no_rows = {
     'selfLink': 'fakelink',
     'totalResults': 0,
     'totalsForAllResults': {'ga:pageviews': '0'}
-},
+}
+
 get_data_for_period_mock_1 = {
     'columnHeaders': [
         {

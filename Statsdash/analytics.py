@@ -56,7 +56,7 @@ class Analytics:
         for _id in ids:
             # TODO replace with _id with ids
             results = self._run_report(_id, start, end, metrics, **kwargs)
-            if results:
+            if results and results.get('rows'):
                 all_reports.append(results)
             else:
                 self._log_no_data(_id, start, end, metrics, **kwargs)

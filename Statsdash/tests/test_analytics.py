@@ -137,17 +137,18 @@ class TestGoogleAnalytics(unittest.TestCase):
     @patch('Statsdash.analytics.GoogleAnalytics._run_report')
     def test_get_data_one_metric(self, mock_query_result):
         """
-        Returns a single dict with the aggregated pageviews.
+        Returns a single dict inside a list with the aggregated pageviews.
         """
         mock_query_result.return_value = mock_responses.response_ready
         aggregated_data = self.analytics.get_data(
             [self._id], self.stats_date, self.stats_date, 'ga:pageviews')
-        self.assertEqual(aggregated_data, {'ga:pageviews': 126070.0})
+        self.assertEqual(aggregated_data, [{'ga:pageviews': 126070.0}])
 
     @patch('Statsdash.analytics.GoogleAnalytics._run_report')
     def test_get_data_two_metrics(self, mock_query_result):
         """
-        Returns a single dict with the aggregated pageviews and dateHour.
+        Returns a single dict inside a list with the aggregated pageviews and
+        dateHour.
         """
         mock_query_result.return_value = mock_responses.response_ready
         metrics = 'ga:pageviews,ga:dateHour'
@@ -155,8 +156,7 @@ class TestGoogleAnalytics(unittest.TestCase):
             [self._id], self.stats_date, self.stats_date, metrics)
         self.assertEqual(
             aggregated_data,
-            # NOTE kinda weird to use dateHour like this but doesn't matter.
-            {'ga:dateHour': 48480749076.0, 'ga:pageviews': 126070.0}
+            [{'ga:dateHour': 48480749076.0, 'ga:pageviews': 126070.0}]
         )
 
     # TODO test match key.
@@ -164,12 +164,12 @@ class TestGoogleAnalytics(unittest.TestCase):
     @patch('Statsdash.analytics.GoogleAnalytics._run_report')
     def test_get_data_no_data(self, mock_query_result):
         """
-        Returns an empty dict if no rows in response.
+        Returns `None` if no rows in response.
         """
         mock_query_result.return_value = mock_responses.response_no_rows
         aggregated_data = self.analytics.get_data(
             [self._id], self.stats_date, self.stats_date, 'ga:pageviews')
-        self.assertEqual(aggregated_data, {})
+        self.assertEqual(aggregated_data, None)
 
 
 class TestYouTubeAnalytics(unittest.TestCase):
