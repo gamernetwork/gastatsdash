@@ -91,256 +91,8 @@ Dimensions = GoogleAnalytics.Dimensions
 #                 row[new_key] = row.pop(key)
 #         return rows
 #
-#     def summary_table(self):
-#         data = {}
-#         # Iterates over every date range item given (period, previous, yearly)
-#         for count, date in enumerate(self.date_list):
-#             totals = []
-#             metrics = "ga:pageviews,ga:users,ga:sessions,ga:pageviewsPerSession,ga:avgSessionDuration"
-#             for site in self.sites:
-#                 rows = [
-#                     analytics.get_data(self.site_ids[site], date.get_start(),
-#                                          date.get_end(), metrics=metrics)]
-#
-#                 if rows[0]:
-#                     rows = self._remove_ga_names(rows)
-#                     rows = utils.change_key_names(rows, {
-#                         "pv_per_session": "pageviewsPerSession",
-#                         "avg_session_time": "avgSessionDuration"})
-#
-#                     totals.extend(rows)
-#                 else:
-#                     logger.debug(
-#                         "No data for site " + site + " on " + date.get_start() + " - " + date.get_end())
-#
-#             aggregate = utils.aggregate_data(totals,
-#                                              ["pageviews", "users", "sessions",
-#                                               "pv_per_session",
-#                                               "avg_session_time"])
-#
-#             # creates a key using index.
-#             data[count] = aggregate
-#
-#         for period in data:
-#             data[period]["pv_per_session"] = data[period].get("pv_per_session",
-#                                                               0) / len(
-#                 self.sites)
-#             data[period]["avg_session_time"] = (data[period].get(
-#                 "avg_session_time", 0) / len(self.sites)) / 60.0
-#
-#         this_period = utils.add_change(data[0], data[1],
-#                                        ["pageviews", "users", "sessions",
-#                                         "pv_per_session", "avg_session_time"],
-#                                        "previous")
-#         this_period = utils.add_change(this_period, data[2],
-#                                        ["pageviews", "users", "sessions",
-#                                         "pv_per_session", "avg_session_time"],
-#                                        "yearly")
-#
-#         return this_period
-#
-#         # TODO de-dupe
-#     def site_summary_table(self):
-#         # NOTE should this be combined with overall summary table?
-#
-#         data = {}
-#
-#         for count, date in enumerate(self.date_list):
-#             totals = []
-#             metrics = "ga:pageviews,ga:users,ga:sessions,ga:pageviewsPerSession,ga:avgSessionDuration"
-#             for site in self.sites:
-#                 rows = [analytics.get_data(self.site_ids[site], date.get_start(), date.get_end(), metrics=metrics)]
-#                 if rows[0]:
-#                     for row in rows:
-#                         row = utils.convert_to_floats(row, metrics.split(","))
-#                         row["ga:site"] = site
-#
-#                     rows = self._remove_ga_names(rows)
-#                     rows = utils.change_key_names(
-#                         rows,
-#                         {"pv_per_session": "pageviewsPerSession", "avg_session_time": "avgSessionDuration"}
-#                     )
-#                     totals.extend(rows)
-#                 else:
-#                     logger.debug(f'No data for site {site} on {date.get_start()} - {date.get_end()}')
-#
-#             aggregated = utils.aggregate_data(
-#                 totals,
-#                 ["pageviews", "users", "sessions", "pv_per_session", "avg_session_time"],
-#                 match_key="site"
-#             )
-#             # TODO fix
-#             sorted = utils.sort_data(aggregated, "users")
-#             data[count] = sorted
-#
-#         added_change = utils.add_change(
-#             data[0],
-#             data[1],
-#             ["pageviews", "users", "sessions", "pv_per_session", "avg_session_time"],
-#             "previous",
-#             match_key="site"
-#         )
-#         added_change = utils.add_change(
-#             added_change,
-#             data[2],
-#             ["pageviews", "users", "sessions", "pv_per_session", "avg_session_time"],
-#             "yearly",
-#             match_key="site"
-#         )
-#         return added_change
-#
-#     def _remove_query_string(self, path):
-#         """
-#         Removes any queries attached to the end of a page path, so aggregation
-#         can be accurate
-#         """
-#         # NOTE not sure why linter is compaining. Maybe `r`?
-#         exp = "^([^\?]+)\?.*"
-#         regex = re.compile(exp)
-#         m = regex.search(path)
-#         if m:
-#             new_path = regex.split(path)[1]
-#             return new_path
-#         else:
-#             return path
-#
-#     def _get_title(self, path, title):
-#         """
-#         Checks if the article path includes 'amp' making it an AMP article, and
-#         appends this to the name so easier to see in report
-#         """
-#         # NOTE title/docstring confusion
-#         exp = "/amp/"
-#         regex = re.compile(exp)
-#         m = regex.search(path + "/")
-#         if m:
-#             title = title + " (AMP)"
-#             # amp articles come with html characters
-#             h = HTMLParser()
-#             title = h.unescape(title)
-#             return title
-#         else:
-#             return title
-#
-#     # TODO de-dupe
-#     def article_table(self):
-#         """
-#         Return top articles as a list of dictionaries
-#         Each dictionary has the pageviews, page title, page path and host name
-#         """
-#         article_previous = StatsRange.get_previous_period(self.period, "DAILY")  # how to do this
-#         data = {}
-#         for count, date in enumerate([self.period, article_previous]):
-#             articles = []
-#             for site in self.sites:
-#                 rows = analytics.rollup_ids(
-#                     self.site_ids[site],
-#                     date.get_start(),
-#                     date.get_end(),
-#                     metrics="ga:pageviews",
-#                     dimensions="ga:pageTitle,ga:pagePath,ga:hostname",
-#                     filters=config.ARTICLE_FILTER,
-#                     sort="-ga:pageviews",
-#                     aggregate_key="ga:pagePath"
-#                 )
-#                 rows = self._remove_ga_names(rows)
-#                 rows = utils.change_key_names(
-#                     rows,
-#                     {"title": "pageTitle", "path": "pagePath", "host": "hostname"}
-#                 )
-#                 for row in rows:
-#                     path = row["path"]
-#                     title = row["title"]
-#                     new_path = self._remove_query_string(path)
-#                     new_title = self._get_title(path, title)
-#                     row["path"] = new_path
-#                     row["site_path"] = site + new_path
-#                     row["title"] = new_title
-#                     row["pageviews"] = float(row["pageviews"])
-#                 articles.extend(rows)
-#             aggregated = utils.aggregate_data(articles, ["pageviews"], match_key="site_path")
-#             sorted = utils.sort_data(aggregated, "pageviews", limit=20)
-#             data[count] = sorted
-#
-#         added_change = utils.add_change(data[0], data[1], ["pageviews"], "previous", match_key="site_path")
-#
-#         return added_change
-#
-#     def country_table(self):
-#         countries = [
-#             "Czec", "Germa", "Denma", "Spai", "Franc", "Italy", "Portug",
-#             "Swede", "Polan", "Brazi", "Belgiu", "Netherl", "United Ki",
-#             "Irela", "United St", "Canad", "Austral", "New Ze"
-#         ]
-#
-#         countries_regex = "|".join(countries)
-#         filters = "ga:country=~%s" % countries_regex
-#         row_filters = "ga:country!~%s" % countries_regex
-#         data = {}
-#         for count, date in enumerate(self.date_list):
-#             breakdown = []
-#             metrics = "ga:pageviews,ga:users"
-#             for site in self.sites:
-#                 rows = analytics.rollup_ids(
-#                     self.site_ids[site],
-#                     date.get_start(),
-#                     date.get_end(),
-#                     metrics=metrics,
-#                     dimensions="ga:country",
-#                     filters=filters,
-#                     sort="-ga:pageviews",
-#                     aggregate_key="ga:country"
-#                 )
-#                 world_rows = [
-#                     # TODO use some sort of *args for date range - also property
-#                     analytics.rollup_ids(
-#                         self.site_ids[site],
-#                         date.get_start(),
-#                         date.get_end(),
-#                         metrics=metrics,
-#                         dimensions=None,
-#                         filters=row_filters,
-#                         sort="-ga:pageviews",
-#                         aggregate_key=None
-#                     )
-#                 ]
-#
-#                 if world_rows[0]:
-#                     world_rows[0]["ga:country"] = "ROW"
-#                 else:
-#                     world_rows = [{"ga:country": "ROW", "ga:pageviews": 0, "ga:users": 0}]
-#                 rows.extend(world_rows)
-#
-#                 for row in rows:
-#                     row = utils.convert_to_floats(row, metrics.split(","))
-#
-#                 rows = self._remove_ga_names(rows)
-#                 # NOTE inconsistent naming
-#                 breakdown.extend(rows)
-#
-#             aggregated = utils.aggregate_data(
-#                 breakdown,
-#                 ["pageviews", "users"],
-#                 match_key="country"
-#             )
-#             sorted = utils.sort_data(aggregated, "users")
-#             data[count] = sorted
-#
-#         added_change = utils.add_change(
-#             data[0],
-#             data[1],
-#             ["pageviews", "users"],
-#             "previous",
-#             match_key="country"
-#         )
-#         added_change = utils.add_change(
-#             added_change,
-#             data[2],
-#             ["pageviews", "users"],
-#             "yearly",
-#             match_key="country"
-#         )
-#         return added_change
+
+
 #
 #     def _get_by_source(self, subdivide_by_medium=False):
 #         data = {}
@@ -852,6 +604,7 @@ class ArticleData(AnalyticsData):
     ]
     filters = 'ga:pagePathLevel1!=/;ga:pagePath!~/page/*;ga:pagePath!~^/\?.*'
     sort_by = '-' + Metrics.pageviews[0]
+    # TODO double check sorting
     match_key = 'site_path'
     aggregate_key = Dimensions.path[0]
 
@@ -867,3 +620,101 @@ class ArticleData(AnalyticsData):
         data['site_path'] = site + new_path
         data['title'] = new_title
         return data
+
+
+class CountryData(AnalyticsData):
+
+    metrics = [
+        Metrics.pageviews,
+        Metrics.users,
+    ]
+    dimensions = [
+        Dimensions.country,
+    ]
+    countries = [
+        'Czec', 'Germa', 'Denma', 'Spai', 'Franc', 'Italy', 'Portug',
+        'Swede', 'Polan', 'Brazi', 'Belgiu', 'Netherl', 'United Ki',
+        'Irela', 'United St', 'Canad', 'Austral', 'New Ze'
+    ]
+    countries_regex = "|".join(countries)
+    filters = f'ga:country=~{countries_regex}'
+    sort_by = '-' + Metrics.pageviews[0]
+    # TODO double check sorting
+    match_key = 'site_path'
+    aggregate_key = Dimensions.path[0]
+
+#     def country_table(self):
+#         countries = [
+#             "Czec", "Germa", "Denma", "Spai", "Franc", "Italy", "Portug",
+#             "Swede", "Polan", "Brazi", "Belgiu", "Netherl", "United Ki",
+#             "Irela", "United St", "Canad", "Austral", "New Ze"
+#         ]
+#
+#         countries_regex = "|".join(countries)
+#         filters = "ga:country=~%s" % countries_regex
+#         row_filters = "ga:country!~%s" % countries_regex
+#         data = {}
+#         for count, date in enumerate(self.date_list):
+#             breakdown = []
+#             metrics = "ga:pageviews,ga:users"
+#             for site in self.sites:
+#                 rows = analytics.rollup_ids(
+#                     self.site_ids[site],
+#                     date.get_start(),
+#                     date.get_end(),
+#                     metrics=metrics,
+#                     dimensions="ga:country",
+#                     filters=filters,
+#                     sort="-ga:pageviews",
+#                     aggregate_key="ga:country"
+#                 )
+#                 world_rows = [
+#                     # TODO use some sort of *args for date range - also property
+#                     analytics.rollup_ids(
+#                         self.site_ids[site],
+#                         date.get_start(),
+#                         date.get_end(),
+#                         metrics=metrics,
+#                         dimensions=None,
+#                         filters=row_filters,
+#                         sort="-ga:pageviews",
+#                         aggregate_key=None
+#                     )
+#                 ]
+#
+#                 if world_rows[0]:
+#                     world_rows[0]["ga:country"] = "ROW"
+#                 else:
+#                     world_rows = [{"ga:country": "ROW", "ga:pageviews": 0, "ga:users": 0}]
+#                 rows.extend(world_rows)
+#
+#                 for row in rows:
+#                     row = utils.convert_to_floats(row, metrics.split(","))
+#
+#                 rows = self._remove_ga_names(rows)
+#                 # NOTE inconsistent naming
+#                 breakdown.extend(rows)
+#
+#             aggregated = utils.aggregate_data(
+#                 breakdown,
+#                 ["pageviews", "users"],
+#                 match_key="country"
+#             )
+#             sorted = utils.sort_data(aggregated, "users")
+#             data[count] = sorted
+#
+#         added_change = utils.add_change(
+#             data[0],
+#             data[1],
+#             ["pageviews", "users"],
+#             "previous",
+#             match_key="country"
+#         )
+#         added_change = utils.add_change(
+#             added_change,
+#             data[2],
+#             ["pageviews", "users"],
+#             "yearly",
+#             match_key="country"
+#         )
+#         return added_change

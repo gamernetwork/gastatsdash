@@ -137,10 +137,11 @@ class GoogleAnalytics(Analytics):
         identifier as Google expects it. Second value is our identifier for the
         dimension.
         """
+        country = ('ga:country', 'country')
         date_hour = ('ga:dateHour', 'date_hour')
-        title = ('ga:pageTitle', 'title')
-        path = ('ga:pagePath', 'path')
         host = ('ga:hostname', 'host')
+        path = ('ga:pagePath', 'path')
+        title = ('ga:pageTitle', 'title')
 
     def data_available(self, _id, stats_date):
         """
