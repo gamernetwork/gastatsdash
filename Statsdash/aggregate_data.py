@@ -666,20 +666,26 @@ class AnalyticsData:
         Returns:
             * `dict`
         """
-        current_period_data = data[0]
-        result = current_period_data
-        for i in range(1, len(data)):
-            comparison_period_data = data[i]
-            period = self.periods[i]
-            change = utils.get_change(
-                current_period_data,
-                comparison_period_data,
-                our_metrics(self.metrics),
-                match_key=self.match_key
-            )
-            change = utils.prefix_keys(change, period.name + '_')
-            result.update(change)
-        return result
+        # each item in data is a period of data
+        current_period = data[0]
+        other_periods = data[1:]
+        new_data = []
+        #iterate over every item in the current period and get the change versus prevous periods
+        for i, current_period_data in enumerate(current_period):
+            joined_data = current_period_data
+            for j, other_period in enumerate(other_periods, 1):
+                period = self.periods[j]
+                other_period_data = other_period[i]
+                change = utils.get_change(
+                    current_period_data,
+                    other_period_data,
+                    our_metrics(self.metrics),
+                    match_key=self.match_key
+                )
+                change = utils.prefix_keys(change, period.name + '_')
+                joined_data.update(change)
+            new_data.append(joined_data)
+        return new_data
 
     def _get_data_for_period(self, period):
         """

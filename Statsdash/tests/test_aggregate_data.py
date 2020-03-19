@@ -88,24 +88,21 @@ class TestSummaryData(unittest.TestCase):
         self.assertEqual(mock_logger.debug.call_count, 2)
 
     def test_join_tables(self):
-        data_1 = {'pageviews': 24640.0, 'users': 1420.0, 'sessions': 2400.0,
-                  'pv_per_session': 6.0, 'avg_session_time': 0.5}
-        data_2 = {'pageviews': 24400.0, 'users': 1200.0, 'sessions': 600.0,
-                  'pv_per_session': 12.0, 'avg_session_time': 0.8}
-        data_3 = {'pageviews': 15000.0, 'users': 800.0, 'sessions': 1200.0,
-                  'pv_per_session': 8.0, 'avg_session_time': 0.2}
+        data_1 = [{'pageviews': 24640.0, 'users': 1420.0, 'sessions': 2400.0,
+                  'pv_per_session': 6.0, 'avg_session_time': 0.5}]
+        data_2 = [{'pageviews': 24400.0, 'users': 1200.0, 'sessions': 600.0,
+                  'pv_per_session': 12.0, 'avg_session_time': 0.8}]
+        data_3 = [{'pageviews': 15000.0, 'users': 800.0, 'sessions': 1200.0,
+                  'pv_per_session': 8.0, 'avg_session_time': 0.2}]
         all_periods = [data_1, data_2, data_3]
 
-        result = self.summary_data._join_periods(all_periods)
+        result = self.summary_data._join_periods(all_periods)[0]
         self.assertTrue(all([k in result.keys() for k in expected_keys]))
 
     @patch('Statsdash.aggregate_data.SummaryData._get_data_for_period')
     def test_get_table(self, mock_query_result):
-        mock_query_result.return_value = {
-            'pageviews': 24640.0, 'users': 1420.0, 'sessions': 2400.0,
-            'pv_per_session': 6.0, 'avg_session_time': 0.5
-        }
-        result = self.summary_data.get_table()
+        mock_query_result.return_value = mock_responses.summary_get_table_data
+        result = self.summary_data.get_table()[0]
         self.assertTrue(all([k in result.keys() for k in expected_keys]))
 
 
@@ -164,38 +161,30 @@ class TestSiteSummaryData(unittest.TestCase):
         self.assertEqual(result[0]['site'], 'fake.site2.com')
         self.assertEqual(result[1]['site'], 'fake.site1.com')
 
-    #
-    # @patch('Statsdash.analytics.GoogleAnalytics._run_report')
-    # @patch('Statsdash.aggregate_data.logger')
-    # def test_get_data_for_period_logger(self, mock_logger, mock_query_result):
-    #     mock_query_result.return_value = {}
-    #     self.summary_data._get_data_for_period(self.period)
-    #     mock_logger.debug.assert_called_with(
-    #         'No data for site fake.site2.com on 2020-03-12 - 2020-03-13'
-    #     )
-    #     self.assertEqual(mock_logger.debug.call_count, 2)
-    #
-    # def test_join_tables(self):
-    #     data_1 = {'pageviews': 24640.0, 'users': 1420.0, 'sessions': 2400.0,
-    #               'pv_per_session': 6.0, 'avg_session_time': 0.5}
-    #     data_2 = {'pageviews': 24400.0, 'users': 1200.0, 'sessions': 600.0,
-    #               'pv_per_session': 12.0, 'avg_session_time': 0.8}
-    #     data_3 = {'pageviews': 15000.0, 'users': 800.0, 'sessions': 1200.0,
-    #               'pv_per_session': 8.0, 'avg_session_time': 0.2}
-    #     all_periods = [data_1, data_2, data_3]
-    #
-    #     result = self.summary_data._join_periods(all_periods)
-    #     self.assertTrue(all([k in result.keys() for k in expected_keys]))
-    #
-    # @patch('Statsdash.aggregate_data.SiteSummaryData._get_data_for_period')
-    # def test_get_table(self, mock_query_result):
-    #     mock_query_result.return_value = {
-    #         'pageviews': 24640.0, 'users': 1420.0, 'sessions': 2400.0,
-    #         'pv_per_session': 6.0, 'avg_session_time': 0.5
-    #     }
-    #     result = self.site_summary_data.get_table()
-    #     print(result)
-    #     self.assertTrue(all([k in result.keys() for k in expected_keys]))
+
+    @patch('Statsdash.analytics.GoogleAnalytics._run_report')
+    @patch('Statsdash.aggregate_data.logger')
+    def test_get_data_for_period_logger(self, mock_logger, mock_query_result):
+        mock_query_result.return_value = {}
+        self.site_summary_data._get_data_for_period(self.period)
+        mock_logger.debug.assert_called_with(
+            'No data for site fake.site2.com on 2020-03-12 - 2020-03-13'
+        )
+        self.assertEqual(mock_logger.debug.call_count, 2)
+
+    def test_join_periods(self):
+        data = mock_responses.mock_join_periods_data
+        result = self.site_summary_data._join_periods(data)
+        for site_data in result:
+            self.assertTrue(all([k in site_data.keys() for k in expected_keys]))
+            self.assertTrue('site' in site_data.keys())
+
+    @patch('Statsdash.aggregate_data.SiteSummaryData._get_data_for_period')
+    def test_get_table(self, mock_query_result):
+        mock_query_result.return_value = mock_responses.site_summary_get_table_data
+        result = self.site_summary_data.get_table()
+        for site_data in result:
+            self.assertTrue(all([k in site_data.keys() for k in expected_keys]))
 
 
 class TestArticleData(unittest.TestCase):

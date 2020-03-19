@@ -299,3 +299,89 @@ article_query_response_2 = {
         ],
     ]
 }
+
+mock_join_periods_data = [
+    [
+        {
+            'avg_session_time': 30.0,
+            'pageviews': 12320.0,
+            'pv_per_session': 6.0,
+            'sessions': 1200.0,
+            'site': 'fake.site1.com',
+            'users': 710.0
+        },
+        {
+            'avg_session_time': 20.0,
+            'pageviews': 8950.0,
+            'pv_per_session': 14.0,
+            'sessions': 1050.0,
+            'site': 'fake.site2.com',
+            'users': 485.0
+        }
+    ],
+    [
+        {
+            'avg_session_time': 30.0,
+            'pageviews': 12320.0,
+            'pv_per_session': 6.0,
+            'sessions': 1200.0,
+            'site': 'fake.site1.com',
+            'users': 710.0
+        },
+        {
+            'avg_session_time': 20.0,
+            'pageviews': 8950.0,
+            'pv_per_session': 14.0,
+            'sessions': 1050.0,
+            'site': 'fake.site2.com',
+            'users': 485.0
+        }
+    ],
+    [
+        {
+            'avg_session_time': 30.0,
+            'pageviews': 12320.0,
+            'pv_per_session': 6.0,
+            'sessions': 1200.0,
+            'site': 'fake.site1.com',
+            'users': 710.0
+        },
+        {
+            'avg_session_time': 20.0,
+            'pageviews': 8950.0,
+            'pv_per_session': 14.0,
+            'sessions': 1050.0,
+            'site': 'fake.site2.com',
+            'users': 485.0
+        }
+    ],
+]
+
+summary_get_table_data = [
+    {
+        'avg_session_time': 0.5,
+        'pageviews': 24640.0,
+        'pv_per_session': 6.0,
+        'sessions': 2400.0,
+        'users': 1420.0
+    }
+]
+
+site_summary_get_table_data = [
+    {
+        'avg_session_time': 30.0,
+        'pageviews': 12320.0,
+        'pv_per_session': 6.0,
+        'sessions': 1200.0,
+        'site': 'fake.site2.com',
+        'users': 710.0
+    },
+    {
+        'avg_session_time': 20.0,
+        'pageviews': 8950.0,
+        'pv_per_session': 14.0,
+        'sessions': 1050.0,
+        'site': 'fake.site1.com',
+        'users': 485.0
+    }
+]
