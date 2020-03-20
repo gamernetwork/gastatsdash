@@ -386,3 +386,239 @@ site_summary_get_table_data = [
         'users': 485.0
     }
 ]
+
+country_report = {
+    'columnHeaders': [
+        {
+            'columnType': 'DIMENSION',
+            'dataType': 'STRING',
+            'name': 'ga:country'
+        },
+        {
+            'columnType': 'METRIC',
+            'dataType': 'INTEGER',
+            'name': 'ga:pageviews'
+        },
+        {
+            'columnType': 'METRIC',
+            'dataType': 'INTEGER',
+            'name': 'ga:users'
+        }
+    ],
+    'containsSampledData': False,
+    'id': 'fakeid',
+    'itemsPerPage': 1000,
+    'kind': 'analytics#gaData',
+    'profileInfo': {
+        'accountId': 'fakeid',
+        'internalWebPropertyId': 'fakeid',
+        'profileId': 'fakeid',
+        'profileName': 'fakename',
+        'tableId': 'fakeid',
+        'webPropertyId': 'fakeid'
+    },
+    'query': {
+        'dimensions': 'ga:country',
+        'end-date': '2020-03-18',
+        'filters': 'ga:country=~Czec|Germa|Denma|Spai|Franc|Italy|Portug|Swede|Polan|Brazi|Belgiu|Netherl|United '
+                   'Ki|Irela|United St|Canad|Austral|New Ze',
+        'ids': 'fakeid',
+        'max-results': 1000,
+        'metrics': ['ga:pageviews', 'ga:users'],
+        'sort': ['-ga:pageviews'],
+        'start-date': '2020-03-18',
+        'start-index': 1
+    },
+    'rows': [
+        ['United States', '95483', '50559'],
+        ['United Kingdom', '34436', '13710'],
+        ['Canada', '15040', '7678'],
+        ['Germany', '11979', '5665'],
+        ['Australia', '8730', '4390'],
+        ['France', '7230', '3593'],
+        ['Netherlands', '6037', '2838'],
+        ['Sweden', '5252', '2580'],
+        ['Italy', '4266', '2027'],
+        ['Brazil', '4225', '2040'],
+        ['Poland', '4209', '2019'],
+        ['Spain', '3373', '1660'],
+        ['Denmark', '2920', '1456'],
+        ['Belgium', '2481', '1217'],
+        ['Czechia', '2010', '960'],
+        ['Ireland', '1801', '822'],
+        ['Portugal', '1753', '792'],
+        ['New Zealand', '1605', '761']
+    ],
+    'selfLink': 'fakelink',
+    'totalResults': 18,
+    'totalsForAllResults': {'ga:pageviews': '212830', 'ga:users': '104767'}
+}
+rest_of_world_country_report = {
+    'columnHeaders': [
+        {
+            'columnType': 'DIMENSION',
+            'dataType': 'STRING',
+            'name': 'ga:country'
+        },
+        {
+            'columnType': 'METRIC',
+            'dataType': 'INTEGER',
+            'name': 'ga:pageviews'
+        },
+        {
+            'columnType': 'METRIC',
+            'dataType': 'INTEGER',
+            'name': 'ga:users'
+        }
+    ],
+    'containsSampledData': False,
+    'id': 'fakeid',
+    'itemsPerPage': 1000,
+    'kind': 'analytics#gaData',
+    'profileInfo': {
+        'accountId': 'fakeid',
+        'internalWebPropertyId': 'fakeid',
+        'profileId': 'fakeid',
+        'profileName': 'fakename',
+        'tableId': 'fakeid',
+        'webPropertyId': 'fakeid'
+    },
+    'query': {
+        'dimensions': 'ga:country',
+        'end-date': '2020-03-18',
+        'filters': 'ga:country!~Czec|Germa|Denma|Spai|Franc|Italy|Portug|Swede|Polan|Brazi|Belgiu|Netherl|United '
+                   'Ki|Irela|United St|Canad|Austral|New Ze',
+        'ids': 'fakeid',
+        'max-results': 1000,
+        'metrics': ['ga:pageviews', 'ga:users'],
+        'sort': ['-ga:pageviews'],
+        'start-date': '2020-03-18',
+        'start-index': 1
+    },
+    'rows': [
+        ['Some other country', '95483', '50559'],
+        ['Another country', '2030', '6830'],
+    ],
+    'selfLink': 'fakelink',
+    'totalResults': 18,
+    'totalsForAllResults': {'ga:pageviews': '95483', 'ga:users': '50559'}
+}
+
+countries_expected_data_row = [
+    {'country': 'ROW', 'pageviews': 195026.0, 'users': 114778.0},
+    {'country': 'United States', 'pageviews': 190966.0, 'users': 101118.0},
+    {'country': 'United Kingdom', 'pageviews': 68872.0, 'users': 27420.0},
+    {'country': 'Canada', 'pageviews': 30080.0, 'users': 15356.0},
+    {'country': 'Germany', 'pageviews': 23958.0, 'users': 11330.0},
+    {'country': 'Australia', 'pageviews': 17460.0, 'users': 8780.0},
+    {'country': 'France', 'pageviews': 14460.0, 'users': 7186.0},
+    {'country': 'Netherlands', 'pageviews': 12074.0, 'users': 5676.0},
+    {'country': 'Sweden', 'pageviews': 10504.0, 'users': 5160.0},
+    {'country': 'Brazil', 'pageviews': 8450.0, 'users': 4080.0},
+    {'country': 'Italy', 'pageviews': 8532.0, 'users': 4054.0},
+    {'country': 'Poland', 'pageviews': 8418.0, 'users': 4038.0},
+    {'country': 'Spain', 'pageviews': 6746.0, 'users': 3320.0},
+    {'country': 'Denmark', 'pageviews': 5840.0, 'users': 2912.0},
+    {'country': 'Belgium', 'pageviews': 4962.0, 'users': 2434.0},
+    {'country': 'Czechia', 'pageviews': 4020.0, 'users': 1920.0},
+    {'country': 'Ireland', 'pageviews': 3602.0, 'users': 1644.0},
+    {'country': 'Portugal', 'pageviews': 3506.0, 'users': 1584.0},
+    {'country': 'New Zealand', 'pageviews': 3210.0, 'users': 1522.0},
+]
+
+countries_expected_data_no_row = [
+    {'country': 'United States', 'pageviews': 190966.0, 'users': 101118.0},
+    {'country': 'United Kingdom', 'pageviews': 68872.0, 'users': 27420.0},
+    {'country': 'Canada', 'pageviews': 30080.0, 'users': 15356.0},
+    {'country': 'Germany', 'pageviews': 23958.0, 'users': 11330.0},
+    {'country': 'Australia', 'pageviews': 17460.0, 'users': 8780.0},
+    {'country': 'France', 'pageviews': 14460.0, 'users': 7186.0},
+    {'country': 'Netherlands', 'pageviews': 12074.0, 'users': 5676.0},
+    {'country': 'Sweden', 'pageviews': 10504.0, 'users': 5160.0},
+    {'country': 'Brazil', 'pageviews': 8450.0, 'users': 4080.0},
+    {'country': 'Italy', 'pageviews': 8532.0, 'users': 4054.0},
+    {'country': 'Poland', 'pageviews': 8418.0, 'users': 4038.0},
+    {'country': 'Spain', 'pageviews': 6746.0, 'users': 3320.0},
+    {'country': 'Denmark', 'pageviews': 5840.0, 'users': 2912.0},
+    {'country': 'Belgium', 'pageviews': 4962.0, 'users': 2434.0},
+    {'country': 'Czechia', 'pageviews': 4020.0, 'users': 1920.0},
+    {'country': 'Ireland', 'pageviews': 3602.0, 'users': 1644.0},
+    {'country': 'Portugal', 'pageviews': 3506.0, 'users': 1584.0},
+    {'country': 'New Zealand', 'pageviews': 3210.0, 'users': 1522.0},
+    {'country': 'ROW', 'pageviews': 0.0, 'users': 0.0},
+]
+
+traffic_source_data = {
+    'columnHeaders': [
+        {
+            'columnType': 'DIMENSION',
+            'dataType': 'STRING',
+            'name': 'ga:sourceMedium'
+        },
+        {
+            'columnType': 'METRIC',
+            'dataType': 'INTEGER',
+            'name': 'ga:pageviews'
+        },
+        {
+            'columnType': 'METRIC',
+            'dataType': 'INTEGER',
+            'name': 'ga:users'
+        }
+    ],
+    'containsSampledData': False,
+    'id': 'fakeid',
+    'itemsPerPage': 1000,
+    'kind': 'analytics#gaData',
+    'profileInfo': {
+        'accountId': 'fakeid',
+        'internalWebPropertyId': 'fakeid',
+        'profileId': 'fakeid',
+        'profileName': 'fakeid',
+        'tableId': 'fakeid',
+        'webPropertyId': 'fakeid'
+    },
+    'query': {
+        'dimensions': 'ga:sourceMedium',
+        'end-date': '2020-03-13',
+        'ids': 'fakeid',
+        'max-results': 1000,
+        'metrics': ['ga:pageviews', 'ga:users'],
+        'sort': ['-ga:users'],
+        'start-date': '2020-03-12',
+        'start-index': 1
+    },
+    'rows': [['google / organic', '236163', '110057'],
+             ['(direct) / (none)', '104762', '42628'],
+             ['feedburner / feed', '12147', '6539'],
+             ['googleads.g.doubleclick.net / referral',
+              '20613', '3451'],
+             ['mormont / inline_image', '18361', '3148'],
+             ['t.co / referral', '6414', '1911'],
+             ['bing / organic', '3714', '1710']],
+
+    'selfLink': 'fakeid',
+    'totalResults': 781,
+    'totalsForAllResults': {'ga:pageviews': '436729',
+                            'ga:users': '182786'}
+}
+
+expected_traffic_source_data = [
+    {'pageviews': 472326.0,
+     'source_medium': 'google / organic',
+     'users': 220114.0},
+    {'pageviews': 209524.0,
+     'source_medium': '(direct) / (none)',
+     'users': 85256.0},
+    {'pageviews': 24294.0, 'source_medium': 'feedburner / feed',
+     'users': 13078.0},
+    {'pageviews': 41226.0,
+     'source_medium': 'googleads.g.doubleclick.net / referral',
+     'users': 6902.0},
+    {'pageviews': 36722.0,
+     'source_medium': 'mormont / inline_image',
+     'users': 6296.0},
+    {'pageviews': 12828.0, 'source_medium': 't.co / referral',
+     'users': 3822.0},
+    {'pageviews': 7428.0, 'source_medium': 'bing / organic', 'users': 3420.0}
+]

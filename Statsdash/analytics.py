@@ -140,6 +140,7 @@ class GoogleAnalytics(Analytics):
         country = ('ga:country', 'country')
         date_hour = ('ga:dateHour', 'date_hour')
         host = ('ga:hostname', 'host')
+        source = ('ga:sourceMedium', 'source_medium')
         path = ('ga:pagePath', 'path')
         title = ('ga:pageTitle', 'title')
 

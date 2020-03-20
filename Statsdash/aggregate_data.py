@@ -94,87 +94,9 @@ Dimensions = GoogleAnalytics.Dimensions
 
 
 #
-#     def _get_by_source(self, subdivide_by_medium=False):
-#         data = {}
-#         aggregate_key = "ga:source"
-#         match_key = "source"
-#         if subdivide_by_medium:
-#             aggregate_key = "ga:sourceMedium"
-#             match_key = "source_medium"
-#         for count, date in enumerate(self.date_list):
-#             traffic_sources = []
-#             metrics = "ga:pageviews,ga:users"
-#             for site in self.sites:
-#                 rows = analytics.rollup_ids(
-#                     self.site_ids[site],
-#                     date.get_start(),
-#                     date.get_end(),
-#                     metrics=metrics,
-#                     dimensions=aggregate_key,
-#                     sort="-ga:users",
-#                     aggregate_key=aggregate_key
-#                 )
-#                 rows = self._remove_ga_names(rows)
-#                 if subdivide_by_medium:
-#                     rows = utils.change_key_names(
-#                         rows,
-#                         {"source_medium": "sourceMedium"}
-#                     )
-#                 for row in rows:
-#                     row = utils.convert_to_floats(row, ["pageviews", "users"])
-#                 traffic_sources.extend(rows)
+
 #
-#             aggregated = utils.aggregate_data(
-#                 traffic_sources,
-#                 ["pageviews", "users"],
-#                 match_key=match_key,
-#             )
-#             sorted = utils.sort_data(aggregated, "users")
-#             data[count] = sorted
-#
-#         added_change = utils.add_change(
-#             data[0],
-#             data[1],
-#             ["pageviews", "users"],
-#             "previous",
-#             match_key=match_key
-#         )
-#         added_change = utils.add_change(
-#             added_change,
-#             data[2],
-#             ["pageviews", "users"],
-#             "yearly",
-#             match_key=match_key
-#         )
-#         return added_change
-#
-#     def traffic_source_table(self):
-#         table = self._get_by_source(subdivide_by_medium=True)
-#         table = table[:10]
-#         return table
-#
-#     def referring_sites_table(self, num_articles):
-#         sources = self._get_by_source()
-#         count = 0
-#         referrals = []
-#         black_ex = '|'
-#         black_string = black_ex.join(config.SOURCE_BLACK_LIST)
-#         regex = re.compile(black_string)
-#         for row in sources:
-#             if count == 5:
-#                 break
-#             source = row["source"]
-#             match = regex.search(source)
-#             if match:
-#                 continue
-#             else:
-#                 count += 1
-#                 filter = "ga:source==%s" % source
-#                 article = self.referral_articles(filter, num_articles)
-#                 row["source"] = source
-#                 row["articles"] = article
-#                 referrals.append(row)
-#         return referrals
+
 #
 #     def social_network_table(self, num_articles):
 #         data = {}
@@ -384,6 +306,8 @@ class AnalyticsData:
     filters = None
     match_key = None
     sort_by = None
+    sort_rows_by = None
+    limit = None
 
     def __init__(self, site_tables, period, frequency):
         self.sites = site_tables.keys()
@@ -406,6 +330,9 @@ class AnalyticsData:
         for period in self.periods:
             data = self._get_data_for_period(period)
             period_data.append(data)
+
+        if self.limit:
+            return self._join_periods(period_data)[:self.limit]
         return self._join_periods(period_data)
 
     def _join_periods(self, data):
@@ -443,7 +370,8 @@ class AnalyticsData:
         """
         Gets the analytics data for each site in `self.site_ids` for the given
         period and prepares it for the table: renames the keys for each metric,
-        aggregates the data for each site, and gets the average for values where appropriate.
+        aggregates the data for each site, and gets the average for values
+        where appropriate.
 
         Args:
             * `period` - `StatsRange`
@@ -464,6 +392,8 @@ class AnalyticsData:
                 sort=self.sort_by,
                 aggregate_key=self.aggregate_key,
             )
+            data = self._get_extra_data(period, site, data)
+
             # data is a list with a dict for each id in site config
             if data:
                 data = self._format_all_data(data, site)
@@ -473,8 +403,17 @@ class AnalyticsData:
                     f'No data for site {site} on {period.get_start()} - '
                     f'{period.get_end()}'
                 )
-        aggregated_data = self._aggregate_data(all_sites_data)
-        return aggregated_data
+        data = self._aggregate_data(all_sites_data)
+        if self.sort_rows_by:
+            data = utils.sort_data(data, self.sort_rows_by[1])
+        return data
+
+    def _get_extra_data(self, period, site, data):
+        """
+
+        """
+        # TODO docstring
+        return data
 
     def _aggregate_data(self, data):
         return utils.aggregate_data(
@@ -631,6 +570,7 @@ class CountryData(AnalyticsData):
     dimensions = [
         Dimensions.country,
     ]
+    # TODO move to analytics.
     countries = [
         'Czec', 'Germa', 'Denma', 'Spai', 'Franc', 'Italy', 'Portug',
         'Swede', 'Polan', 'Brazi', 'Belgiu', 'Netherl', 'United Ki',
@@ -638,83 +578,66 @@ class CountryData(AnalyticsData):
     ]
     countries_regex = "|".join(countries)
     filters = f'ga:country=~{countries_regex}'
+    rest_of_world_filters = f'ga:country!~{countries_regex}'
+    match_key = 'country'
     sort_by = '-' + Metrics.pageviews[0]
-    # TODO double check sorting
-    match_key = 'site_path'
-    aggregate_key = Dimensions.path[0]
+    sort_rows_by = Metrics.users
+    aggregate_key = Dimensions.country[0]
 
-#     def country_table(self):
-#         countries = [
-#             "Czec", "Germa", "Denma", "Spai", "Franc", "Italy", "Portug",
-#             "Swede", "Polan", "Brazi", "Belgiu", "Netherl", "United Ki",
-#             "Irela", "United St", "Canad", "Austral", "New Ze"
-#         ]
-#
-#         countries_regex = "|".join(countries)
-#         filters = "ga:country=~%s" % countries_regex
-#         row_filters = "ga:country!~%s" % countries_regex
-#         data = {}
-#         for count, date in enumerate(self.date_list):
-#             breakdown = []
-#             metrics = "ga:pageviews,ga:users"
-#             for site in self.sites:
-#                 rows = analytics.rollup_ids(
-#                     self.site_ids[site],
-#                     date.get_start(),
-#                     date.get_end(),
-#                     metrics=metrics,
-#                     dimensions="ga:country",
-#                     filters=filters,
-#                     sort="-ga:pageviews",
-#                     aggregate_key="ga:country"
-#                 )
-#                 world_rows = [
-#                     # TODO use some sort of *args for date range - also property
-#                     analytics.rollup_ids(
-#                         self.site_ids[site],
-#                         date.get_start(),
-#                         date.get_end(),
-#                         metrics=metrics,
-#                         dimensions=None,
-#                         filters=row_filters,
-#                         sort="-ga:pageviews",
-#                         aggregate_key=None
-#                     )
-#                 ]
-#
-#                 if world_rows[0]:
-#                     world_rows[0]["ga:country"] = "ROW"
-#                 else:
-#                     world_rows = [{"ga:country": "ROW", "ga:pageviews": 0, "ga:users": 0}]
-#                 rows.extend(world_rows)
-#
-#                 for row in rows:
-#                     row = utils.convert_to_floats(row, metrics.split(","))
-#
-#                 rows = self._remove_ga_names(rows)
-#                 # NOTE inconsistent naming
-#                 breakdown.extend(rows)
-#
-#             aggregated = utils.aggregate_data(
-#                 breakdown,
-#                 ["pageviews", "users"],
-#                 match_key="country"
-#             )
-#             sorted = utils.sort_data(aggregated, "users")
-#             data[count] = sorted
-#
-#         added_change = utils.add_change(
-#             data[0],
-#             data[1],
-#             ["pageviews", "users"],
-#             "previous",
-#             match_key="country"
-#         )
-#         added_change = utils.add_change(
-#             added_change,
-#             data[2],
-#             ["pageviews", "users"],
-#             "yearly",
-#             match_key="country"
-#         )
-#         return added_change
+    def _get_extra_data(self, period, site, data):
+        world_rows = analytics.get_data(
+            self.site_ids[site],
+            period.get_start(),
+            period.get_end(),
+            metrics=','.join(google_metrics(self.metrics)),
+            dimensions=None,
+            filters=self.rest_of_world_filters,
+            sort=self.sort_by,
+            aggregate_key=None
+        )
+        if world_rows:
+            world_rows[0]['ga:country'] = 'ROW'
+        else:
+            world_rows = [{'ga:country': 'ROW', 'ga:pageviews': 0, 'ga:users': 0}]
+        data.extend(world_rows)
+        return data
+
+
+class TrafficSourceData(AnalyticsData):
+
+    metrics = [
+        Metrics.pageviews,
+        Metrics.users,
+    ]
+    dimensions = [
+        Dimensions.source,
+    ]
+    sort_by = '-' + Metrics.users[0]
+    sort_rows_by = Metrics.users
+    aggregate_key = Dimensions.source[0]
+    match_key = Dimensions.source[1]
+    limit = 10
+
+
+#     def referring_sites_table(self, num_articles):
+#         sources = self._get_by_source()
+#         count = 0
+#         referrals = []
+#         black_ex = '|'
+#         black_string = black_ex.join(config.SOURCE_BLACK_LIST)
+#         regex = re.compile(black_string)
+#         for row in sources:
+#             if count == 5:
+#                 break
+#             source = row["source"]
+#             match = regex.search(source)
+#             if match:
+#                 continue
+#             else:
+#                 count += 1
+#                 filter = "ga:source==%s" % source
+#                 article = self.referral_articles(filter, num_articles)
+#                 row["source"] = source
+#                 row["articles"] = article
+#                 referrals.append(row)
+#         return referrals
