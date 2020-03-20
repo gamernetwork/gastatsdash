@@ -139,10 +139,32 @@ class GoogleAnalytics(Analytics):
         """
         country = ('ga:country', 'country')
         date_hour = ('ga:dateHour', 'date_hour')
+        device_category = ('ga:deviceCategory', 'device_category')
         host = ('ga:hostname', 'host')
         source = ('ga:sourceMedium', 'source_medium')
         path = ('ga:pagePath', 'path')
         title = ('ga:pageTitle', 'title')
+
+    class Countries:
+        czech_republic = 'Czec'
+        germany = 'Germa'
+        denmark = 'Denma'
+        spain = 'Spai'
+        france = 'Franc'
+        italy = 'Italy'
+        portugal = 'Portug'
+        sweden = 'Swede'
+        poland = 'Polan'
+        brazil = 'Brazi'
+        belgium = 'Belgiu'
+        netherlands = 'Netherl'
+        united_kingdom = 'United Ki'
+        ireland = 'Irela'
+        united_states = 'United St'
+        canada = 'Canad'
+        australia = 'Austral'
+        new_zealand = 'New Ze'
+
 
     def data_available(self, _id, stats_date):
         """
