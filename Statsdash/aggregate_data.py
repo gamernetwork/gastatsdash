@@ -1,5 +1,4 @@
 from pprint import pprint
-from datetime import datetime, timedelta
 from html.parser import HTMLParser
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
@@ -208,6 +207,7 @@ class SummaryData(AnalyticsData):
     """
     Gets the aggregated analytics data for all sites.
     """
+    table_label = 'summary_table'
     metrics = [
         Metrics.pageviews,
         Metrics.users,
@@ -243,6 +243,7 @@ class SummaryData(AnalyticsData):
 
 class SiteSummaryData(AnalyticsData):
 
+    table_label = 'site_table'
     metrics = [
         Metrics.pageviews,
         Metrics.users,
@@ -252,6 +253,7 @@ class SiteSummaryData(AnalyticsData):
     ]
 
     match_key = 'site'
+    sort_rows_by = Metrics.users
 
     def _format_data(self, data, site):
         data = super()._format_data(data, site)
@@ -259,15 +261,10 @@ class SiteSummaryData(AnalyticsData):
         data['site'] = site
         return data
 
-    # TODO replace with simple sort_by attribute.
-    def _get_data_for_period(self, period):
-        # sort sites by users
-        data = super()._get_data_for_period(period)
-        return utils.sort_data(data, Metrics.users[1])
-
 
 class ArticleData(AnalyticsData):
 
+    table_label = 'top_articles'
     metrics = [
         Metrics.pageviews,
     ]
@@ -298,6 +295,7 @@ class ArticleData(AnalyticsData):
 
 class CountryData(AnalyticsData):
 
+    table_label = 'geo_table'
     metrics = [
         Metrics.pageviews,
         Metrics.users,
@@ -355,6 +353,7 @@ class CountryData(AnalyticsData):
 
 class TrafficSourceData(AnalyticsData):
 
+    table_label = 'traffic_table'
     metrics = [
         Metrics.pageviews,
         Metrics.users,
@@ -371,6 +370,7 @@ class TrafficSourceData(AnalyticsData):
 
 class DeviceData(AnalyticsData):
 
+    table_label = 'device_table'
     metrics = [
         Metrics.users,
     ]

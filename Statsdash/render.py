@@ -1,4 +1,4 @@
-from jinja2 import Environment, FileSystemLoader
+from jinja2 import Environment, PackageLoader, select_autoescape
 
 
 #custom filters 
@@ -48,9 +48,14 @@ def div_or_na(num, denom):
 
 def get_environment():
     """
-    Returns Jinja2 rendering environment and creates context with custom filterss
+    Returns Jinja2 rendering environment and creates context with custom
+    filters.
     """
-    env = Environment(loader=FileSystemLoader('Statsdash/Templates'), extensions=['jinja2.ext.loopcontrols'])
+    env = Environment(
+        loader=PackageLoader('Statsdash', 'Templates'),
+    	autoescape=select_autoescape(['html', 'xml']),
+        extensions=['jinja2.ext.loopcontrols']
+    )
     env.filters['intcomma'] = int_comma
     env.filters['cut'] = cut
     env.globals['div_or_na'] = div_or_na

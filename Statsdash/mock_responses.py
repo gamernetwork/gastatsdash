@@ -1,3 +1,6 @@
+# TODO naming
+
+
 response_not_ready = {
     'columnHeaders': [{'columnType': 'DIMENSION',
                        'dataType': 'STRING',
@@ -301,6 +304,53 @@ article_query_response_2 = {
     ]
 }
 
+article_table_expected_data = [
+    {'host': 'www.fake.site1.com',
+     'pageviews': 15200.0,
+     'path': '/link/to/article-1/',
+     'previous_change_pageviews': 0.0,
+     'previous_figure_pageviews': 15200.0,
+     'previous_percentage_pageviews': 0.0,
+     'site_path': 'fake.site1.com/link/to/article-1/',
+     'title': 'Article 1',
+     'yearly_change_pageviews': 0.0,
+     'yearly_figure_pageviews': 15200.0,
+     'yearly_percentage_pageviews': 0.0},
+    {'host': 'www.fake.site1.com',
+     'pageviews': 16800.0,
+     'path': '/link/to/article-2/',
+     'previous_change_pageviews': 0.0,
+     'previous_figure_pageviews': 16800.0,
+     'previous_percentage_pageviews': 0.0,
+     'site_path': 'fake.site1.com/link/to/article-2/',
+     'title': 'Article 2',
+     'yearly_change_pageviews': 0.0,
+     'yearly_figure_pageviews': 16800.0,
+     'yearly_percentage_pageviews': 0.0},
+    {'host': 'www.fake.site1.com',
+     'pageviews': 15200.0,
+     'path': '/link/to/article-1/',
+     'previous_change_pageviews': 0.0,
+     'previous_figure_pageviews': 15200.0,
+     'previous_percentage_pageviews': 0.0,
+     'site_path': 'fake.site2.com/link/to/article-1/',
+     'title': 'Article 1',
+     'yearly_change_pageviews': 0.0,
+     'yearly_figure_pageviews': 15200.0,
+     'yearly_percentage_pageviews': 0.0},
+    {'host': 'www.fake.site1.com',
+     'pageviews': 16800.0,
+     'path': '/link/to/article-2/',
+     'previous_change_pageviews': 0.0,
+     'previous_figure_pageviews': 16800.0,
+     'previous_percentage_pageviews': 0.0,
+     'site_path': 'fake.site2.com/link/to/article-2/',
+     'title': 'Article 2',
+     'yearly_change_pageviews': 0.0,
+     'yearly_figure_pageviews': 16800.0,
+     'yearly_percentage_pageviews': 0.0}
+]
+
 mock_join_periods_data = [
     [
         {
@@ -367,6 +417,45 @@ summary_get_table_data = [
         'users': 1420.0
     }
 ]
+
+summary_expected_data = {
+    'avg_session_time': 0.5,
+    'pageviews': 24640.0,
+    'previous_change_avg_session_time': 0.0,
+    'previous_change_pageviews': 0.0,
+    'previous_change_pv_per_session': 0.0,
+    'previous_change_sessions': 0.0,
+    'previous_change_users': 0.0,
+    'previous_figure_avg_session_time': 0.5,
+    'previous_figure_pageviews': 24640.0,
+    'previous_figure_pv_per_session': 6.0,
+    'previous_figure_sessions': 2400.0,
+    'previous_figure_users': 1420.0,
+    'previous_percentage_avg_session_time': 0.0,
+    'previous_percentage_pageviews': 0.0,
+    'previous_percentage_pv_per_session': 0.0,
+    'previous_percentage_sessions': 0.0,
+    'previous_percentage_users': 0.0,
+    'pv_per_session': 6.0,
+    'sessions': 2400.0,
+    'users': 1420.0,
+    'yearly_change_avg_session_time': 0.0,
+    'yearly_change_pageviews': 0.0,
+    'yearly_change_pv_per_session': 0.0,
+    'yearly_change_sessions': 0.0,
+    'yearly_change_users': 0.0,
+    'yearly_figure_avg_session_time': 0.5,
+    'yearly_figure_pageviews': 24640.0,
+    'yearly_figure_pv_per_session': 6.0,
+    'yearly_figure_sessions': 2400.0,
+    'yearly_figure_users': 1420.0,
+    'yearly_percentage_avg_session_time': 0.0,
+    'yearly_percentage_pageviews': 0.0,
+    'yearly_percentage_pv_per_session': 0.0,
+    'yearly_percentage_sessions': 0.0,
+    'yearly_percentage_users': 0.0
+}
+
 
 site_summary_get_table_data = [
     {
@@ -548,6 +637,26 @@ countries_expected_data_no_row = [
     {'country': 'ROW', 'pageviews': 0.0, 'users': 0.0},
 ]
 
+country_table_expected_data = [
+    {
+        'country': 'ROW',
+        'pageviews': 195026.0,
+        'previous_change_pageviews': 0.0,
+        'previous_change_users': 0.0,
+        'previous_figure_pageviews': 195026.0,
+        'previous_figure_users': 114778.0,
+        'previous_percentage_pageviews': 0.0,
+        'previous_percentage_users': 0.0,
+        'users': 114778.0,
+        'yearly_change_pageviews': 0.0,
+        'yearly_change_users': 0.0,
+        'yearly_figure_pageviews': 195026.0,
+        'yearly_figure_users': 114778.0,
+        'yearly_percentage_pageviews': 0.0,
+        'yearly_percentage_users': 0.0
+    }
+]
+
 traffic_source_data = {
     'columnHeaders': [
         {
@@ -623,6 +732,113 @@ expected_traffic_source_data = [
     {'pageviews': 7428.0, 'source_medium': 'bing / organic', 'users': 3420.0}
 ]
 
+traffic_expected_data =[
+    {'pageviews': 472326.0,
+     'previous_change_pageviews': 0.0,
+     'previous_change_users': 0.0,
+     'previous_figure_pageviews': 472326.0,
+     'previous_figure_users': 220114.0,
+     'previous_percentage_pageviews': 0.0,
+     'previous_percentage_users': 0.0,
+     'source_medium': 'google / organic',
+     'users': 220114.0,
+     'yearly_change_pageviews': 0.0,
+     'yearly_change_users': 0.0,
+     'yearly_figure_pageviews': 472326.0,
+     'yearly_figure_users': 220114.0,
+     'yearly_percentage_pageviews': 0.0,
+     'yearly_percentage_users': 0.0},
+    {'pageviews': 209524.0,
+     'previous_change_pageviews': 0.0,
+     'previous_change_users': 0.0,
+     'previous_figure_pageviews': 209524.0,
+     'previous_figure_users': 85256.0,
+     'previous_percentage_pageviews': 0.0,
+     'previous_percentage_users': 0.0,
+     'source_medium': '(direct) / (none)',
+     'users': 85256.0,
+     'yearly_change_pageviews': 0.0,
+     'yearly_change_users': 0.0,
+     'yearly_figure_pageviews': 209524.0,
+     'yearly_figure_users': 85256.0,
+     'yearly_percentage_pageviews': 0.0,
+     'yearly_percentage_users': 0.0},
+    {'pageviews': 24294.0,
+     'previous_change_pageviews': 0.0,
+     'previous_change_users': 0.0,
+     'previous_figure_pageviews': 24294.0,
+     'previous_figure_users': 13078.0,
+     'previous_percentage_pageviews': 0.0,
+     'previous_percentage_users': 0.0,
+     'source_medium': 'feedburner / feed',
+     'users': 13078.0,
+     'yearly_change_pageviews': 0.0,
+     'yearly_change_users': 0.0,
+     'yearly_figure_pageviews': 24294.0,
+     'yearly_figure_users': 13078.0,
+     'yearly_percentage_pageviews': 0.0,
+     'yearly_percentage_users': 0.0},
+    {'pageviews': 41226.0,
+     'previous_change_pageviews': 0.0,
+     'previous_change_users': 0.0,
+     'previous_figure_pageviews': 41226.0,
+     'previous_figure_users': 6902.0,
+     'previous_percentage_pageviews': 0.0,
+     'previous_percentage_users': 0.0,
+     'source_medium': 'googleads.g.doubleclick.net / referral',
+     'users': 6902.0,
+     'yearly_change_pageviews': 0.0,
+     'yearly_change_users': 0.0,
+     'yearly_figure_pageviews': 41226.0,
+     'yearly_figure_users': 6902.0,
+     'yearly_percentage_pageviews': 0.0,
+     'yearly_percentage_users': 0.0},
+    {'pageviews': 36722.0,
+     'previous_change_pageviews': 0.0,
+     'previous_change_users': 0.0,
+     'previous_figure_pageviews': 36722.0,
+     'previous_figure_users': 6296.0,
+     'previous_percentage_pageviews': 0.0,
+     'previous_percentage_users': 0.0,
+     'source_medium': 'mormont / inline_image',
+     'users': 6296.0,
+     'yearly_change_pageviews': 0.0,
+     'yearly_change_users': 0.0,
+     'yearly_figure_pageviews': 36722.0,
+     'yearly_figure_users': 6296.0,
+     'yearly_percentage_pageviews': 0.0,
+     'yearly_percentage_users': 0.0},
+    {'pageviews': 12828.0,
+     'previous_change_pageviews': 0.0,
+     'previous_change_users': 0.0,
+     'previous_figure_pageviews': 12828.0,
+     'previous_figure_users': 3822.0,
+     'previous_percentage_pageviews': 0.0,
+     'previous_percentage_users': 0.0,
+     'source_medium': 't.co / referral',
+     'users': 3822.0,
+     'yearly_change_pageviews': 0.0,
+     'yearly_change_users': 0.0,
+     'yearly_figure_pageviews': 12828.0,
+     'yearly_figure_users': 3822.0,
+     'yearly_percentage_pageviews': 0.0,
+     'yearly_percentage_users': 0.0},
+    {'pageviews': 7428.0,
+     'previous_change_pageviews': 0.0,
+     'previous_change_users': 0.0,
+     'previous_figure_pageviews': 7428.0,
+     'previous_figure_users': 3420.0,
+     'previous_percentage_pageviews': 0.0,
+     'previous_percentage_users': 0.0,
+     'source_medium': 'bing / organic',
+     'users': 3420.0,
+     'yearly_change_pageviews': 0.0,
+     'yearly_change_users': 0.0,
+     'yearly_figure_pageviews': 7428.0,
+     'yearly_figure_users': 3420.0,
+     'yearly_percentage_pageviews': 0.0,
+     'yearly_percentage_users': 0.0}]
+
 device_response = {'columnHeaders': [{'columnType': 'DIMENSION',
                     'dataType': 'STRING',
                     'name': 'ga:deviceCategory'},
@@ -656,6 +872,33 @@ device_data_expected_1 = [
     {'device_category': 'desktop', 'users': 210676.0},
     {'device_category': 'mobile', 'users': 138770.0},
     {'device_category': 'tablet', 'users': 9490.0}
+]
+
+device_table_expected_data = [
+    {'device_category': 'desktop',
+     'previous_change_users': 0.0,
+     'previous_figure_users': 210676.0,
+     'previous_percentage_users': 0.0,
+     'users': 210676.0,
+     'yearly_change_users': 0.0,
+     'yearly_figure_users': 210676.0,
+     'yearly_percentage_users': 0.0},
+    {'device_category': 'mobile',
+     'previous_change_users': 0.0,
+     'previous_figure_users': 138770.0,
+     'previous_percentage_users': 0.0,
+     'users': 138770.0,
+     'yearly_change_users': 0.0,
+     'yearly_figure_users': 138770.0,
+     'yearly_percentage_users': 0.0},
+    {'device_category': 'tablet',
+     'previous_change_users': 0.0,
+     'previous_figure_users': 9490.0,
+     'previous_percentage_users': 0.0,
+     'users': 9490.0,
+     'yearly_change_users': 0.0,
+     'yearly_figure_users': 9490.0,
+     'yearly_percentage_users': 0.0}
 ]
 
 social_response = {'columnHeaders': [{'columnType': 'DIMENSION',
@@ -779,3 +1022,68 @@ social_data_expected_1 = [
      'social_network': 'Instagram',
      'users': 4.0},
 ]
+
+mock_network_summary_data = {
+    'avg_session_time': 0.5,
+    'pageviews': 24640.0,
+    'previous_change_avg_session_time': 0.0,
+    'previous_change_pageviews': 0.0,
+    'previous_change_pv_per_session': 0.0,
+    'previous_change_sessions': 0.0,
+    'previous_change_users': 0.0,
+    'previous_figure_avg_session_time': 0.5,
+    'previous_figure_pageviews': 24640.0,
+    'previous_figure_pv_per_session': 6.0,
+    'previous_figure_sessions': 2400.0,
+    'previous_figure_users': 1420.0,
+    'previous_percentage_avg_session_time': 0.0,
+    'previous_percentage_pageviews': 0.0,
+    'previous_percentage_pv_per_session': 0.0,
+    'previous_percentage_sessions': 0.0,
+    'previous_percentage_users': 0.0,
+    'pv_per_session': 6.0,
+    'sessions': 2400.0,
+    'users': 1420.0,
+    'yearly_change_avg_session_time': 0.0,
+    'yearly_change_pageviews': 0.0,
+    'yearly_change_pv_per_session': 0.0,
+    'yearly_change_sessions': 0.0,
+    'yearly_change_users': 0.0,
+    'yearly_figure_avg_session_time': 0.5,
+    'yearly_figure_pageviews': 24640.0,
+    'yearly_figure_pv_per_session': 6.0,
+    'yearly_figure_sessions': 2400.0,
+    'yearly_figure_users': 1420.0,
+    'yearly_percentage_avg_session_time': 0.0,
+    'yearly_percentage_pageviews': 0.0,
+    'yearly_percentage_pv_per_session': 0.0,
+    'yearly_percentage_sessions': 0.0,
+    'yearly_percentage_users': 0.0
+}
+
+mock_get_tables_monthly = {
+    'summary_table': summary_expected_data,
+    'site_table': [
+        {}
+    ],
+    'top_articles': article_table_expected_data,
+    'geo_table': country_table_expected_data,
+    'traffic_table': traffic_expected_data,
+    'device_table': device_table_expected_data,
+    'network_summary_table': summary_expected_data,
+}
+
+mock_get_tables_daily = {
+    'summary_table': summary_expected_data,
+    'site_table': [
+        {}
+    ],
+    'top_articles': article_table_expected_data,
+    'geo_table': country_table_expected_data,
+    'traffic_table': traffic_expected_data,
+    'device_table': device_table_expected_data,
+    'network_summary_table': summary_expected_data,
+    'network_month_summary_table': summary_expected_data,
+    'full_month_summary_table': summary_expected_data,
+    'month_summary_table': summary_expected_data,
+}

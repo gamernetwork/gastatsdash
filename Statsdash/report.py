@@ -1,3 +1,4 @@
+from pprint import pprint
 from datetime import date, datetime, timedelta
 from email.mime.image import MIMEImage
 import logging.config, logging.handlers
@@ -5,6 +6,7 @@ import smtplib
 
 from Statsdash.config import LOGGING
 from Statsdash.GA.aggregate_data import AnalyticsData
+from Statsdash import aggregate_data
 from Statsdash.render import get_environment
 from Statsdash.Youtube.aggregate_data import YoutubeData
 from Statsdash import config
@@ -14,21 +16,22 @@ import Statsdash.utilities as utils
 logging.config.dictConfig(LOGGING)
 logger = logging.getLogger('report')
 
-class Report(object):
-    #template = "Templates/base.html"
+
+class Report:
     """
     Report object
     Gathers data from analytics, renders and sends as an email
     """
-    def __init__(self, sites, period, recipients, frequency, subject):
+    data = []
+
+    def __init__(self, sites, period, frequency, subject):
         self.sites = sites
         self.period = period
-        self.recipients = recipients
         self.frequency = frequency
         self.subject = subject
-        
+
         self.env = get_environment()
-        self.template = self.env.get_template("base.html")
+        self.template = self.env.get_template('base.html')
         
     def get_subject(self):
         """
@@ -43,27 +46,16 @@ class Report(object):
         	subject = ' '.join([self.subject, self.period.start_date.strftime('%B %Y')])
         
         return subject
-		
+
+    # TODO test
     def get_freq_label(self):
         """
-        Returns label for the period of change 
-        E.g. where frequency == "monthly", label == "MoM"
+        Returns label for the period of change, e.g. where
+        frequency == 'monthly', label == 'MoM'
         """
         first_letter = self.frequency[0].upper()
         label = first_letter + "o" + first_letter
         return label
-
-    def check_data_availability(self, override=False):
-        check = self.data.check_available_data()
-        if check["result"]:
-            return True
-        else:
-            logger.debug("Data not available for: %s" % check["site"])
-            if override:
-                self.warning_sites = check["site"]
-                return check["site"]
-            else:
-                return False	    
 
     def generate_html(self):
         """
@@ -92,8 +84,12 @@ class Report(object):
         # sender.sendmail(config.SEND_FROM, self.recipients, msg.as_string())
         #
         # sender.quit()
-     
-    
+
+    # TODO test and docstring
+    def _get_tables(self):
+        args = [self.sites, self.period, self.frequency]
+        return {d.table_label: d(*args).get_table() for d in self.data}
+
 
 
 class YoutubeReport(Report):
@@ -146,153 +142,133 @@ class YoutubeReport(Report):
                 return check["channel"]
             else:
                 return False
-		    
+
 
 class AnalyticsCoreReport(Report):
-    
-    def __init__(self, sites, period, recipients, frequency, subject):
-        super(AnalyticsCoreReport, self).__init__(sites, period, recipients, frequency, subject)
+    """
+    Google Analytics data report for a given collection of sites. Converts the
+    report into HTML.
+    """
+
+    def __init__(self, sites, period, frequency, subject):
+        super().__init__(sites, period, frequency, subject)
         self.sites = sites
         self.period = period
-        self.recipients = recipients
         self.frequency = frequency
         self.subject = subject
         self.data = AnalyticsData(self.sites, self.period, self.frequency)
         self.warning_sites = []
-        self.template = self.env.get_template("GA/base.html")
         self.imgdata = None
-        
+        self.template = self.env.get_template("GA/base.html")
+
+        # NOTE maybe nicer way to handle this
+        self.today = self.period.end_date
+        self.first = datetime(self.today.year, self.today.month, 1).date()
+        self.last = utils.add_one_month(self.first) - timedelta(days=1)
+        self.num_days = (self.last - self.period.end_date).days
+
         if self.sites == ga_config.ALL_NETWORK_SITES:
             self.all_sites = True
         else:
             self.all_sites = False
-        
+
+        # TODO move outside init
+        self.data = [
+            aggregate_data.SummaryData,
+            aggregate_data.SiteSummaryData,
+            aggregate_data.CountryData,
+            aggregate_data.ArticleData,
+            aggregate_data.TrafficSourceData,
+            aggregate_data.DeviceData,
+            # TODO
+            # referring_site_table = self.data.referring_sites_table(num_articles)
+            # social_table = self.data.social_network_table(num_articles)
+        ]
         logger.debug("Running analytics core report")
                 
-                
+    # TODO sort this
     def get_site(self):
         if len(self.sites) == 1:
             return self.sites[0]
         elif self.all_sites:
             return ga_config.ALL_SITES_NAME
-    
 
     def generate_html(self):
-        
-        to_month_table = None
-        num_days = None
-        full_month_table = None
-        network_summary_table = None
-        network_month_summary_table = None
-        device_img = None
-        num_articles = 5
-        today = self.period.end_date
-        
-        if self.frequency != "MONTHLY":
-            num_articles = 1
-            #today = self.period.end_date
-            first = datetime(today.year, today.month, 1).date()
-            month_range = utils.StatsRange("Month to date Aggregate", first, today)            
-            to_month_data = AnalyticsData(self.sites, month_range, self.frequency)
-            to_month_table = to_month_data.summary_table()
-            
-            last = utils.add_one_month(first) - timedelta(days=1)
-            num_days = (last - self.period.end_date).days
-            month_range = utils.StatsRange("Month to date Aggregate", first, last)           
-            full_month_data = AnalyticsData(self.sites, month_range, self.frequency)
-            full_month_table = full_month_data.summary_table()            
-            
-        elif self.frequency == "MONTHLY":
+        tables = self._get_tables()
 
-            month_stats_range = utils.list_of_months(today, 1)
-        
-            device = []  
-            for month in month_stats_range:
-                new_row = {}
-                new_row["month"] = month.get_start()
-                data = AnalyticsData(self.sites, month, "MONTHLY")
-                new_row["data"] = data.device_table()
-                new_row["summary"] = data.summary_table()
-                device.append(new_row)
-                
-            self.imgdata = self.data.device_chart(device)
-
-
-        if not self.all_sites:
-            network_data = AnalyticsData(ga_config.TABLES.keys(), self.period, self.frequency)
-            network_summary_table = network_data.summary_table()
-            if self.frequency != "MONTHLY":
-                network_month_data = AnalyticsData(ga_config.TABLES.keys(), month_range, self.frequency)
-                network_month_summary_table = network_month_data.summary_table()
-        
-            
-        summary_table = self.data.summary_table()    
-        site_table = self.data.site_summary_table()
-        country_table = self.data.country_table()
-        article_table = self.data.article_table()
-        traffic_table = self.data.traffic_source_table()
-        referring_site_table = self.data.referring_sites_table(num_articles)
-        device_table = self.data.device_table()
-        social_table = self.data.social_network_table(num_articles)
-
-        
         html = self.template.render(
             subject=self.get_subject(),
             change=self.get_freq_label(),
-            site = self.get_site(),
-            all_sites = self.all_sites,
-            report_span = self.frequency,
-            warning_sites = self.warning_sites,
-            month_summary_table = to_month_table,
-            num_days = num_days,
-            full_month_summary_table = full_month_table,
-            network_summary_table = network_summary_table,
-            network_month_summary_table = network_month_summary_table,
-            summary_table=summary_table,
-            geo_table=country_table,
-            site_summary=site_table,
-            top_articles=article_table,
-            traffic_table=traffic_table,	
-            referrals=referring_site_table,
-            device_table=device_table,
-            social_table=social_table, 		
+            site=self.get_site(),
+            all_sites=self.all_sites,
+            report_span=self.frequency,
+            warning_sites=self.warning_sites,
+            num_days=self.num_days,
+            **tables
         )
-        return html		
-        
-        
-    def send_email(self, html):
-        # TODO use mailcatcher smtp.
-        """
-        Send html email using config parameters
-        """
-        pass
-        # html = transform(html)  # inline css using premailer
-        # msg = MIMEMultipart('alternative')
-        # msg.set_charset('utf8')
-        # msg['Subject'] = self.get_subject()
-        # msg['From'] = config.SEND_FROM
-        # msg['To'] = ', '.join(self.recipients)
+        return html
 
-        # NOTE disabled for now
-        # text_part = MIMEText("Please open with an HTML-enabled Email client.", 'plain')
-        # html_part = MIMEText(html.encode("utf-8"), 'html')
+    def _get_tables(self):
+        tables = super()._get_tables()
+        tables['summary_table'] = tables['summary_table'][0]
+        print(tables['summary_table'])
+        tables['network_summary_table'] = self._get_network_summary_table()
+        if self.frequency != 'MONTHLY':
+            tables['network_month_summary_table'] = self._get_network_month_summary_table()
+            tables['full_month_summary_table'] = self._get_full_month_summary_table()
+            tables['month_summary_table'] = self._get_month_summary_table()
+        return tables
+
+    def _get_network_summary_table(self):
+        network_data = aggregate_data.SummaryData(ga_config.TABLES.keys(), self.period, self.frequency)
+        return network_data.get_table()
+
+    def _get_month_summary_table(self):
+        # TODO clean, test, mock
+        if self.frequency != 'MONTHLY':
+            # TODO does this need to use datetime method
+            month_range = utils.StatsRange('Month to date Aggregate', self.first, self.today)
+            month_summary_data = aggregate_data.SummaryData(self.sites, month_range, self.frequency)
+            return month_summary_data.get_table()
+        return None
+
+    def _get_full_month_summary_table(self):
+        # TODO clean, test, mock
+        month_range = self._get_month_range()
+        full_month_data = aggregate_data.SummaryData(self.sites, month_range, self.frequency)
+        return full_month_data.get_table()
+
+    def _get_network_month_summary_table(self):
+        month_range = self._get_month_range()
+        # TODO fix
+        if not self.all_sites:
+            network_month_data = aggregate_data.SummaryData(ga_config.TABLES, month_range, self.frequency)
+            return network_month_data.get_table()
+        return None
+
+    def _get_month_range(self):
+        # TODO docstring and test
+        return utils.StatsRange('Month to date Aggregate', self.first, self.last)
+
+        # # TODO not clear what the different frequency possibilities are.
+        # else:
+        #     month_stats_range = utils.list_of_months(today, 1)
         #
-        # if self.imgdata:
-        #     img_part = MIMEImage(self.imgdata, 'png')
-        #     img_part.add_header('Content-ID', '<graph>')
-        #     msg.attach(img_part)
+        #     device = []
+        #     for month in month_stats_range:
+        #         new_row = dict()
+        #         new_row["month"] = month.get_start()
+        #         device_data = aggregate_data.DeviceData(self.sites, month, "MONTHLY")
+        #         summary_data = aggregate_data.SummaryData(self.sites, month, "MONTHLY")
+        #         new_row['data'] = device_data.get_table()
+        #         new_row['summary'] = summary_data.get_table()
+        #         device.append(new_row)
         #
-        # msg.attach(text_part)
-        # msg.attach(html_part)
+        #     # TODO add this back in
+        #     # self.imgdata = self.data.device_chart(device)
         #
-        # sender = smtplib.SMTP(config.SMTP_ADDRESS)
-        # sender.sendmail(config.SEND_FROM, self.recipients, msg.as_string())
-        #
-        # sender.quit()
+
         
-        
-        
-			
 class AnalyticsSocialReport(Report):
     
     def __init__(self, sites, period, recipients, frequency, subject):

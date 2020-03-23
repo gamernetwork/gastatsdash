@@ -6,7 +6,7 @@ cssutils==1.0.*
 google-api-python-client==1.*
 google-auth
 google-auth-oauthlib
-Jinja2==2.8.*
+Jinja2==2.11.*
 mock
 oauthlib
 premailer

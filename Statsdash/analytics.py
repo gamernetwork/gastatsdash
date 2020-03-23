@@ -221,7 +221,6 @@ class GoogleAnalytics(Analytics):
             metrics=metrics,
             **kwargs
         )
-        pprint(self._execute_query(query))
         return self._execute_query(query)
 
 

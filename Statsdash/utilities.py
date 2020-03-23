@@ -379,8 +379,9 @@ class StatsRange(object):
         Return instantiated one day period for date.
         """
         return cls("One month", subtract_one_month(date), date - timedelta(days=1))
-        
-        
+
+# TODO improve docstring.
+# TODO test
 def list_of_months(today, num_years):
     """
     Return a list of monthly stats ranges for the amount of years specified 

@@ -105,6 +105,7 @@ class TestSummaryData(unittest.TestCase):
         mock_query_result.return_value = mock_responses.summary_get_table_data
         result = self.summary_data.get_table()[0]
         self.assertTrue(all([k in result.keys() for k in expected_keys]))
+        self.assertEqual(result, mock_responses.summary_expected_data)
 
 
 class TestSiteSummaryData(unittest.TestCase):
@@ -290,21 +291,7 @@ class TestArticleData(unittest.TestCase):
         mock_query_result.return_value = mock_responses.article_query_response_1
         result = self.article_data.get_table()
         self.assertEqual(len(result), 4)
-        expected_keys = [
-            'pageviews',
-            'title',
-            'path',
-            'host',
-            'site_path',
-            'previous_figure_pageviews',
-            'previous_change_pageviews',
-            'previous_percentage_pageviews',
-            'yearly_figure_pageviews',
-            'yearly_change_pageviews',
-            'yearly_percentage_pageviews',
-        ]
-        for article_data in result:
-            self.assertTrue(all([k in article_data.keys() for k in expected_keys]))
+        self.assertEqual(result, mock_responses.article_table_expected_data)
 
 
 class TestCountryData(unittest.TestCase):
@@ -414,8 +401,7 @@ class TestTrafficSourceData(unittest.TestCase):
     def test_get_table(self, mock_query_result):
         mock_query_result.return_value = mock_responses.traffic_source_data
         result = self.traffic_source_data.get_table()
-        for data in result:
-            self.assertTrue(all([k in data.keys() for k in self.expected_keys]))
+        self.assertEqual(result, mock_responses.traffic_expected_data)
 
     @patch('Statsdash.analytics.GoogleAnalytics._run_report')
     def test_get_table_limit_works(self, mock_query_result):
