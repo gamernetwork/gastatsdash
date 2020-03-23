@@ -66,7 +66,7 @@ class AnalyticsData:
             period_data.append(data)
 
         if self.limit:
-            return self._join_periods(period_data)[:self.limit]
+            return self._join_periods(period_data)
         return self._join_periods(period_data)
 
     def _join_periods(self, data):
@@ -140,6 +140,8 @@ class AnalyticsData:
         data = self._aggregate_data(all_sites_data)
         if self.sort_rows_by:
             data = utils.sort_data(data, self.sort_rows_by[1])
+        if self.limit:
+            data = data[:self.limit]
         return data
 
     def _get_extra_data(self, period, site, data):
@@ -155,7 +157,6 @@ class AnalyticsData:
             our_metrics(self.metrics),
             match_key=self.match_key
         )
-
 
     def _format_all_data(self, data, site):
         output = []
@@ -368,7 +369,6 @@ class TrafficSourceData(AnalyticsData):
     limit = 10
 
 
-# TODO test
 class DeviceData(AnalyticsData):
 
     metrics = [
@@ -381,10 +381,8 @@ class DeviceData(AnalyticsData):
     sort_rows_by = Metrics.users
     aggregate_key = Dimensions.device_category[0]
     match_key = Dimensions.source[1]
-    limit = 6
 
 
-# TODO test
 class SocialData(AnalyticsData):
 
     metrics = [
@@ -392,10 +390,15 @@ class SocialData(AnalyticsData):
         Metrics.users,
         Metrics.sessions,
     ]
+    dimensions = [
+        Dimensions.social_network,
+    ]
 
     filters = 'ga:socialNetwork!=(not set)'
     sort_by = '-' + Metrics.users[0]
-    limit = 6
+    aggregate_key = Dimensions.social_network[0]
+    match_key = Dimensions.social_network[1]
+    limit = 15
 
 
 # TODO social chart should be different form the data class. should be in different module
@@ -486,59 +489,4 @@ class SocialData(AnalyticsData):
     #             referrals.append(row)
     #     return referrals
 
-    # TODO composite table
-#     def social_network_table(self, num_articles):
-#         data = {}
-#         for count, date in enumerate(self.date_list):
-#             social = []
-#             metrics = "ga:pageviews,ga:users,ga:sessions"
-#             for site in self.sites:
-#                 rows = analytics.rollup_ids(
-#                     self.site_ids[site],
-#                     date.get_start(),
-#                     date.get_end(),
-#                     metrics=metrics,
-#                     dimensions="ga:socialNetwork",
-#                     filters="ga:socialNetwork!=(not set)",
-#                     sort="-ga:users",
-#                     aggregate_key="ga:socialNetwork"
-#                 )
-#                 rows = self._remove_ga_names(rows)
-#                 rows = utils.change_key_names(
-#                     rows,
-#                     {"social_network": "socialNetwork"}
-#                 )
-#                 for row in rows:
-#                     row = utils.convert_to_floats(
-#                         row,
-#                         ["pageviews", "users", "sessions"]
-#                     )
-#                 social.extend(rows)
-#
-#             aggregated = utils.aggregate_data(
-#                 social,
-#                 ["pageviews", "users", "sessions"],
-#                 match_key="social_network"
-#             )
-#             sorted = utils.sort_data(aggregated, "users", limit=15)
-#             data[count] = sorted
-#
-#         added_change = utils.add_change(
-#             data[0],
-#             data[1],
-#             ["pageviews", "users", "sessions"],
-#             "previous",
-#             match_key="social_network"
-#         )
-#         added_change = utils.add_change(
-#             added_change,
-#             data[2],
-#             ["pageviews", "users", "sessions"],
-#             "yearly",
-#             match_key="social_network"
-#         )
-#         for row in added_change:
-#             filter = "ga:socialNetwork==%s" % row["social_network"]
-#             article = self.referral_articles(filter, num_articles)
-#             row["articles"] = article
-#         return added_change
+

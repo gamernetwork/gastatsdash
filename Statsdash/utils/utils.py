@@ -56,7 +56,6 @@ def change_key_names(data, changes):
     """
     Renames the keys specified in rows.
     """
-    # output =
     for original, new in changes:
         data[new] = data.pop(original)
     return data

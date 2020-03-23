@@ -141,6 +141,7 @@ class GoogleAnalytics(Analytics):
         date_hour = ('ga:dateHour', 'date_hour')
         device_category = ('ga:deviceCategory', 'device_category')
         host = ('ga:hostname', 'host')
+        social_network = ('ga:socialNetwork', 'social_network')
         source = ('ga:sourceMedium', 'source_medium')
         path = ('ga:pagePath', 'path')
         title = ('ga:pageTitle', 'title')
@@ -220,6 +221,7 @@ class GoogleAnalytics(Analytics):
             metrics=metrics,
             **kwargs
         )
+        pprint(self._execute_query(query))
         return self._execute_query(query)
 
 
