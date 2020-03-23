@@ -653,9 +653,9 @@ device_response = {'columnHeaders': [{'columnType': 'DIMENSION',
  'totalsForAllResults': {'ga:users': '179468'}}
 
 device_data_expected_1 = [
-    {'device_category': 'desktop', 'users': 105338.0},
-    {'device_category': 'mobile', 'users': 69385.0},
-    {'device_category': 'tablet', 'users': 4745.0}
+    {'device_category': 'desktop', 'users': 210676.0},
+    {'device_category': 'mobile', 'users': 138770.0},
+    {'device_category': 'tablet', 'users': 9490.0}
 ]
 
 social_response = {'columnHeaders': [{'columnType': 'DIMENSION',

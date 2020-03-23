@@ -440,9 +440,6 @@ class TestDeviceData(unittest.TestCase):
             'fake.site1.com': [{'id': 'ga:12345678'}],
             'fake.site2.com': [{'id': 'ga:87654321'}],
         }
-        self.site_tables = {
-            'rockpapershotgun.com': [{'id': 'ga:130215556'}],
-        }
 
         self.social_data = DeviceData(self.site_tables, self.period, 'MONTHLY')
         self.expected_keys = [
@@ -452,12 +449,12 @@ class TestDeviceData(unittest.TestCase):
             'yearly_percentage_users'
         ]
 
-
     @patch('Statsdash.analytics.GoogleAnalytics._run_report')
-    def test_country_get_data_for_period(self, mock_query_result):
+    def test_device_get_data_for_period(self, mock_query_result):
         mock_query_result.return_value = mock_responses.device_response
         expected_data = mock_responses.device_data_expected_1
         result = self.social_data._get_data_for_period(self.period)
+
         self.assertEqual(expected_data, result)
 
     def test_join_tables(self):
@@ -503,9 +500,70 @@ class TestSocialData(unittest.TestCase):
         ]
 
     @patch('Statsdash.analytics.GoogleAnalytics._run_report')
-    def test_country_get_data_for_period(self, mock_query_result):
+    def test_social_get_data_for_period(self, mock_query_result):
         mock_query_result.return_value = mock_responses.social_response
-        expected_data = mock_responses.social_data_expected_1
+        expected_data = [
+            {'pageviews': 11960.0,
+             'sessions': 8298.0,
+             'social_network': 'Facebook',
+             'users': 6002.0},
+            {'pageviews': 12842.0,
+             'sessions': 6966.0,
+             'social_network': 'Twitter',
+             'users': 3828.0},
+            {'pageviews': 1818.0,
+             'sessions': 1004.0,
+             'social_network': 'reddit',
+             'users': 574.0},
+            {'pageviews': 336.0,
+             'sessions': 168.0,
+             'social_network': 'YouTube',
+             'users': 144.0},
+            {'pageviews': 310.0,
+             'sessions': 176.0,
+             'social_network': 'Hacker News',
+             'users': 134.0},
+            {'pageviews': 154.0,
+             'sessions': 138.0,
+             'social_network': 'Quora',
+             'users': 116.0},
+            {'pageviews': 214.0,
+             'sessions': 128.0,
+             'social_network': 'Pocket',
+             'users': 64.0},
+            {'pageviews': 80.0,
+             'sessions': 48.0,
+             'social_network': 'Pinterest',
+             'users': 46.0},
+            {'pageviews': 120.0,
+             'sessions': 70.0,
+             'social_network': 'Netvibes',
+             'users': 38.0},
+            {'pageviews': 68.0,
+             'sessions': 46.0,
+             'social_network': 'Blogger',
+             'users': 16.0},
+            {'pageviews': 14.0,
+             'sessions': 14.0,
+             'social_network': 'VKontakte',
+             'users': 12.0},
+            {'pageviews': 14.0,
+             'sessions': 10.0,
+             'social_network': 'Naver',
+             'users': 10.0},
+            {'pageviews': 8.0,
+             'sessions': 8.0,
+             'social_network': 'LiveJournal',
+             'users': 8.0},
+            {'pageviews': 24.0,
+             'sessions': 10.0,
+             'social_network': 'WordPress',
+             'users': 8.0},
+            {'pageviews': 4.0,
+             'sessions': 4.0,
+             'social_network': 'Instagram',
+             'users': 4.0},
+        ]
         result = self.social_data._get_data_for_period(self.period)
         self.assertEqual(expected_data, result)
         self.assertEqual(len(result), 15)

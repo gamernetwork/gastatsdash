@@ -380,7 +380,7 @@ class DeviceData(AnalyticsData):
     sort_by = '-' + Metrics.users[0]
     sort_rows_by = Metrics.users
     aggregate_key = Dimensions.device_category[0]
-    match_key = Dimensions.source[1]
+    match_key = Dimensions.device_category[1]
 
 
 class SocialData(AnalyticsData):
