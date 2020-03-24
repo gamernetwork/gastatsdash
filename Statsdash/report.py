@@ -1,17 +1,15 @@
 from pprint import pprint
 from datetime import date, datetime, timedelta
-from email.mime.image import MIMEImage
 import logging.config, logging.handlers
-import smtplib
 
 from Statsdash.config import LOGGING
 from Statsdash.GA.aggregate_data import AnalyticsData
 from Statsdash import aggregate_data
 from Statsdash.render import get_environment
 from Statsdash.Youtube.aggregate_data import YoutubeData
-from Statsdash import config
 import Statsdash.GA.config as ga_config
 import Statsdash.utilities as utils
+from Statsdash.utils import Frequency
 
 logging.config.dictConfig(LOGGING)
 logger = logging.getLogger('report')
@@ -32,19 +30,19 @@ class Report:
 
         self.env = get_environment()
         self.template = self.env.get_template('base.html')
-        
+
+    # TODO make a property
     def get_subject(self):
         """
         Return the subject of the email that includes the dates for this period
         """
-        if self.frequency == 'DAILY' or self.frequency == "WOW_DAILY":
-        	subject = ' '.join([self.subject, self.period.end_date.strftime("%a %d %b %Y")])
-        elif self.frequency  == 'WEEKLY':
-        	weekly_date = self.period.start_date.strftime("%a %d %b %Y") + ' - ' + self.period.end_date.strftime("%a %d %b %Y")
-        	subject = ' '.join([self.subject, weekly_date])
-        elif self.frequency == 'MONTHLY':
-        	subject = ' '.join([self.subject, self.period.start_date.strftime('%B %Y')])
-        
+        if self.frequency in [Frequency.DAILY, Frequency.WOW_DAILY]:
+            subject = ' '.join([self.subject, self.period.end_date.strftime("%a %d %b %Y")])
+        elif self.frequency == Frequency.WEEKLY:
+            weekly_date = self.period.start_date.strftime("%a %d %b %Y") + ' - ' + self.period.end_date.strftime("%a %d %b %Y")
+            subject = ' '.join([self.subject, weekly_date])
+        else:
+            subject = ' '.join([self.subject, self.period.start_date.strftime('%B %Y')])
         return subject
 
     # TODO test
@@ -62,28 +60,6 @@ class Report:
         Get formatted data and render to template
         """
         raise NotImplementedError()       
-
-    def send_email(self, html):
-        """
-        Send html email using config parameters
-        """
-        pass
-        # html = transform(html) #inline css using premailer
-        # msg = MIMEMultipart('alternative')
-        # msg.set_charset('utf8')
-        # msg['Subject'] = self.get_subject()
-        # msg['From'] = config.SEND_FROM
-        # msg['To'] = ', '.join(self.recipients)
-        # text_part = MIMEText("Please open with an HTML-enabled Email client.", 'plain')
-        # html_part = MIMEText(html.encode("utf-8"), 'html')
-        #
-        # msg.attach(text_part)
-        # msg.attach(html_part)
-        #
-        # sender = smtplib.SMTP(config.SMTP_ADDRESS)
-        # sender.sendmail(config.SEND_FROM, self.recipients, msg.as_string())
-        #
-        # sender.quit()
 
     # TODO test and docstring
     def _get_tables(self):
@@ -105,8 +81,8 @@ class YoutubeReport(Report):
         self.template = self.env.get_template("Youtube/base.html")
         #check = self.data.check_available_data()
         #if not check['result']:
-        	#raise Exception("Data not available for %s" % check['channel'])
-        	
+            #raise Exception("Data not available for %s" % check['channel'])
+
         logger.debug("Running youtube report")
 
 
@@ -129,7 +105,7 @@ class YoutubeReport(Report):
         )
         
         return html
-		
+
     def check_data_availability(self, override=False):
         check = self.data.check_available_data()
         if check["result"]:
@@ -144,6 +120,7 @@ class YoutubeReport(Report):
                 return False
 
 
+# TODO break this into a daily report and a montly report
 class AnalyticsCoreReport(Report):
     """
     Google Analytics data report for a given collection of sites. Converts the
@@ -158,7 +135,7 @@ class AnalyticsCoreReport(Report):
         self.subject = subject
         self.data = AnalyticsData(self.sites, self.period, self.frequency)
         self.warning_sites = []
-        self.imgdata = None
+        self.img_data = None
         self.template = self.env.get_template("GA/base.html")
 
         # NOTE maybe nicer way to handle this
@@ -265,7 +242,7 @@ class AnalyticsCoreReport(Report):
         #         device.append(new_row)
         #
         #     # TODO add this back in
-        #     # self.imgdata = self.data.device_chart(device)
+        #     # self.img_data = self.data.device_chart(device)
         #
 
         
@@ -281,7 +258,7 @@ class AnalyticsSocialReport(Report):
         self.data = AnalyticsData(self.sites, self.period, self.frequency)    
         self.warning_sites = []
         self.template = self.env.get_template("GA/social_report.html")
-        self.imgdata = None
+        self.img_data = None
         
         logger.debug("Running analytics social report")
         
@@ -295,7 +272,7 @@ class AnalyticsSocialReport(Report):
             return self.sites[0]
         elif len(self.sites) == len(ga_config.TABLES.keys()):
             return ga_config.ALL_SITES_NAME
-    	
+
                 
     def generate_html(self):
         #TO DO 
@@ -305,7 +282,7 @@ class AnalyticsSocialReport(Report):
         network_summary_table = network_data.summary_table()
         
         social_table = self.data.social_network_table(10)
-        self.imgdata = self.data.social_chart()
+        self.img_data = self.data.social_chart()
 
         html = self.template.render(
             subject=self.get_subject(),
@@ -320,35 +297,6 @@ class AnalyticsSocialReport(Report):
             social_table=social_table, 		
         )
         return html		
-
-    def send_email(self, html):
-        """
-        Send html email using config parameters
-        """
-        pass
-        # html = transform(html) #inline css using premailer
-        # msg = MIMEMultipart('alternative')
-        # msg.set_charset('utf8')
-        # msg['Subject'] = self.get_subject()
-        # msg['From'] = config.SEND_FROM
-        # msg['To'] = ', '.join(self.recipients)
-        # text_part = MIMEText("Please open with an HTML-enabled Email client.", 'plain')
-        # html_part = MIMEText(html.encode("utf-8"), 'html')
-
-
-        if self.imgdata:
-            img_part = MIMEImage(self.imgdata, 'png')
-            img_part.add_header('Content-ID', '<graph>')
-            msg.attach(img_part)
-                    
-        msg.attach(text_part)
-        msg.attach(html_part)
-        
-        sender = smtplib.SMTP(config.SMTP_ADDRESS)
-        sender.sendmail(config.SEND_FROM, self.recipients, msg.as_string())
-    
-        sender.quit()
-
 
 
 class AnalyticsYearSocialReport(Report):
@@ -457,8 +405,8 @@ class AnalyticsSocialExport(Report):
         self.warning_sites = []
         self.template = self.env.get_template("social.csv")
         
-        logger.debug("Running analytics social export")   	        
-    	
+        logger.debug("Running analytics social export")
+
     def generate_html(self):
 
         month_stats_range = utils.list_of_months(self.period.end_date, 1)
@@ -469,7 +417,6 @@ class AnalyticsSocialExport(Report):
             data = AnalyticsData(self.sites, month, self.frequency)
             new_row["data"] = data.social_network_table(0)
             social_export.append(new_row)
-            
 
         csv = self.template.render(
             subject=self.get_subject(),
@@ -478,22 +425,4 @@ class AnalyticsSocialExport(Report):
             warning_sites = self.warning_sites,
             social_export = social_export	
         )
-        return csv		
-        
-    def send_email(self, csv):
-        pass
-        # msg = MIMEMultipart('alternative')
-        #
-        # msg['Subject'] = self.get_subject()
-        # msg['From'] = config.SEND_FROM
-        # msg['To'] = ', '.join(self.recipients)
-        #
-        # attachment= MIMEText(csv)
-        #
-        # attachment.add_header("Content-Disposition", "attachment", filename="test.csv")
-        # msg.attach(attachment)
-        #
-        # sender = smtplib.SMTP(config.SMTP_ADDRESS)
-        # sender.sendmail(config.SEND_FROM, self.recipients, msg.as_string())
-        #
-        # sender.quit()
+        return csv

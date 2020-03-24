@@ -265,7 +265,7 @@ class TestYouTubeAnalytics(unittest.TestCase):
             ['1', '2'],
             self.stats_date,
             self.stats_date,
-            YouTubeAnalytics.Metrics.pageviews
+            YouTubeAnalytics.Metrics.views
         )
         self.assertEqual(len(all_reports), 2)
 
@@ -280,12 +280,12 @@ class TestYouTubeAnalytics(unittest.TestCase):
             [self._id],
             self.stats_date,
             self.stats_date,
-            YouTubeAnalytics.Metrics.pageviews
+            YouTubeAnalytics.Metrics.views
         )
         self.assertEqual(len(all_reports), 0)
         mock_logger.debug.assert_called_with(
             f'No data for {self._id} on {self.stats_date} - {self.stats_date}.'
-            f'\nmetrics: {YouTubeAnalytics.Metrics.pageviews}\ndimensions: '
+            f'\nmetrics: {YouTubeAnalytics.Metrics.views}\ndimensions: '
             'None.\nfilters: None.'
         )
 

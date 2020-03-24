@@ -1,12 +1,9 @@
 from datetime import date, datetime, timedelta
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
 from sqlite3 import OperationalError
 from tendo import singleton
 import argparse
 import logging, logging.config, logging.handlers
 import os
-import smtplib
 import sqlite3
 import sys
 import traceback
@@ -15,10 +12,12 @@ from Statsdash.config import LOGGING
 from Statsdash.report_schedule import reports
 from Statsdash.utilities import add_one_month, find_next_weekday
 import Statsdash.config as config
+from Statsdash.mailer import send_email
 import Statsdash.utilities as utils
 
 
-class RunLogger(object):
+# TODO test this once we're up and running?
+class RunLogger:
     """
     Persistence layer for recording the last run of a report and querying
     whether a report can be run now, given a reporting frequency.
@@ -26,19 +25,22 @@ class RunLogger(object):
     override_data = False
     
     def __init__(self):
-        db_location = os.path.join(config.SCHEDULE_DB_LOCATION, "schedule.db")
+        """
+        Build `report_runs` table if it doesn't already exist.
+        """
+        db_location = os.path.join(config.SCHEDULE_DB_LOCATION, 'schedule.db')
         self.conn = sqlite3.connect(db_location)
         try:
             # Check if the `report_runs` table exists.
-            self.conn.execute("SELECT * FROM report_runs LIMIT 1")
+            self.conn.execute('SELECT * FROM report_runs LIMIT 1')
         except OperationalError:
             # Build `report_runs` table if it doesn't exist.
             self.bootstrap_db()
 
     def bootstrap_db(self):
         self.conn.execute(
-            "CREATE TABLE report_runs " +
-            "(identifier text unique, last_run datetime)"
+            'CREATE TABLE report_runs ' +
+            '(identifier text unique, last_run datetime)'
         )
 
     def get_last_run_end(self, identifier):
@@ -51,12 +53,11 @@ class RunLogger(object):
         """
         c = self.conn.cursor()
         c.execute(
-            "SELECT last_run FROM report_runs " +
-            "WHERE identifier='%s'" % identifier
+            f'SELECT last_run FROM report_runs WHERE identifier={identifier}'
         )
         result = c.fetchone()
         if result:
-            last_run = datetime.strptime(result[0], "%Y-%m-%d %H:%M:%S.%f")
+            last_run = datetime.strptime(result[0], '%Y-%m-%d %H:%M:%S.%f')
             return last_run
         return datetime(1, 1, 1)
 
@@ -68,7 +69,7 @@ class RunLogger(object):
             run_datetime = datetime.now()
         c = self.conn.cursor()
         c.execute(
-            "INSERT OR REPLACE INTO report_runs VALUES (?, ?)", 
+            'INSERT OR REPLACE INTO report_runs VALUES (?, ?)',
             (identifier, run_datetime)
         )
         self.conn.commit()
@@ -82,7 +83,8 @@ class RunLogger(object):
         # NOTE whats going on here?
         today = date.today() - timedelta(days=1)
         now = datetime(today.year, today.month, today.day, 00)
-        
+
+        # TODO remove lits
         if last_run_end.year == 1:
             if frequency == 'DAILY' or frequency == "WOW_DAILY":
                 return now
@@ -123,9 +125,10 @@ class RunLogger(object):
         return next_run
 
 
-# NOTE python2
-class Errors(object):
+class Errors:
+
     errors = []
+
     def get_errors(self):
         """
         Return list of current errors
@@ -142,24 +145,12 @@ class Errors(object):
         """
         Send html email using config parameters
         """
-        msg = MIMEMultipart('alternative')
-        msg.set_charset('utf8')
-        msg['Subject'] = "Statsdash Errors"
-        msg['From'] = config.SEND_FROM
-        msg['To'] = ", ".join(config.ERROR_REPORTER)
-        
-        message = ""
-        for error in self.errors:
-            message += error + "\n"
-        
-        text_part = MIMEText(message, 'plain')      
-        msg.attach(text_part)
-        
-        sender = smtplib.SMTP(config.SMTP_ADDRESS)
-        sender.sendmail(config.SEND_FROM, config.ERROR_REPORTER, msg.as_string())
-    
-        sender.quit()  
-            
+        message = '\n'.join(self.errors)
+        subject = 'Statsdash Errors'
+        send_from = config.SEND_FROM
+        recipients = config.ERROR_REPORTER
+        send_email('', message, subject, send_from, recipients)
+
 
 def _run(dryrun=False):
     """
@@ -176,13 +167,11 @@ def _run(dryrun=False):
     logging.config.dictConfig(LOGGING)
     logger = logging.getLogger('report')
 
-    for config in reports:  # TODO fix shadow
-        identifier = config['identifier']
-        frequency = config['frequency']
+    for report_conf in reports:
+        identifier = report_conf['identifier']
+        frequency = report_conf['frequency']
 
-        # NOTE Frequency options allow more specific frequency to be specified,
-        # e.g. first Tuesday of every month
-        frequency_options = config.get('frequency_options', {})
+        frequency_options = report_conf.get('frequency_options', {})
 
         last_run_end = run_logger.get_last_run_end(identifier)
         next_run_date = run_logger.get_next_run(last_run_end, frequency, frequency_options).date()
@@ -194,7 +183,7 @@ def _run(dryrun=False):
         if needs_run:
             period = utils.StatsRange.get_period(next_run_date, frequency)
             # Create report instance with given period.
-            report = config["report"](config["sites"], period, config["recipients"], config["frequency"], config["subject"])  
+            report = report_conf['report'](report_conf['sites'], period, report_conf['frequency'], report_conf['subject'])
             if run_logger.override_data:
                 data_available = True
                 no_data_site = report.check_data_availability(override=True)
@@ -215,7 +204,7 @@ def _run(dryrun=False):
                 try:
                     if not dryrun:
                         html = report.generate_html()
-                        # report.send_email(html)
+                        send_email(html, report.subject, config.SEND_FROM, report_conf['recipients'], report.imgdata)
                         run_datetime = datetime(
                             year=report.period.end_date.year,
                             month=report.period.end_date.month,

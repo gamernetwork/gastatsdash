@@ -1,3 +1,4 @@
+import requests
 from pprint import pprint
 from googleapiclient import errors
 import logging.config
@@ -231,7 +232,14 @@ class YouTubeAnalytics(Analytics):
     identifier = 'YouTube Analytics'
 
     class Metrics:
-        pageviews = 'views'
+        views = ('views', 'views')
+        estimated_minutes_watched = ('estimatedMinutesWatched', 'views')
+        subscribers_gained = ('subscribersGained', 'subscribers_gained')
+        subscribers_lost = ('subscribersLost', 'subscribers_lost')
+
+    class Dimensions:
+        country = ('country', 'country')
+
 
     def __init__(self, data_resource, content_owner_id):
         super().__init__(data_resource)
@@ -240,7 +248,7 @@ class YouTubeAnalytics(Analytics):
     def data_available(self, _id, stats_date):
         filters = f'channel=={_id}'
         results = self._run_report(_id, stats_date, stats_date,
-                                   self.Metrics.pageviews[0], filters=filters)
+                                   self.Metrics.views[0], filters=filters)
         # TODO duplication
         rows = results.get('rows')
         if not bool(rows):
@@ -250,7 +258,12 @@ class YouTubeAnalytics(Analytics):
         return True
 
     def _run_report(self, _id, start_date, end_date, metrics, **kwargs):
+        """
+
+        TODO
+        """
         filters = self._prepare_filters(_id, kwargs.pop('filters', None))
+
         query = self.data_resource.query(
             ids=f'contentowner=={self.content_owner_id}',
             startDate=start_date,
@@ -259,6 +272,8 @@ class YouTubeAnalytics(Analytics):
             filters=filters,
             **kwargs,
         )
+        response = requests.get(query.uri)
+        pprint(response.json())
         return self._execute_query(query)
 
     def _prepare_filters(self, _id, filters):
@@ -269,6 +284,8 @@ class YouTubeAnalytics(Analytics):
         """
         # TODO test
         if filters:
+            print('AGGHHH')
+            print(filters)
             return filters + ';channel==%s' % _id
         return 'channel==%s' % _id
 
@@ -312,9 +329,9 @@ class YouTubeChannels(Analytics):
     #     return self._execute_query(video_results)
 
 
-def google_metrics(metrics):
+def third_party_metrics(metrics):
     """
-    Gets the Google identifier for an iterable of metrics.
+    Gets the Google/YouTube identifier for an iterable of metrics.
 
     Args:
         * `metrics` - `list` - a list of metrics

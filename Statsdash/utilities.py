@@ -135,7 +135,6 @@ def add_change(this_period, previous_period, change_keys, label, match_key=None)
     return this_period               
 
 
-
 def convert_values_list(id_dict):
     """
     Converts the values of a dictionary to be list format
@@ -150,6 +149,7 @@ def convert_values_list(id_dict):
     return id_dict 
 
 
+# TODO fix
 def chart(title, x_labels, data, x_title, y_title):
     line_chart = pygal.Line(height=500, interpolate='cubic', x_label_rotation=30, stroke_style={"width":2})
     line_chart.title = title
@@ -159,13 +159,12 @@ def chart(title, x_labels, data, x_title, y_title):
     for line in data:
         line_chart.add(line, data[line]) 
 
-    # NOTE disabled for the moment.
-    # imgdata = io.StringIO()
-    # image = line_chart.render_to_png(imgdata)
-    # imgdata.seek(0)
-    # return imgdata.buf
+    imgdata = io.StringIO()
+    image = line_chart.render_to_png(imgdata)
+    imgdata.seek(0)
+    return imgdata.buf
     
-    #line_chart.render_to_png("/var/www/dev/faye/statsdash_reports/social.png")
+    line_chart.render_to_png("/var/www/dev/faye/statsdash_reports/social.png")
 
 
 

@@ -1,24 +1,26 @@
-from oauth2client.file import Storage
-from oauth2client.client import flow_from_clientsecrets
+import os
+import subprocess
 
-from Statsdash.Youtube import config
-
-
-CLIENT_SECRETS_FILE = config.CLIENT_SECRETS_FILE
-
-YOUTUBE_SCOPES = [
-    "https://www.googleapis.com/auth/youtube.readonly",
-    "https://www.googleapis.com/auth/yt-analytics.readonly",
-    "https://www.googleapis.com/auth/youtubepartner",
+API_SERVICE_NAME = 'youtubeAnalytics'
+API_VERSION = 'v2'
+SCOPES = [
+    'https://www.googleapis.com/auth/youtube.readonly',
+    'https://www.googleapis.com/auth/yt-analytics.readonly',
+    'https://www.googleapis.com/auth/youtubepartner'
 ]
+PROJECT_ROOT = dir_path = os.path.dirname(os.path.realpath(__file__))
+OUTPUT_LOCATION = PROJECT_ROOT + '/credentials/oauth2.json'
+print(PROJECT_ROOT)
+print(OUTPUT_LOCATION)
 
-
-# Create a Flow from a clients secrets file
-flow = flow_from_clientsecrets(
-    CLIENT_SECRETS_FILE,
-    scope=" ".join(YOUTUBE_SCOPES),
-    redirect_uri='http://localhost:8080'
-)
-
-storage = Storage("youtube-oauth2.json")
-credentials = run_flow(flow, storage)
+print(' '.join(SCOPES))
+subprocess.run([
+    'google-oauthlib-tool',
+    '--client-secrets',
+    '/Users/john/src/gastatsdash/credentials/client_secret_611899013700-ummpb9k80n2ks2c5esvk8oq8bktq1a6e.apps.googleusercontent.com.json',
+    '--scope',
+    ' '.join(SCOPES),
+    '--save',
+    '--credentials',
+    OUTPUT_LOCATION,
+])

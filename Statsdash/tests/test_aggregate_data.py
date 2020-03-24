@@ -3,8 +3,7 @@ from datetime import date
 import unittest
 from unittest.mock import patch
 
-from Statsdash.aggregate_data import ArticleData, CountryData, \
-    DeviceData, SiteSummaryData, SocialData, SummaryData, TrafficSourceData
+from Statsdash.aggregate_data import google, youtube
 from Statsdash import mock_responses
 from Statsdash.stats_range import StatsRange
 
@@ -48,7 +47,7 @@ expected_keys = [
 ]
 
 
-class TestSummaryData(unittest.TestCase):
+class TestGoogleSummaryData(unittest.TestCase):
 
     @patch('Statsdash.GA.config.TABLES')
     def setUp(self, mock_tables):
@@ -61,7 +60,7 @@ class TestSummaryData(unittest.TestCase):
             'fake.site1.com': [{'id': 'ga:12345678'}],
             'fake.site2.com': [{'id': 'ga:87654321'}],
         }
-        self.summary_data = SummaryData(self.site_tables, self.period, 'MONTHLY')
+        self.summary_data = google.SummaryData(self.site_tables, self.period, 'MONTHLY')
 
     @patch('Statsdash.analytics.GoogleAnalytics._run_report')
     def test_get_data_for_period(self, mock_query_result):
@@ -79,7 +78,7 @@ class TestSummaryData(unittest.TestCase):
         self.assertEqual(result[0]['avg_session_time'], .5)
 
     @patch('Statsdash.analytics.GoogleAnalytics._run_report')
-    @patch('Statsdash.aggregate_data.logger')
+    @patch('Statsdash.aggregate_data.google.logger')
     def test_get_data_for_period_logger(self, mock_logger, mock_query_result):
         mock_query_result.return_value = {}
         self.summary_data._get_data_for_period(self.period)
@@ -100,7 +99,7 @@ class TestSummaryData(unittest.TestCase):
         result = self.summary_data._join_periods(all_periods)[0]
         self.assertTrue(all([k in result.keys() for k in expected_keys]))
 
-    @patch('Statsdash.aggregate_data.SummaryData._get_data_for_period')
+    @patch('Statsdash.aggregate_data.google.SummaryData._get_data_for_period')
     def test_get_table(self, mock_query_result):
         mock_query_result.return_value = mock_responses.summary_get_table_data
         result = self.summary_data.get_table()[0]
@@ -108,7 +107,7 @@ class TestSummaryData(unittest.TestCase):
         self.assertEqual(result, mock_responses.summary_expected_data)
 
 
-class TestSiteSummaryData(unittest.TestCase):
+class TestGoogleSiteSummaryData(unittest.TestCase):
 
     @patch('Statsdash.GA.config.TABLES')
     def setUp(self, mock_tables):
@@ -121,7 +120,7 @@ class TestSiteSummaryData(unittest.TestCase):
             'fake.site1.com': [{'id': 'ga:12345678'}],
             'fake.site2.com': [{'id': 'ga:87654321'}],
         }
-        self.site_summary_data = SiteSummaryData(self.site_tables, self.period, 'MONTHLY')
+        self.site_summary_data = google.SiteSummaryData(self.site_tables, self.period, 'MONTHLY')
 
 
     @patch('Statsdash.analytics.GoogleAnalytics._run_report')
@@ -163,9 +162,8 @@ class TestSiteSummaryData(unittest.TestCase):
         self.assertEqual(result[0]['site'], 'fake.site2.com')
         self.assertEqual(result[1]['site'], 'fake.site1.com')
 
-
     @patch('Statsdash.analytics.GoogleAnalytics._run_report')
-    @patch('Statsdash.aggregate_data.logger')
+    @patch('Statsdash.aggregate_data.google.logger')
     def test_get_data_for_period_logger(self, mock_logger, mock_query_result):
         mock_query_result.return_value = {}
         self.site_summary_data._get_data_for_period(self.period)
@@ -181,7 +179,7 @@ class TestSiteSummaryData(unittest.TestCase):
             self.assertTrue(all([k in site_data.keys() for k in expected_keys]))
             self.assertTrue('site' in site_data.keys())
 
-    @patch('Statsdash.aggregate_data.SiteSummaryData._get_data_for_period')
+    @patch('Statsdash.aggregate_data.google.SiteSummaryData._get_data_for_period')
     def test_get_table(self, mock_query_result):
         mock_query_result.return_value = mock_responses.site_summary_get_table_data
         result = self.site_summary_data.get_table()
@@ -189,7 +187,7 @@ class TestSiteSummaryData(unittest.TestCase):
             self.assertTrue(all([k in site_data.keys() for k in expected_keys]))
 
 
-class TestArticleData(unittest.TestCase):
+class TestGoogleArticleData(unittest.TestCase):
 
     @patch('Statsdash.GA.config.TABLES')
     def setUp(self, mock_tables):
@@ -202,7 +200,7 @@ class TestArticleData(unittest.TestCase):
             'fake.site1.com': [{'id': 'ga:12345678'}],
             'fake.site2.com': [{'id': 'ga:87654321'}],
         }
-        self.article_data = ArticleData(self.site_tables, self.period, 'MONTHLY')
+        self.article_data = google.ArticleData(self.site_tables, self.period, 'MONTHLY')
 
     @patch('Statsdash.analytics.GoogleAnalytics._run_report')
     def test_article_get_data_for_period_one_site(self, mock_query_result):
@@ -294,7 +292,7 @@ class TestArticleData(unittest.TestCase):
         self.assertEqual(result, mock_responses.article_table_expected_data)
 
 
-class TestCountryData(unittest.TestCase):
+class TestGoogleCountryData(unittest.TestCase):
 
     @patch('Statsdash.GA.config.TABLES')
     def setUp(self, mock_tables):
@@ -307,7 +305,7 @@ class TestCountryData(unittest.TestCase):
             'fake.site1.com': [{'id': 'ga:12345678'}],
             'fake.site2.com': [{'id': 'ga:87654321'}],
         }
-        self.country_data = CountryData(self.site_tables, self.period, 'MONTHLY')
+        self.country_data = google.CountryData(self.site_tables, self.period, 'MONTHLY')
         self.expected_keys = [
             'country', 'pageviews', 'users', 'previous_figure_pageviews',
             'previous_change_pageviews', 'previous_percentage_pageviews',
@@ -360,7 +358,7 @@ class TestCountryData(unittest.TestCase):
         self.assertTrue(all([k in result.keys() for k in self.expected_keys]))
 
 
-class TestTrafficSourceData(unittest.TestCase):
+class TestGoogleTrafficSourceData(unittest.TestCase):
 
     @patch('Statsdash.GA.config.TABLES')
     def setUp(self, mock_tables):
@@ -373,7 +371,7 @@ class TestTrafficSourceData(unittest.TestCase):
             'fake.site1.com': [{'id': 'ga:12345678'}],
             'fake.site2.com': [{'id': 'ga:87654321'}],
         }
-        self.traffic_source_data = TrafficSourceData(self.site_tables, self.period, 'MONTHLY')
+        self.traffic_source_data = google.TrafficSourceData(self.site_tables, self.period, 'MONTHLY')
         self.expected_keys = [
             'pageviews', 'source_medium', 'users', 'previous_figure_pageviews',
             'previous_change_pageviews', 'previous_percentage_pageviews',
@@ -413,7 +411,7 @@ class TestTrafficSourceData(unittest.TestCase):
         self.assertEqual(len(result), 5)
 
 
-class TestDeviceData(unittest.TestCase):
+class TestGoogleDeviceData(unittest.TestCase):
 
     @patch('Statsdash.GA.config.TABLES')
     def setUp(self, mock_tables):
@@ -427,7 +425,7 @@ class TestDeviceData(unittest.TestCase):
             'fake.site2.com': [{'id': 'ga:87654321'}],
         }
 
-        self.social_data = DeviceData(self.site_tables, self.period, 'MONTHLY')
+        self.social_data = google.DeviceData(self.site_tables, self.period, 'MONTHLY')
         self.expected_keys = [
             'device_category', 'users', 'previous_figure_users',
             'previous_change_users', 'previous_percentage_users',
@@ -457,7 +455,7 @@ class TestDeviceData(unittest.TestCase):
             self.assertTrue(all([k in data.keys() for k in self.expected_keys]))
 
 
-class TestSocialData(unittest.TestCase):
+class TestGoogleSocialData(unittest.TestCase):
 
     @patch('Statsdash.GA.config.TABLES')
     def setUp(self, mock_tables):
@@ -471,7 +469,7 @@ class TestSocialData(unittest.TestCase):
             'fake.site2.com': [{'id': 'ga:87654321'}],
         }
 
-        self.social_data = SocialData(self.site_tables, self.period, 'MONTHLY')
+        self.social_data = google.SocialData(self.site_tables, self.period, 'MONTHLY')
         self.expected_keys = [
             'pageviews', 'sessions', 'social_network', 'users',
             'previous_figure_pageviews', 'previous_change_pageviews',
@@ -566,3 +564,67 @@ class TestSocialData(unittest.TestCase):
         result = self.social_data.get_table()
         for data in result:
             self.assertTrue(all([k in data.keys() for k in self.expected_keys]))
+
+
+class TestYouTubeCountryData(unittest.TestCase):
+
+    def setUp(self):
+        self.period = StatsRange(
+            'Month to date Aggregate',
+            date(2020, 3, 12),
+            date(2020, 3, 13)
+        )
+        self.site_tables = {
+            'channel_1': '12345678',
+            'channel_2': '87654321',
+        }
+        self.site_tables = {
+            'dicebreaker': ['UC0jMXccxfvnwXvTpngFwbNA'],
+        }
+        self.country_data = youtube.CountryData(self.site_tables, self.period, 'MONTHLY')
+        self.expected_keys = [
+            'country', 'pageviews', 'users', 'previous_figure_pageviews',
+            'previous_change_pageviews', 'previous_percentage_pageviews',
+            'previous_figure_users', 'previous_change_users',
+            'previous_percentage_users', 'yearly_figure_pageviews',
+            'yearly_change_pageviews', 'yearly_percentage_pageviews',
+            'yearly_figure_users', 'yearly_change_users',
+            'yearly_percentage_users'
+        ]
+
+    # @patch('Statsdash.analytics.YouTubeAnalytics._run_report')
+    def test_country_get_data_for_period(self):
+
+        # mock_query_result.return_value = {}
+        expected_data = mock_responses.countries_expected_data_row
+        result = self.country_data._get_data_for_period(self.period)
+        self.assertEqual(expected_data, result)
+
+    # @patch('Statsdash.analytics.GoogleAnalytics._run_report')
+    # def test_country_get_data_for_period_no_row(self, mock_query_result):
+    #     def mock_run_report(*args, **kwargs):
+    #         if kwargs['filters'].startswith('ga:country=~'):
+    #             return mock_responses.country_report
+    #         return None
+    #     mock_query_result.side_effect = mock_run_report
+    #     expected_data = mock_responses.countries_expected_data_no_row
+    #     result = self.country_data._get_data_for_period(self.period)
+    #     self.assertEqual(expected_data, result)
+    #
+    # def test_join_tables(self):
+    #     all_periods = [mock_responses.countries_expected_data_row] * 3
+    #     result = self.country_data._join_periods(all_periods)
+    #
+    #     for data in result:
+    #         self.assertTrue(all([k in data.keys() for k in self.expected_keys]))
+    #
+    # @patch('Statsdash.analytics.GoogleAnalytics._run_report')
+    # def test_get_table(self, mock_query_result):
+    #     def mock_run_report(*args, **kwargs):
+    #         if kwargs['filters'].startswith('ga:country=~'):
+    #             return mock_responses.country_report
+    #         return mock_responses.rest_of_world_country_report
+    #     mock_query_result.side_effect = mock_run_report
+    #     result = self.country_data.get_table()[0]
+    #     self.assertTrue(all([k in result.keys() for k in self.expected_keys]))
+
