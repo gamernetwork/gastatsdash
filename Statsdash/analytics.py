@@ -107,7 +107,7 @@ class Analytics:
             if val:
                 s = val.encode('utf-8')
             log_message += f'\n{kw}: {s}.'
-            logger.debug(log_message)
+        logger.debug(log_message)
 
     def _run_report(self, _id, start, end, metrics, **kwargs):
         raise NotImplementedError(
@@ -166,7 +166,6 @@ class GoogleAnalytics(Analytics):
         canada = 'Canad'
         australia = 'Austral'
         new_zealand = 'New Ze'
-
 
     def data_available(self, _id, stats_date):
         """
@@ -233,13 +232,19 @@ class YouTubeAnalytics(Analytics):
 
     class Metrics:
         views = ('views', 'views')
-        estimated_minutes_watched = ('estimatedMinutesWatched', 'views')
+        estimated_minutes_watched = ('estimatedMinutesWatched', 'estimated_minutes_watched')
         subscribers_gained = ('subscribersGained', 'subscribers_gained')
         subscribers_lost = ('subscribersLost', 'subscribers_lost')
+        likes = ('likes', 'likes')
+        dislikes = ('dislikes', 'dislikes')
+        comments = ('comments', 'comments')
+        shares = ('shares', 'shares')
 
     class Dimensions:
+        channel = ('channel', 'channel')
         country = ('country', 'country')
-
+        insight_traffic_source_type = ('insightTrafficSourceType', 'insight_traffic_source_type')
+        video = ('video', 'video')
 
     def __init__(self, data_resource, content_owner_id):
         super().__init__(data_resource)
@@ -265,15 +270,14 @@ class YouTubeAnalytics(Analytics):
         filters = self._prepare_filters(_id, kwargs.pop('filters', None))
 
         query = self.data_resource.query(
-            ids=f'contentowner=={self.content_owner_id}',
+            ids=f'contentOwner=={self.content_owner_id}',
             startDate=start_date,
             endDate=end_date,
             metrics=metrics,
             filters=filters,
             **kwargs,
         )
-        response = requests.get(query.uri)
-        pprint(response.json())
+        pprint(self._execute_query(query))
         return self._execute_query(query)
 
     def _prepare_filters(self, _id, filters):
@@ -284,13 +288,11 @@ class YouTubeAnalytics(Analytics):
         """
         # TODO test
         if filters:
-            print('AGGHHH')
-            print(filters)
             return filters + ';channel==%s' % _id
         return 'channel==%s' % _id
 
 
-class YouTubeChannels(Analytics):
+class YouTubeVideos(Analytics):
     """
     Wrapper class for YouTube Data API Channels resource.
     """
@@ -317,16 +319,15 @@ class YouTubeChannels(Analytics):
         )
         return self._execute_query(query)
 
-    #
-    # def get_video(self, id):
-    #     """
-    #     Returns info on video with specified id.
-    #     """
-    #     video_results = self.youtube.videos().list(
-    #         id=id,
-    #         part="snippet"
-    #     )
-    #     return self._execute_query(video_results)
+    def get_video(self, id):
+        """
+        Returns info on video with specified id.
+        """
+        video_results = self.data_resource.list(
+            id=id,
+            part='snippet'
+        )
+        return self._execute_query(video_results)
 
 
 def third_party_metrics(metrics):

@@ -1,16 +1,9 @@
 from pprint import pprint
 
-import logging.config
-import logging.handlers
-
 from Statsdash.analytics import third_party_metrics, our_metrics
 from Statsdash.config import LOGGING
 from Statsdash.stats_range import StatsRange
 from Statsdash.utils import utils
-
-
-logging.config.dictConfig(LOGGING)
-logger = logging.getLogger('report')
 
 
 class AggregateData:
@@ -24,6 +17,7 @@ class AggregateData:
     sort_by = None
     sort_rows_by = None
     limit = None
+    max_results = None
 
     def __init__(self, site_tables, period, frequency):
         self.sites = site_tables.keys()
@@ -105,6 +99,7 @@ class AggregateData:
                 metrics=','.join(third_party_metrics(self.metrics)),
                 dimensions=','.join(third_party_metrics(self.dimensions)),
                 filters=self.filters,
+                maxResults=self.max_results,
                 sort=self.sort_by,
                 aggregate_key=self.aggregate_key,
             )
@@ -114,11 +109,6 @@ class AggregateData:
             if data:
                 data = self._format_all_data(data, site)
                 all_sites_data = all_sites_data + data
-            else:
-                logger.debug(
-                    f'No data for site {site} on {period.get_start()} - '
-                    f'{period.get_end()}'
-                )
         data = self._aggregate_data(all_sites_data)
         if self.sort_rows_by:
             data = utils.sort_data(data, self.sort_rows_by[1])

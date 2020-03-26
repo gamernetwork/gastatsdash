@@ -1,11 +1,17 @@
+import json
+import requests
 from pprint import pprint
 from datetime import date
 import unittest
 from unittest.mock import patch
 
+from googleapiclient.discovery import build
+from google.oauth2.credentials import Credentials
+
 from Statsdash.aggregate_data import google, youtube
 from Statsdash import mock_responses
 from Statsdash.stats_range import StatsRange
+from Statsdash.Youtube import config
 
 
 expected_keys = [
@@ -78,12 +84,15 @@ class TestGoogleSummaryData(unittest.TestCase):
         self.assertEqual(result[0]['avg_session_time'], .5)
 
     @patch('Statsdash.analytics.GoogleAnalytics._run_report')
-    @patch('Statsdash.aggregate_data.google.logger')
+    @patch('Statsdash.analytics.logger')
     def test_get_data_for_period_logger(self, mock_logger, mock_query_result):
         mock_query_result.return_value = {}
         self.summary_data._get_data_for_period(self.period)
-        mock_logger.debug.assert_called_with(
-            'No data for site fake.site2.com on 2020-03-12 - 2020-03-13'
+        mock_logger.debug.assert_called_with((
+            "No data for {'id': 'ga:87654321'} on 2020-03-12 - 2020-03-13.\n"
+            "metrics: ga:pageviews,ga:users,ga:sessions,"
+            "ga:pageviewsPerSession,ga:avgSessionDuration\ndimensions: None."
+            "\nfilters: None.")
         )
         self.assertEqual(mock_logger.debug.call_count, 2)
 
@@ -163,13 +172,15 @@ class TestGoogleSiteSummaryData(unittest.TestCase):
         self.assertEqual(result[1]['site'], 'fake.site1.com')
 
     @patch('Statsdash.analytics.GoogleAnalytics._run_report')
-    @patch('Statsdash.aggregate_data.google.logger')
+    @patch('Statsdash.analytics.logger')
     def test_get_data_for_period_logger(self, mock_logger, mock_query_result):
         mock_query_result.return_value = {}
         self.site_summary_data._get_data_for_period(self.period)
-        mock_logger.debug.assert_called_with(
-            'No data for site fake.site2.com on 2020-03-12 - 2020-03-13'
-        )
+        mock_logger.debug.assert_called_with((
+            "No data for {'id': 'ga:87654321'} on 2020-03-12 - 2020-03-13."
+            "\nmetrics: ga:pageviews,ga:users,ga:sessions,ga:pageviewsPerSession,"
+            "ga:avgSessionDuration\ndimensions: None.\nfilters: None."
+        ))
         self.assertEqual(mock_logger.debug.call_count, 2)
 
     def test_join_periods(self):
@@ -566,6 +577,129 @@ class TestGoogleSocialData(unittest.TestCase):
             self.assertTrue(all([k in data.keys() for k in self.expected_keys]))
 
 
+class TestYouTubeChannelSummaryData(unittest.TestCase):
+
+    def setUp(self):
+        self.period = StatsRange(
+            'Month to date Aggregate',
+            date(2020, 3, 12),
+            date(2020, 3, 13)
+        )
+        self.site_tables = {
+            'channel_1': ['12345678'],
+            'channel_2': ['87654321'],
+        }
+        self.channel_summary_data = youtube.ChannelSummaryData(self.site_tables, self.period, 'MONTHLY')
+        self.expected_keys = [
+            'channel', 'estimated_minutes_watched', 'subscriber_change',
+            'subscribers_gained', 'subscribers_lost',
+            'previous_figure_estimated_minutes_watched',
+            'previous_change_estimated_minutes_watched',
+            'previous_percentage_estimated_minutes_watched',
+            'previous_figure_subscribers_gained',
+            'previous_change_subscribers_gained',
+            'previous_percentage_subscribers_gained',
+            'previous_figure_subscribers_lost',
+            'previous_change_subscribers_lost',
+            'previous_percentage_subscribers_lost',
+            'yearly_figure_estimated_minutes_watched',
+            'yearly_change_estimated_minutes_watched',
+            'yearly_percentage_estimated_minutes_watched',
+            'yearly_figure_subscribers_gained',
+            'yearly_change_subscribers_gained',
+            'yearly_percentage_subscribers_gained',
+            'yearly_figure_subscribers_lost',
+            'yearly_change_subscribers_lost',
+            'yearly_percentage_subscribers_lost'
+        ]
+
+    @patch('Statsdash.analytics.YouTubeAnalytics._run_report')
+    def test_get_data_for_period(self, mock_query_result):
+        mock_query_result.return_value = mock_responses.youtube_channel_summary_report_response
+        expected_data = mock_responses.youtube_channel_summary_expected_data_for_period
+        result = self.channel_summary_data._get_data_for_period(self.period)
+        self.assertEqual(
+            result[0]['subscriber_change'],
+            result[0]['subscribers_gained'] - result[0]['subscribers_lost']
+        )
+        self.assertEqual(result, expected_data)
+
+    def test_join_tables(self):
+        all_periods = [mock_responses.youtube_channel_summary_expected_data_for_period] * 3
+        result = self.channel_summary_data._join_periods(all_periods)
+        for item in result:
+            self.assertTrue(all([k in item.keys() for k in self.expected_keys]))
+
+    @patch('Statsdash.analytics.YouTubeAnalytics._run_report')
+    def test_get_table(self, mock_query_result):
+        mock_query_result.return_value = mock_responses.youtube_country_report_response
+        result = self.channel_summary_data.get_table()
+        for item in result:
+            self.assertTrue(all([k in item.keys() for k in self.expected_keys]))
+
+
+class TestYouTubeChannelStatsData(unittest.TestCase):
+
+    def setUp(self):
+        self.period = StatsRange(
+            'Month to date Aggregate',
+            date(2020, 3, 12),
+            date(2020, 3, 13)
+        )
+        self.site_tables = {
+            'channel_1': ['12345678'],
+            'channel_2': ['87654321'],
+        }
+
+        self.channel_stats_data = youtube.ChannelStatsData(self.site_tables, self.period, 'MONTHLY')
+        self.expected_keys = [
+            'channel', 'comment_rate', 'comments', 'dislike_ratio',
+            'dislikes', 'like_rate', 'like_ratio', 'likes', 'shares',
+            'shares_rate', 'subs_rate', 'subscribers_gained', 'views',
+            'previous_figure_views', 'previous_change_views',
+            'previous_percentage_views', 'previous_figure_likes',
+            'previous_change_likes', 'previous_percentage_likes',
+            'previous_figure_dislikes', 'previous_change_dislikes',
+            'previous_percentage_dislikes', 'previous_figure_comments',
+            'previous_change_comments', 'previous_percentage_comments',
+            'previous_figure_shares', 'previous_change_shares',
+            'previous_percentage_shares',
+            'previous_figure_subscribers_gained',
+            'previous_change_subscribers_gained',
+            'previous_percentage_subscribers_gained', 'yearly_figure_views',
+            'yearly_change_views', 'yearly_percentage_views',
+            'yearly_figure_likes', 'yearly_change_likes',
+            'yearly_percentage_likes', 'yearly_figure_dislikes',
+            'yearly_change_dislikes', 'yearly_percentage_dislikes',
+            'yearly_figure_comments', 'yearly_change_comments',
+            'yearly_percentage_comments', 'yearly_figure_shares',
+            'yearly_change_shares', 'yearly_percentage_shares',
+            'yearly_figure_subscribers_gained',
+            'yearly_change_subscribers_gained',
+            'yearly_percentage_subscribers_gained'
+        ]
+
+    @patch('Statsdash.analytics.YouTubeAnalytics._run_report')
+    def test_get_data_for_period(self, mock_query_result):
+        mock_query_result.return_value = mock_responses.youtube_channel_stats_report_response
+        expected_data = mock_responses.youtube_channel_stats_expected_data_for_period
+        result = self.channel_stats_data._get_data_for_period(self.period)
+        self.assertEqual(result, expected_data)
+
+    def test_join_tables(self):
+        all_periods = [mock_responses.youtube_channel_stats_expected_data_for_period] * 3
+        result = self.channel_stats_data._join_periods(all_periods)
+        for item in result:
+            self.assertTrue(all([k in item.keys() for k in self.expected_keys]))
+
+    @patch('Statsdash.analytics.YouTubeAnalytics._run_report')
+    def test_get_table(self, mock_query_result):
+        mock_query_result.return_value = mock_responses.youtube_channel_stats_report_response
+        result = self.channel_stats_data.get_table()
+        for item in result:
+            self.assertTrue(all([k in item.keys() for k in self.expected_keys]))
+
+
 class TestYouTubeCountryData(unittest.TestCase):
 
     def setUp(self):
@@ -578,53 +712,129 @@ class TestYouTubeCountryData(unittest.TestCase):
             'channel_1': '12345678',
             'channel_2': '87654321',
         }
-        self.site_tables = {
-            'dicebreaker': ['UC0jMXccxfvnwXvTpngFwbNA'],
-        }
         self.country_data = youtube.CountryData(self.site_tables, self.period, 'MONTHLY')
         self.expected_keys = [
-            'country', 'pageviews', 'users', 'previous_figure_pageviews',
-            'previous_change_pageviews', 'previous_percentage_pageviews',
-            'previous_figure_users', 'previous_change_users',
-            'previous_percentage_users', 'yearly_figure_pageviews',
-            'yearly_change_pageviews', 'yearly_percentage_pageviews',
-            'yearly_figure_users', 'yearly_change_users',
-            'yearly_percentage_users'
+            'country', 'estimated_minutes_watched', 'subscriber_change',
+            'subscribers_gained', 'subscribers_lost', 'views',
+            'previous_figure_views', 'previous_change_views',
+            'previous_percentage_views',
+            'previous_figure_estimated_minutes_watched',
+            'previous_change_estimated_minutes_watched',
+            'previous_percentage_estimated_minutes_watched',
+            'previous_figure_subscribers_gained',
+            'previous_change_subscribers_gained',
+            'previous_percentage_subscribers_gained',
+            'previous_figure_subscribers_lost',
+            'previous_change_subscribers_lost',
+            'previous_percentage_subscribers_lost',
+            'yearly_figure_views', 'yearly_change_views',
+            'yearly_percentage_views', 'yearly_figure_estimated_minutes_watched',
+            'yearly_change_estimated_minutes_watched',
+            'yearly_percentage_estimated_minutes_watched',
+            'yearly_figure_subscribers_gained',
+            'yearly_change_subscribers_gained',
+            'yearly_percentage_subscribers_gained',
+            'yearly_figure_subscribers_lost', 'yearly_change_subscribers_lost',
+            'yearly_percentage_subscribers_lost'
         ]
 
-    # @patch('Statsdash.analytics.YouTubeAnalytics._run_report')
-    def test_country_get_data_for_period(self):
-
-        # mock_query_result.return_value = {}
-        expected_data = mock_responses.countries_expected_data_row
+    @patch('Statsdash.analytics.YouTubeAnalytics._run_report')
+    def test_get_data_for_period(self, mock_query_result):
+        mock_query_result.return_value = mock_responses.youtube_country_report_response
+        expected_data = mock_responses.youtube_country_data_for_period_response
         result = self.country_data._get_data_for_period(self.period)
-        self.assertEqual(expected_data, result)
+        self.assertEqual(len(result), 20)
+        self.assertEqual(
+            result[0]['subscriber_change'],
+            result[0]['subscribers_gained'] - result[0]['subscribers_lost']
+        )
+        self.assertEqual(result, expected_data)
 
-    # @patch('Statsdash.analytics.GoogleAnalytics._run_report')
-    # def test_country_get_data_for_period_no_row(self, mock_query_result):
-    #     def mock_run_report(*args, **kwargs):
-    #         if kwargs['filters'].startswith('ga:country=~'):
-    #             return mock_responses.country_report
-    #         return None
-    #     mock_query_result.side_effect = mock_run_report
-    #     expected_data = mock_responses.countries_expected_data_no_row
-    #     result = self.country_data._get_data_for_period(self.period)
-    #     self.assertEqual(expected_data, result)
-    #
-    # def test_join_tables(self):
-    #     all_periods = [mock_responses.countries_expected_data_row] * 3
-    #     result = self.country_data._join_periods(all_periods)
-    #
-    #     for data in result:
-    #         self.assertTrue(all([k in data.keys() for k in self.expected_keys]))
-    #
-    # @patch('Statsdash.analytics.GoogleAnalytics._run_report')
-    # def test_get_table(self, mock_query_result):
-    #     def mock_run_report(*args, **kwargs):
-    #         if kwargs['filters'].startswith('ga:country=~'):
-    #             return mock_responses.country_report
-    #         return mock_responses.rest_of_world_country_report
-    #     mock_query_result.side_effect = mock_run_report
-    #     result = self.country_data.get_table()[0]
-    #     self.assertTrue(all([k in result.keys() for k in self.expected_keys]))
+    def test_join_tables(self):
+        all_periods = [mock_responses.youtube_country_data_for_period_response] * 3
+        result = self.country_data._join_periods(all_periods)
+        for item in result:
+            self.assertTrue(all([k in item.keys() for k in self.expected_keys]))
 
+    @patch('Statsdash.analytics.YouTubeAnalytics._run_report')
+    def test_get_table(self, mock_query_result):
+        mock_query_result.return_value = mock_responses.youtube_country_report_response
+        result = self.country_data.get_table()
+        for item in result:
+            self.assertTrue(all([k in item.keys() for k in self.expected_keys]))
+
+
+class TestYouTubeVideoData(unittest.TestCase):
+
+    def setUp(self):
+        self.period = StatsRange(
+            'Month to date Aggregate',
+            date(2020, 3, 12),
+            date(2020, 3, 13)
+        )
+        self.site_tables = {
+            'channel_1': '12345678',
+            'channel_2': '87654321',
+        }
+        self.video_data = youtube.VideoData(self.site_tables, self.period, 'MONTHLY')
+        self.expected_keys = [
+            'channel', 'estimated_minutes_watched', 'title', 'video', 'views',
+            'previous_figure_views', 'previous_change_views',
+            'previous_percentage_views',
+            'previous_figure_estimated_minutes_watched',
+            'previous_change_estimated_minutes_watched',
+            'previous_percentage_estimated_minutes_watched',
+            'yearly_figure_views', 'yearly_change_views',
+            'yearly_percentage_views',
+            'yearly_figure_estimated_minutes_watched',
+            'yearly_change_estimated_minutes_watched',
+            'yearly_percentage_estimated_minutes_watched'
+        ]
+
+    @patch('Statsdash.aggregate_data.youtube.VideoData._get_video_title')
+    @patch('Statsdash.analytics.YouTubeAnalytics._run_report')
+    def test_get_data_for_period(self, mock_query_result, mock_get_video_title):
+        mock_query_result.return_value = mock_responses.youtube_video_data_report_response
+        mock_get_video_title.return_value = 'Video Title'
+        expected_data = mock_responses.youtube_video_expected_data_for_period
+        result = self.video_data._get_data_for_period(self.period)
+        self.assertEqual(len(result), 20)
+        self.assertEqual(result, expected_data)
+
+    def test_join_tables(self):
+        all_periods = [mock_responses.youtube_video_expected_data_for_period] * 3
+        result = self.video_data._join_periods(all_periods)
+        for item in result:
+            self.assertTrue(all([k in item.keys() for k in self.expected_keys]))
+
+    @patch('Statsdash.aggregate_data.youtube.VideoData._get_video_title')
+    @patch('Statsdash.analytics.YouTubeAnalytics._run_report')
+    def test_get_table(self, mock_query_result, mock_get_video_title):
+        mock_query_result.return_value = mock_responses.youtube_video_data_report_response
+        mock_get_video_title.return_value = 'Video Title'
+        result = self.video_data.get_table()
+        for item in result:
+            self.assertTrue(all([k in item.keys() for k in self.expected_keys]))
+
+
+class TestYouTubeTrafficSourceData(unittest.TestCase):
+
+    def setUp(self):
+        self.period = StatsRange(
+            'Month to date Aggregate',
+            date(2020, 3, 12),
+            date(2020, 3, 13)
+        )
+        self.site_tables = {
+            'channel_1': '12345678',
+            'channel_2': '87654321',
+        }
+        self.traffic_source_data = youtube.TrafficSourceData(self.site_tables, self.period, 'MONTHLY')
+
+    # TODO need to get to the bottom of what this table is meant to do.
+    @patch('Statsdash.analytics.YouTubeAnalytics._run_report')
+    def test_get_data_for_period(self, mock_query_result):
+        mock_query_result.return_value = mock_responses.youtube_traffic_source_report_result
+        expected_data = mock_responses.youtube_traffic_source_expected_data_for_period
+        result = self.traffic_source_data._get_data_for_period(self.period)
+        self.assertEqual(result, expected_data)

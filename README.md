@@ -8,7 +8,7 @@ Youtube channels.  Not especially useful if you only have one account.
 
 Uses Google Analytics API v3 and various Youtube APIs.
 
-Designed to run perdiocally and to send reports when data is ready; GA and YT
+Designed to run periodically and to send reports when data is ready; GA and YT
 do not have live stats and data can take 48 hours to appear.
 
 ## Install

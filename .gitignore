@@ -16,4 +16,3 @@ weekly.sh
 schedule.db
 report_schedule.py
 *.egg-info/
-youtube_credentials.json

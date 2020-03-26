@@ -1,19 +1,12 @@
 import re
+from html.parser import HTMLParser
 
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
-import logging.config
-import logging.handlers
 
 from .base import AggregateData
-from Statsdash.analytics import GoogleAnalytics
+from Statsdash.analytics import GoogleAnalytics, third_party_metrics
 from Statsdash.GA import config
-
-from Statsdash.config import LOGGING
-
-
-logging.config.dictConfig(LOGGING)
-logger = logging.getLogger('report')
 
 SCOPES = ['https://www.googleapis.com/auth/analytics.readonly', ]
 credentials = service_account.Credentials.from_service_account_file(
@@ -196,11 +189,11 @@ class CountryData(AnalyticsData):
     aggregate_key = Dimensions.country[0]
 
     def _get_extra_data(self, period, site, data):
-        world_rows = analytics.get_data(
+        world_rows = self.analytics.get_data(
             self.site_ids[site],
             period.get_start(),
             period.get_end(),
-            metrics=','.join(google_metrics(self.metrics)),
+            metrics=','.join(third_party_metrics(self.metrics)),
             dimensions=None,
             filters=self.rest_of_world_filters,
             sort=self.sort_by,
