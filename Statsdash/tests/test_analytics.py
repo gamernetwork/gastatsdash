@@ -1,4 +1,3 @@
-from pprint import pprint
 from mock import Mock
 import unittest
 from unittest.mock import patch
@@ -7,9 +6,8 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from googleapiclient.http import HttpMock
 
-from Statsdash import mock_responses
-from Statsdash.analytics import GoogleAnalytics, YouTubeAnalytics, \
-    YouTubeChannels
+from Statsdash.tests.data import mock_responses
+from Statsdash.analytics import GoogleAnalytics, YouTubeAnalytics
 
 
 class TestGoogleAnalytics(unittest.TestCase):

@@ -15,13 +15,11 @@
 		<tr class="{{ loop.cycle('odd', 'even') }}">
 			<td>{{row.channel}}</td>
 			<td class="num">{{row.views|int|intcomma}}</td>
-			<td class="num">{{row.likeRatio|int|intcomma}}:{{row.dislikeRatio|int|intcomma}} (<span style="{% if row.previous_percentage_likeRatio > 0 %}color:green;{% else %}color:red;{% endif %}">{{row.previous_percentage_likeRatio|round(1)|intcomma}}%</span>)</td>
-			<td class="num">{{row.likeRate|round(1)|intcomma}} (<span style="{% if row.previous_percentage_likeRate > 0 %}color:green;{% else %}color:red;{% endif %}">{{row.previous_percentage_likeRate|round(1)|intcomma}}%</span>)</td>																								
-			<td class="num">{{row.subsRate|round(1)|intcomma}} (<span style="{% if row.previous_percentage_subsRate > 0 %}color:green;{% else %}color:red;{% endif %}">{{row.previous_percentage_subsRate|round(1)|intcomma}}%</span>)</td>
-
-			<td class="num">{{row.commentRate|round(1)|intcomma}} (<span style="{% if row.previous_percentage_commentRate > 0 %}color:green;{% else %}color:red;{% endif %}">{{row.previous_percentage_commentRate|round(1)|intcomma}}%</span>)</td>
-
-			<td class="num">{{row.sharesRate|round(1)|intcomma}} (<span style="{% if row.previous_percentage_sharesRate > 0 %}color:green;{% else %}color:red;{% endif %}">{{row.previous_percentage_sharesRate|round(1)|intcomma}}%</span>)</td>					
+			<td class="num">{{row.like_ratio|int|intcomma}}:{{row.dislike_ratio|int|intcomma}} (<span style="{% if row.previous_percentage_like_ratio > 0 %}color:green;{% else %}color:red;{% endif %}">{{row.previous_percentage_like_ratio|round(1)|intcomma}}%</span>)</td>
+			<td class="num">{{row.like_rate|round(1)|intcomma}} (<span style="{% if row.previous_percentage_like_rate > 0 %}color:green;{% else %}color:red;{% endif %}">{{row.previous_percentage_like_rate|round(1)|intcomma}}%</span>)</td>
+			<td class="num">{{row.subs_rate|round(1)|intcomma}} (<span style="{% if row.previous_percentage_subs_rate > 0 %}color:green;{% else %}color:red;{% endif %}">{{row.previous_percentage_subs_rate|round(1)|intcomma}}%</span>)</td>
+			<td class="num">{{row.comment_rate|round(1)|intcomma}} (<span style="{% if row.previous_percentage_comment_rate > 0 %}color:green;{% else %}color:red;{% endif %}">{{row.previous_percentage_comment_rate|round(1)|intcomma}}%</span>)</td>
+			<td class="num">{{row.shares_rate|round(1)|intcomma}} (<span style="{% if row.previous_percentage_shares_rate > 0 %}color:green;{% else %}color:red;{% endif %}">{{row.previous_percentage_shares_rate|round(1)|intcomma}}%</span>)</td>
 
 		</tr>
 		{% endfor %}

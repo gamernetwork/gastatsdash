@@ -1,18 +1,11 @@
-import json
-import requests
 from pprint import pprint
 from datetime import date
 import unittest
 from unittest.mock import patch
 
-from googleapiclient.discovery import build
-from google.oauth2.credentials import Credentials
-
 from Statsdash.aggregate_data import google, youtube
-from Statsdash import mock_responses
+from Statsdash.tests.data import mock_responses
 from Statsdash.stats_range import StatsRange
-from Statsdash.Youtube import config
-
 
 expected_keys = [
     'pageviews',
@@ -625,7 +618,8 @@ class TestYouTubeChannelSummaryData(unittest.TestCase):
         self.assertEqual(result, expected_data)
 
     def test_join_tables(self):
-        all_periods = [mock_responses.youtube_channel_summary_expected_data_for_period] * 3
+        all_periods = [
+                          mock_responses.youtube_channel_summary_expected_data_for_period] * 3
         result = self.channel_summary_data._join_periods(all_periods)
         for item in result:
             self.assertTrue(all([k in item.keys() for k in self.expected_keys]))
@@ -687,7 +681,8 @@ class TestYouTubeChannelStatsData(unittest.TestCase):
         self.assertEqual(result, expected_data)
 
     def test_join_tables(self):
-        all_periods = [mock_responses.youtube_channel_stats_expected_data_for_period] * 3
+        all_periods = [
+                          mock_responses.youtube_channel_stats_expected_data_for_period] * 3
         result = self.channel_stats_data._join_periods(all_periods)
         for item in result:
             self.assertTrue(all([k in item.keys() for k in self.expected_keys]))
@@ -751,7 +746,8 @@ class TestYouTubeCountryData(unittest.TestCase):
         self.assertEqual(result, expected_data)
 
     def test_join_tables(self):
-        all_periods = [mock_responses.youtube_country_data_for_period_response] * 3
+        all_periods = [
+                          mock_responses.youtube_country_data_for_period_response] * 3
         result = self.country_data._join_periods(all_periods)
         for item in result:
             self.assertTrue(all([k in item.keys() for k in self.expected_keys]))
@@ -802,7 +798,8 @@ class TestYouTubeVideoData(unittest.TestCase):
         self.assertEqual(result, expected_data)
 
     def test_join_tables(self):
-        all_periods = [mock_responses.youtube_video_expected_data_for_period] * 3
+        all_periods = [
+                          mock_responses.youtube_video_expected_data_for_period] * 3
         result = self.video_data._join_periods(all_periods)
         for item in result:
             self.assertTrue(all([k in item.keys() for k in self.expected_keys]))
@@ -827,7 +824,6 @@ class TestYouTubeTrafficSourceData(unittest.TestCase):
         )
         self.site_tables = {
             'channel_1': '12345678',
-            'channel_2': '87654321',
         }
         self.traffic_source_data = youtube.TrafficSourceData(self.site_tables, self.period, 'MONTHLY')
 

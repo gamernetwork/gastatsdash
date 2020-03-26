@@ -3,10 +3,9 @@ from datetime import date, datetime, timedelta
 import logging.config, logging.handlers
 
 from Statsdash.config import LOGGING
-from Statsdash.GA.aggregate_data import AnalyticsData
+from Statsdash.aggregate_data import google, youtube
 from Statsdash import aggregate_data
 from Statsdash.render import get_environment
-from Statsdash.Youtube.aggregate_data import YoutubeData
 import Statsdash.GA.config as ga_config
 import Statsdash.utilities as utils
 from Statsdash.utils import Frequency
@@ -67,57 +66,52 @@ class Report:
         return {d.table_label: d(*args).get_table() for d in self.data}
 
 
+class YouTubeReport(Report):
 
-class YoutubeReport(Report):
-    
-    def __init__(self, channels, period, recipients, frequency, subject):
-        super(YoutubeReport, self).__init__(channels, period, recipients, frequency, subject)
+    data = [
+        youtube.ChannelSummaryData,
+        youtube.ChannelStatsData,
+        youtube.CountryData,
+        youtube.VideoData,
+        youtube.TrafficSourceData,
+        # TODO
+        # referring_site_table = self.data.referring_sites_table(num_articles)
+        # social_table = self.data.social_network_table(num_articles)
+    ]
+
+    def __init__(self, channels, period, frequency, subject):
+        super().__init__(channels, period, frequency, subject)
         self.channels = channels
         self.period = period
-        self.recipients = recipients
         self.frequency = frequency
         self.subject = subject
-        self.data = YoutubeData(self.channels, self.period, self.frequency)
         self.template = self.env.get_template("Youtube/base.html")
-        #check = self.data.check_available_data()
-        #if not check['result']:
-            #raise Exception("Data not available for %s" % check['channel'])
-
         logger.debug("Running youtube report")
 
+    def generate_html(self):
+        tables = self._get_tables()
 
-    def generate_html(self):   	
-        tableone = self.data.channel_summary_table()
-        tabletwo = self.data.channel_stats_table()
-        tablethree = self.data.country_table()
-        tablefour = self.data.video_table()
-        tablefive = self.data.traffic_source_table()
-        
         html = self.template.render(
             subject=self.get_subject(),
             change=self.get_freq_label(),
-            report_span = self.frequency,
-            summary_table=tableone,
-            stats_table=tabletwo,
-            geo_table=tablethree,
-            top_vids=tablefour,
-            traffic=tablefive,	
+            report_span=self.frequency,
+            **tables
         )
-        
         return html
 
-    def check_data_availability(self, override=False):
-        check = self.data.check_available_data()
-        if check["result"]:
-            return True
-        else:
-            logger.debug("Data not available for: %s" % check["channel"])
-            if override:
-                self.warning_sites = check["channel"]
-                
-                return check["channel"]
-            else:
-                return False
+
+    # def check_data_availability(self, override=False):
+    #     check = self.data.check_available_data()
+    #     if check["result"]:
+    #         return True
+    #     else:
+    #         logger.debug("Data not available for: %s" % check["channel"])
+    #         if override:
+    #             self.warning_sites = check["channel"]
+    #
+    #             return check["channel"]
+    #         else:
+    #             return False
 
 
 # TODO break this into a daily report and a montly report
@@ -126,6 +120,17 @@ class AnalyticsCoreReport(Report):
     Google Analytics data report for a given collection of sites. Converts the
     report into HTML.
     """
+    data = [
+        google.SummaryData,
+        google.SiteSummaryData,
+        google.CountryData,
+        google.ArticleData,
+        google.TrafficSourceData,
+        google.DeviceData,
+        # TODO
+        # referring_site_table = self.data.referring_sites_table(num_articles)
+        # social_table = self.data.social_network_table(num_articles)
+    ]
 
     def __init__(self, sites, period, frequency, subject):
         super().__init__(sites, period, frequency, subject)
@@ -133,7 +138,6 @@ class AnalyticsCoreReport(Report):
         self.period = period
         self.frequency = frequency
         self.subject = subject
-        self.data = AnalyticsData(self.sites, self.period, self.frequency)
         self.warning_sites = []
         self.img_data = None
         self.template = self.env.get_template("GA/base.html")
@@ -149,18 +153,6 @@ class AnalyticsCoreReport(Report):
         else:
             self.all_sites = False
 
-        # TODO move outside init
-        self.data = [
-            aggregate_data.SummaryData,
-            aggregate_data.SiteSummaryData,
-            aggregate_data.CountryData,
-            aggregate_data.ArticleData,
-            aggregate_data.TrafficSourceData,
-            aggregate_data.DeviceData,
-            # TODO
-            # referring_site_table = self.data.referring_sites_table(num_articles)
-            # social_table = self.data.social_network_table(num_articles)
-        ]
         logger.debug("Running analytics core report")
                 
     # TODO sort this
@@ -188,7 +180,6 @@ class AnalyticsCoreReport(Report):
     def _get_tables(self):
         tables = super()._get_tables()
         tables['summary_table'] = tables['summary_table'][0]
-        print(tables['summary_table'])
         tables['network_summary_table'] = self._get_network_summary_table()
         if self.frequency != 'MONTHLY':
             tables['network_month_summary_table'] = self._get_network_month_summary_table()
@@ -197,7 +188,7 @@ class AnalyticsCoreReport(Report):
         return tables
 
     def _get_network_summary_table(self):
-        network_data = aggregate_data.SummaryData(ga_config.TABLES.keys(), self.period, self.frequency)
+        network_data = google.SummaryData(ga_config.TABLES.keys(), self.period, self.frequency)
         return network_data.get_table()
 
     def _get_month_summary_table(self):
@@ -205,21 +196,21 @@ class AnalyticsCoreReport(Report):
         if self.frequency != 'MONTHLY':
             # TODO does this need to use datetime method
             month_range = utils.StatsRange('Month to date Aggregate', self.first, self.today)
-            month_summary_data = aggregate_data.SummaryData(self.sites, month_range, self.frequency)
+            month_summary_data = google.SummaryData(self.sites, month_range, self.frequency)
             return month_summary_data.get_table()
         return None
 
     def _get_full_month_summary_table(self):
         # TODO clean, test, mock
         month_range = self._get_month_range()
-        full_month_data = aggregate_data.SummaryData(self.sites, month_range, self.frequency)
+        full_month_data = google.SummaryData(self.sites, month_range, self.frequency)
         return full_month_data.get_table()
 
     def _get_network_month_summary_table(self):
         month_range = self._get_month_range()
         # TODO fix
         if not self.all_sites:
-            network_month_data = aggregate_data.SummaryData(ga_config.TABLES, month_range, self.frequency)
+            network_month_data = google.SummaryData(ga_config.TABLES, month_range, self.frequency)
             return network_month_data.get_table()
         return None
 
@@ -248,8 +239,8 @@ class AnalyticsCoreReport(Report):
         
 class AnalyticsSocialReport(Report):
     
-    def __init__(self, sites, period, recipients, frequency, subject):
-        super(AnalyticsSocialReport, self).__init__(sites, period, recipients, frequency, subject)
+    def __init__(self, sites, period, frequency, subject):
+        super(AnalyticsSocialReport, self).__init__(sites, period, frequency, subject)
         self.sites = sites
         self.period = period
         self.recipients = recipients

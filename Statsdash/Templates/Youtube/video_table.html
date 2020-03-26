@@ -15,7 +15,7 @@
 		<tr class="{{ loop.cycle('odd', 'even') }}">
 			<td>{{row.channel}}</td>
 			<td><a href="https://www.youtube.com/watch?v={{row.video}}" target="_blank">{{row.title}}</a></td>
-			<td class="num">{{row.estimatedMinutesWatched|int|intcomma}}</td>
+			<td class="num">{{row.estimated_minutes_watched|int|intcomma}}</td>
 			<td class="num">{{row.views|int|intcomma}}</td>
 		</tr>
 		{% endfor %}

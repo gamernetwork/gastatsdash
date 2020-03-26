@@ -10,6 +10,7 @@ class AggregateData:
 
     analytics = None
     metrics = []
+    extra_metrics = []
     dimensions = []
     aggregate_key = None
     filters = None
@@ -68,7 +69,7 @@ class AggregateData:
                 change = utils.get_change(
                     current_period_data,
                     other_period_data,
-                    our_metrics(self.metrics),
+                    our_metrics(self.metrics) + self.extra_metrics,
                     match_key=self.match_key
                 )
                 change = utils.prefix_keys(change, period.name + '_')

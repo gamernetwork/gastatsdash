@@ -27,17 +27,14 @@
 			{% for row in summary_table %}
 			<tr class="{{ loop.cycle('odd', 'even') }}">
 				<td>{{row.channel}}</td>
-				<td class="num">{{row.estimatedMinutesWatched|int|intcomma}}</td>
-				<td class="num" style="{% if row.previous_percentage_estimatedMinutesWatched > 0 %}color:green;{% else %}color:red;{% endif %}">{{row.previous_percentage_estimatedMinutesWatched|round(1)}}%</td>
-				<td class="num" style="{% if row.yearly_percentage_estimatedMinutesWatched > 0 %}color:green;{% else %}color:red;{% endif %}">{{row.yearly_percentage_estimatedMinutesWatched|round(1)}}%</td>
+				<td class="num">{{row.estimated_minutes_watched|int|intcomma}}</td>
+				<td class="num" style="{% if row.previous_percentage_estimated_minutes_watched > 0 %}color:green;{% else %}color:red;{% endif %}">{{row.previous_percentage_estimated_minutes_watched|round(1)}}%</td>
+				<td class="num" style="{% if row.yearly_percentage_estimated_minutes_watched > 0 %}color:green;{% else %}color:red;{% endif %}">{{row.yearly_percentage_estimated_minutes_watched|round(1)}}%</td>
 									
-				<td class="num">{{row.subscriberChange|int|intcomma}}</td>
-				<td class="num" style="{% if row.previous_percentage_subscriberChange > 0 %}color:green;{% else %}color:red;{% endif %}">{{row.previous_percentage_subscriberChange|round(1)}}%</td>
-				<td class="num" style="{% if row.yearly_percentage_subscriberChange > 0 %}color:green;{% else %}color:red;{% endif %}">{{row.yearly_percentage_subscriberChange|round(1)}}%</td>
+				<td class="num">{{row.subscriber_change|int|intcomma}}</td>
+				<td class="num" style="{% if row.previous_percentage_subscriber_change > 0 %}color:green;{% else %}color:red;{% endif %}">{{row.previous_percentage_subscriber_change|round(1)}}%</td>
+				<td class="num" style="{% if row.yearly_percentage_subscriber_change > 0 %}color:green;{% else %}color:red;{% endif %}">{{row.yearly_percentage_subscriber_change|round(1)}}%</td>
 				
-				<td class="num">{{row.subscriberCount|int|intcomma}}</td>
-				<td class="num" style="{% if row.previous_percentage_subscriberCount > 0 %}color:green;{% else %}color:red;{% endif %}">{{row.previous_percentage_subscriberCount|round(1)}}%</td>
-			</tr>
 			{% endfor %}
 		</tbody>
 	</table>

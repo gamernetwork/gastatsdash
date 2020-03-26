@@ -49,12 +49,16 @@ class YouTubeData(AggregateData):
     #                 run_report['channel'].append(channel)
     #     return run_report
 
-class ChannelSummaryData(YouTubeData):
 
+class ChannelSummaryData(YouTubeData):
+    table_label = 'summary_table'
     metrics = [
         Metrics.estimated_minutes_watched,
         Metrics.subscribers_gained,
         Metrics.subscribers_lost,
+    ]
+    extra_metrics = [
+        'subscriber_change'
     ]
     # sort_by = '-' + Metrics.estimated_minutes_watched[0]
     match_key = Dimensions.channel[1]
@@ -68,9 +72,8 @@ class ChannelSummaryData(YouTubeData):
         return data
 
 
-
 class ChannelStatsData(YouTubeData):
-
+    table_label = 'stats_table'
     metrics = [
         Metrics.views,
         Metrics.likes,
@@ -78,6 +81,14 @@ class ChannelStatsData(YouTubeData):
         Metrics.comments,
         Metrics.shares,
         Metrics.subscribers_gained,
+    ]
+    extra_metrics = [
+        'like_rate',
+        'comment_rate',
+        'shares_rate',
+        'subs_rate',
+        'like_ratio',
+        'dislike_ratio',
     ]
     sort_rows_by = Metrics.views
     match_key = Dimensions.channel[1]
@@ -106,11 +117,15 @@ class ChannelStatsData(YouTubeData):
 
 
 class CountryData(YouTubeData):
+    table_label = 'geo_table'
     metrics = [
         Metrics.views,
         Metrics.estimated_minutes_watched,
         Metrics.subscribers_gained,
         Metrics.subscribers_lost,
+    ]
+    extra_metrics = [
+        'subscriber_change',
     ]
     dimensions = [
         Dimensions.country
@@ -136,11 +151,12 @@ class CountryData(YouTubeData):
 
 
 class VideoData(YouTubeData):
-
+    table_label = 'top_vids'
     metrics = [
         Metrics.views,
         Metrics.estimated_minutes_watched,
     ]
+
     dimensions = [
         Dimensions.video,
     ]
@@ -167,7 +183,7 @@ class VideoData(YouTubeData):
 
 
 class TrafficSourceData(YouTubeData):
-
+    table_label = 'traffic'
     metrics = [
         Metrics.estimated_minutes_watched,
     ]

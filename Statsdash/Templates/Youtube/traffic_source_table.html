@@ -6,17 +6,7 @@
 			<th>Channel</th>
 			{% for source in traffic.0 %}
 				<th>{{source.insightTrafficSourceType|replace("_", " ")|capitalize}}</th>
-			{%- endfor %}
+			{% endfor %}
 		</tr>
 	</thead>
-	<tbody>
-		{% for row in traffic %}
-		<tr class="{{ loop.cycle('odd', 'even') }}">
-			<td>{{row.0.channel}}</td>
-			{% for source in row %}
-            <td class="num {{ source.insightTrafficSourceType }}">{{ source.source_percentage|round(1)|intcomma }}%</td>
-            {% endfor %}
-		</tr>
-		{% endfor %}
-	</tbody>
-</table>	
+</table>
