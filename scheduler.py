@@ -178,9 +178,7 @@ def _run(dryrun=False):
         next_run_date = run_logger.get_next_run(last_run_end, frequency, frequency_options).date()
 
         today = date.today()
-        # TODO fix
-        # needs_run = next_run_date <= today
-        needs_run = True
+        needs_run = next_run_date <= today
         print("%s next run: %s.  Needs run: %s" % (identifier, next_run_date, needs_run))
 
         if needs_run:

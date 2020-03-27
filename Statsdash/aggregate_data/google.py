@@ -6,11 +6,14 @@ from googleapiclient.discovery import build
 
 from .base import AggregateData
 from Statsdash.analytics import GoogleAnalytics, third_party_metrics
-from Statsdash.GA import config
+from Statsdash import config
+
+KEY_FILE = config.GOOGLE['KEY_FILE']
+TABLES = config.GOOGLE['TABLES']
 
 SCOPES = ['https://www.googleapis.com/auth/analytics.readonly', ]
 credentials = service_account.Credentials.from_service_account_file(
-    config.KEY_FILE,
+    KEY_FILE,
     scopes=SCOPES
 )
 service = build('analytics', 'v3', credentials=credentials)
@@ -27,7 +30,7 @@ class AnalyticsData(AggregateData):
 
     def __init__(self, sites, period, frequency):
         super().__init__(sites, period, frequency)
-        self.site_ids = config.TABLES
+        self.site_ids = TABLES,
 
     def _remove_query_string(self, path):
         """

@@ -2,7 +2,8 @@ import os
 
 from google_auth_oauthlib.flow import InstalledAppFlow
 
-from Statsdash.Youtube.config import KEY_FILE
+from Statsdash import config
+KEY_FILE = config.YOUTUBE['KEY_FILE']
 
 API_SERVICE_NAME = 'youtubeAnalytics'
 API_VERSION = 'v2'

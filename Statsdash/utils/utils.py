@@ -165,7 +165,7 @@ def aggregate_data(data, aggregate_keys, match_key=None):
                 new_table[key] = row[key]
     if new_table:
         return [new_table]
-    return None
+    return []
 
 
 # TODO this method returns a list and the other method returns a dict. Should be consistent

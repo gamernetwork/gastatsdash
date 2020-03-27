@@ -2,15 +2,13 @@ from pprint import pprint
 from datetime import date, datetime, timedelta
 import logging.config, logging.handlers
 
-from Statsdash.config import LOGGING
+from Statsdash import config
 from Statsdash.aggregate_data import google, youtube
-from Statsdash import aggregate_data
 from Statsdash.render import get_environment
-import Statsdash.GA.config as ga_config
 import Statsdash.utilities as utils
 from Statsdash.utils import Frequency
 
-logging.config.dictConfig(LOGGING)
+logging.config.dictConfig(config.LOGGING)
 logger = logging.getLogger('report')
 
 
@@ -139,7 +137,7 @@ class AnalyticsCoreReport(Report):
         self.last = utils.add_one_month(self.first) - timedelta(days=1)
         self.num_days = (self.last - self.period.end_date).days
 
-        if self.sites == ga_config.ALL_NETWORK_SITES:
+        if self.sites == config.GOOGLE['ALL_NETWORK_SITES']:
             self.all_sites = True
         else:
             self.all_sites = False
@@ -151,7 +149,7 @@ class AnalyticsCoreReport(Report):
         if len(self.sites) == 1:
             return self.sites[0]
         elif self.all_sites:
-            return ga_config.ALL_SITES_NAME
+            return config.GOOGLE['ALL_SITES_NAME']
 
     def generate_html(self):
         tables = self._get_tables()
@@ -179,7 +177,7 @@ class AnalyticsCoreReport(Report):
         return tables
 
     def _get_network_summary_table(self):
-        network_data = google.SummaryData(ga_config.TABLES.keys(), self.period, self.frequency)
+        network_data = google.SummaryData(config.GOOGLE['TABLES'].keys(), self.period, self.frequency)
         return network_data.get_table()
 
     def _get_month_summary_table(self):
@@ -201,7 +199,7 @@ class AnalyticsCoreReport(Report):
         month_range = self._get_month_range()
         # TODO fix
         if not self.all_sites:
-            network_month_data = google.SummaryData(ga_config.TABLES, month_range, self.frequency)
+            network_month_data = google.SummaryData(config.GOOGLE['TABLES'], month_range, self.frequency)
             return network_month_data.get_table()
         return None
 
@@ -243,7 +241,7 @@ class AnalyticsSocialReport(Report):
 
         logger.debug("Running analytics social report")
         
-        if self.sites == len(ga_config.TABLES.keys()):
+        if self.sites == len(config.GOOGLE['TABLES'].keys()):
             self.all_sites = True
         else:
             self.all_sites = False
@@ -251,15 +249,15 @@ class AnalyticsSocialReport(Report):
     def get_site(self):
         if len(self.sites) == 1:
             return self.sites[0]
-        elif len(self.sites) == len(ga_config.TABLES.keys()):
-            return ga_config.ALL_SITES_NAME
+        elif len(self.sites) == len(config.GOOGLE['TABLES'].keys()):
+            return config.GOOGLE['ALL_SITES_NAME']
 
                 
     def generate_html(self):
         #TO DO 
         
         summary_table = self.data.summary_table()
-        network_data = AnalyticsData(ga_config.TABLES.keys(), self.period, self.frequency)
+        network_data = AnalyticsData(config.GOOGLE['TABLES'].keys(), self.period, self.frequency)
         network_summary_table = network_data.summary_table()
         
         social_table = self.data.social_network_table(10)
@@ -294,7 +292,7 @@ class AnalyticsYearSocialReport(Report):
         
         logger.debug("Running analytics top social network report for the year")      
 
-        if len(self.sites) == len(ga_config.TABLES.keys()):
+        if len(self.sites) == len(config.GOOGLE['TABLES'].keys()):
             self.all_sites = True
         else:
             self.all_sites = False
@@ -312,8 +310,8 @@ class AnalyticsYearSocialReport(Report):
     def get_site(self):
         if len(self.sites) == 1:
             return self.sites[0]
-        elif len(self.sites) == len(ga_config.TABLES.keys()):
-            return ga_config.ALL_SITES_NAME
+        elif len(self.sites) == len(config.GOOGLE['TABLES'].keys()):
+            return config.GOOGLE['ALL_SITES_NAME']
           
     
     def _get_social_data(self):

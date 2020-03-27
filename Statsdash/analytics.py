@@ -1,4 +1,3 @@
-import requests
 from pprint import pprint
 from googleapiclient import errors
 import logging.config

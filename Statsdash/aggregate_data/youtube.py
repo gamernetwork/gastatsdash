@@ -4,10 +4,13 @@ from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 
 from .base import AggregateData
+from Statsdash import config
 from Statsdash.analytics import YouTubeAnalytics, YouTubeVideos, our_metrics
 from Statsdash.utils import utils
-from Statsdash.Youtube import config
 
+CONTENT_OWNER_ID = config.YOUTUBE['CONTENT_OWNER_ID']
+CREDENTIALS_FILE = config.YOUTUBE['CREDENTIALS_FILE']
+TABLES = config.YOUTUBE['CHANNELS']
 
 API_SERVICE_NAME = 'youtubeAnalytics'
 API_VERSION = 'v2'
@@ -18,7 +21,7 @@ SCOPES = [
     'https://www.googleapis.com/auth/yt-analytics.readonly',
     'https://www.googleapis.com/auth/youtubepartner'
 ]
-with open(config.CREDENTIALS_FILE) as json_file:
+with open(CREDENTIALS_FILE) as json_file:
     data = json.load(json_file)
 credentials = Credentials(**data)
 
@@ -36,8 +39,8 @@ Metrics = YouTubeAnalytics.Metrics
 
 class YouTubeData(AggregateData):
 
-    analytics = YouTubeAnalytics(resource, config.CONTENT_OWNER_ID)
-    site_ids = config.CHANNELS
+    analytics = YouTubeAnalytics(resource, CONTENT_OWNER_ID)
+    site_ids = TABLES
 
 
     # def check_available_data(self):
