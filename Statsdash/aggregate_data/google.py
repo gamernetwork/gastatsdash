@@ -24,13 +24,17 @@ Dimensions = GoogleAnalytics.Dimensions
 Countries = GoogleAnalytics.Countries
 
 
+def get_site_ids():
+    return TABLES
+
+
 class AnalyticsData(AggregateData):
 
     analytics = GoogleAnalytics(resource)
 
     def __init__(self, sites, period, frequency):
         super().__init__(sites, period, frequency)
-        self.site_ids = TABLES,
+        self.site_ids = get_site_ids()
 
     def _remove_query_string(self, path):
         """

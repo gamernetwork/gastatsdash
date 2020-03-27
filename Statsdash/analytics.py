@@ -210,7 +210,6 @@ class GoogleAnalytics(Analytics):
         """
         # NOTE we're running this multiple times per site.
         kwargs['include_empty_rows'] = True  # always True
-        # TODO fix hack
         if type(view_id) == dict:
             view_id = list(view_id.values())[0]
         query = self.data_resource.get(

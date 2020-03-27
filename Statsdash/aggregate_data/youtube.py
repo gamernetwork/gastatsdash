@@ -37,11 +37,17 @@ Dimensions = YouTubeAnalytics.Dimensions
 Metrics = YouTubeAnalytics.Metrics
 
 
+def get_site_ids():
+    return TABLES
+
+
 class YouTubeData(AggregateData):
 
     analytics = YouTubeAnalytics(resource, CONTENT_OWNER_ID)
-    site_ids = TABLES
 
+    def __init__(self, sites, period, frequency):
+        super().__init__(sites, period, frequency)
+        self.site_ids = get_site_ids()
 
     # def check_available_data(self):
     #     run_report = {"result": True, "channel": []}
@@ -53,6 +59,7 @@ class YouTubeData(AggregateData):
     #                 run_report['result'] = False
     #                 run_report['channel'].append(channel)
     #     return run_report
+
 
 
 class ChannelSummaryData(YouTubeData):

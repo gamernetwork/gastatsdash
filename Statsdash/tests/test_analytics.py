@@ -170,7 +170,7 @@ class TestGoogleAnalytics(unittest.TestCase):
         mock_query_result.return_value = mock_responses.response_no_rows
         aggregated_data = self.analytics.get_data(
             [self._id], self.stats_date, self.stats_date, 'ga:pageviews')
-        self.assertEqual(aggregated_data, None)
+        self.assertEqual(aggregated_data, [])
 
 
 class TestYouTubeAnalytics(unittest.TestCase):
