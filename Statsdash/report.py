@@ -20,6 +20,7 @@ class Report:
     Gathers data from analytics, renders and sends as an email
     """
     data = []
+    img_data = None
 
     def __init__(self, sites, period, frequency, subject):
         self.sites = sites
@@ -65,6 +66,10 @@ class Report:
         args = [self.sites, self.period, self.frequency]
         return {d.table_label: d(*args).get_table() for d in self.data}
 
+    # TODO consider how this should work
+    def check_data_availability(self):
+        return True
+
 
 class YouTubeReport(Report):
 
@@ -100,26 +105,13 @@ class YouTubeReport(Report):
         return html
 
 
-    # def check_data_availability(self, override=False):
-    #     check = self.data.check_available_data()
-    #     if check["result"]:
-    #         return True
-    #     else:
-    #         logger.debug("Data not available for: %s" % check["channel"])
-    #         if override:
-    #             self.warning_sites = check["channel"]
-    #
-    #             return check["channel"]
-    #         else:
-    #             return False
-
-
 # TODO break this into a daily report and a montly report
 class AnalyticsCoreReport(Report):
     """
     Google Analytics data report for a given collection of sites. Converts the
     report into HTML.
     """
+    # Maybe just make the other tables classes.
     data = [
         google.SummaryData,
         google.SiteSummaryData,
@@ -139,7 +131,6 @@ class AnalyticsCoreReport(Report):
         self.frequency = frequency
         self.subject = subject
         self.warning_sites = []
-        self.img_data = None
         self.template = self.env.get_template("GA/base.html")
 
         # NOTE maybe nicer way to handle this
@@ -180,11 +171,11 @@ class AnalyticsCoreReport(Report):
     def _get_tables(self):
         tables = super()._get_tables()
         tables['summary_table'] = tables['summary_table'][0]
-        tables['network_summary_table'] = self._get_network_summary_table()
+        tables['network_summary_table'] = self._get_network_summary_table()[0]
         if self.frequency != 'MONTHLY':
-            tables['network_month_summary_table'] = self._get_network_month_summary_table()
-            tables['full_month_summary_table'] = self._get_full_month_summary_table()
-            tables['month_summary_table'] = self._get_month_summary_table()
+            tables['network_month_summary_table'] = self._get_network_month_summary_table()[0]
+            tables['full_month_summary_table'] = self._get_full_month_summary_table()[0]
+            tables['month_summary_table'] = self._get_month_summary_table()[0]
         return tables
 
     def _get_network_summary_table(self):
@@ -249,8 +240,7 @@ class AnalyticsSocialReport(Report):
         self.data = AnalyticsData(self.sites, self.period, self.frequency)    
         self.warning_sites = []
         self.template = self.env.get_template("GA/social_report.html")
-        self.img_data = None
-        
+
         logger.debug("Running analytics social report")
         
         if self.sites == len(ga_config.TABLES.keys()):

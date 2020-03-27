@@ -1,17 +1,10 @@
-from Statsdash.report import YoutubeReport, AnalyticsCoreReport, AnalyticsSocialReport, AnalyticsSocialExport, AnalyticsYearSocialReport
-from Statsdash.report import AnalyticsCoreReport, AnalyticsSocialReport, AnalyticsSocialExport, AnalyticsYearSocialReport
 import argparse
-#import report_schedule
+from datetime import date, timedelta
 
-from datetime import datetime, date, timedelta
-#from Statdateutils import subtract_one_month
-
-#import Statsdash.Youtube.config as yt_config
-import Statsdash.GA.config as ga_config
-import Statsdash.utilities as utils
+from Statsdash import utils
+from Statsdash.report import AnalyticsCoreReport, AnalyticsSocialReport, \
+    AnalyticsSocialExport, AnalyticsYearSocialReport, YouTubeReport
 import Statsdash.report_schedule as config
-
-from premailer import transform
 
 
 parser = argparse.ArgumentParser()

@@ -21,24 +21,24 @@ def send_email(html, text, subject, send_from, recipients, img_data=None):
         * `recipients` - `list` - Recipient email addresses.
         * `img_data` - `image`
     """
-
-    html = transform(html)  # inline css using premailer
     msg = MIMEMultipart('alternative')
     msg.set_charset('utf8')
     msg['Subject'] = subject
     msg['From'] = send_from
     msg['To'] = ', '.join(recipients)
 
+    if html:
+        html = transform(html)  # inline css using premailer
+        html_part = MIMEText(html, 'html')
+        msg.attach(html_part)
+
     text_part = MIMEText(text, 'plain')
-    html_part = MIMEText(html, 'html')
+    msg.attach(text_part)
 
     if img_data:
         img_part = MIMEImage(img_data, 'png')
         img_part.add_header('Content-ID', '<graph>')
         msg.attach(img_part)
-
-    msg.attach(text_part)
-    msg.attach(html_part)
 
     sender = smtplib.SMTP(smtp_address)
     sender.sendmail(send_from, recipients, msg.as_string())

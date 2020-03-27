@@ -277,7 +277,6 @@ class YouTubeAnalytics(Analytics):
             filters=filters,
             **kwargs,
         )
-        pprint(self._execute_query(query))
         return self._execute_query(query)
 
     def _prepare_filters(self, _id, filters):

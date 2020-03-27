@@ -37,6 +37,8 @@ Metrics = YouTubeAnalytics.Metrics
 class YouTubeData(AggregateData):
 
     analytics = YouTubeAnalytics(resource, config.CONTENT_OWNER_ID)
+    site_ids = config.CHANNELS
+
 
     # def check_available_data(self):
     #     run_report = {"result": True, "channel": []}
@@ -160,11 +162,11 @@ class VideoData(YouTubeData):
     dimensions = [
         Dimensions.video,
     ]
+    extra_params = {'maxResults': 20}
 
     # NOTE you need to sort by descending views if you want to run a
     # `dimensions=video` report, and you can only retrieve at most 200 results
     sort_by = '-' + Metrics.views[0]
-    max_results = 20
     aggregate_key = Dimensions.video[0]
     match_key = Dimensions.video[1]
 

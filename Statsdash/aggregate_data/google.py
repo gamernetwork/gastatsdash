@@ -25,6 +25,10 @@ class AnalyticsData(AggregateData):
 
     analytics = GoogleAnalytics(resource)
 
+    def __init__(self, sites, period, frequency):
+        super().__init__(sites, period, frequency)
+        self.site_ids = config.TABLES
+
     def _remove_query_string(self, path):
         """
         Removes any queries attached to the end of a page path, so aggregation

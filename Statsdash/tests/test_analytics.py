@@ -13,8 +13,9 @@ from Statsdash.analytics import GoogleAnalytics, YouTubeAnalytics
 class TestGoogleAnalytics(unittest.TestCase):
 
     def setUp(self):
+        # TODO fix link
         analytics_discovery = \
-            '/Users/john/src/gastatsdash/analytics-discovery.json'
+            '/Users/john/src/gastatsdash/Statsdash/tests/data/analytics-discovery.json'
         http = HttpMock(analytics_discovery, {'status': '200'})
         api_key = 'test_api_key'
         service = build(
@@ -176,7 +177,7 @@ class TestYouTubeAnalytics(unittest.TestCase):
 
     def setUp(self):
         analytics_discovery = \
-            '/Users/john/src/gastatsdash/youtube-analytics-discovery.json'
+            '/Users/john/src/gastatsdash/Statsdash/tests/data/youtube-analytics-discovery.json'
         http = HttpMock(analytics_discovery, {'status': '200'})
         api_key = 'test_api_key'
         service = build(

@@ -51,9 +51,10 @@ class RunLogger:
         Yields datetime(1,1,1) if a report with that identifier has never been 
         recorded.
         """
+        print(identifier)
         c = self.conn.cursor()
         c.execute(
-            f'SELECT last_run FROM report_runs WHERE identifier={identifier}'
+            f'SELECT last_run FROM report_runs WHERE identifier="{identifier}"'
         )
         result = c.fetchone()
         if result:
@@ -149,7 +150,7 @@ class Errors:
         subject = 'Statsdash Errors'
         send_from = config.SEND_FROM
         recipients = config.ERROR_REPORTER
-        send_email('', message, subject, send_from, recipients)
+        send_email(None, message, subject, send_from, recipients)
 
 
 def _run(dryrun=False):
@@ -177,7 +178,9 @@ def _run(dryrun=False):
         next_run_date = run_logger.get_next_run(last_run_end, frequency, frequency_options).date()
 
         today = date.today()
-        needs_run = next_run_date <= today
+        # TODO fix
+        # needs_run = next_run_date <= today
+        needs_run = True
         print("%s next run: %s.  Needs run: %s" % (identifier, next_run_date, needs_run))
 
         if needs_run:
@@ -186,7 +189,7 @@ def _run(dryrun=False):
             report = report_conf['report'](report_conf['sites'], period, report_conf['frequency'], report_conf['subject'])
             if run_logger.override_data:
                 data_available = True
-                no_data_site = report.check_data_availability(override=True)
+                no_data_site = report.check_data_availability()
                 logger.warning("Overriding data availability and sending report anyway")
                 error_list.add_error("There is no data, or a lack of data available for the site: %s between %s - %s. This is being overridden to send the report %s anyway." % (no_data_site, period.start_date, period.end_date, identifier))
 
@@ -204,7 +207,7 @@ def _run(dryrun=False):
                 try:
                     if not dryrun:
                         html = report.generate_html()
-                        send_email(html, report.subject, config.SEND_FROM, report_conf['recipients'], report.imgdata)
+                        send_email(html, '', report.subject, config.SEND_FROM, report_conf['recipients'], report.img_data)
                         run_datetime = datetime(
                             year=report.period.end_date.year,
                             month=report.period.end_date.month,
