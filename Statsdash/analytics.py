@@ -1,4 +1,3 @@
-from pprint import pprint
 from googleapiclient import errors
 import logging.config
 import logging.handlers
@@ -36,10 +35,9 @@ class Analytics:
         for report in all_reports:
             formatted_data = utils.format_data_rows(report)
             for row in formatted_data:
-                # TODO we shouldn't use split all the time like this.
-                utils.convert_to_floats(row, metrics.split(","))
+                utils.convert_to_floats(row, metrics)
             output.extend(formatted_data)
-        return utils.aggregate_data(output, metrics.split(','), aggregate_key)
+        return utils.aggregate_data(output, metrics, aggregate_key)
 
     def _fetch_multiple(self, ids, start, end, metrics, **kwargs):
         """
@@ -47,14 +45,16 @@ class Analytics:
         no rows. Logs empty rows.
 
         Args:
-            * `ids` - `list` - A list of ids.
+            * `ids` - `list` - A list of ids. For GA, ids.
+            * `start` - `str` - Start date of reports, e.g. `'2020-03-18'`.
+            * `end` - `str` - End date of reports, e.g. `'2020-03-19'`.
+            * `metrics` - `list` - metric identifiers, e.g, `['views' ,'users']`.
 
         Returns:
             * `list` of results (`dict`).
         """
         all_reports = []
         for _id in ids:
-            # TODO replace with _id with ids
             results = self._run_report(_id, start, end, metrics, **kwargs)
             if results and results.get('rows'):
                 all_reports.append(results)
@@ -97,6 +97,10 @@ class Analytics:
         Log that there was no data in the result. Include the dimensions and
         filters used in the query if applicable.
         """
+        metrics = ','.join(metrics)
+        dimensions =  kwargs.get('dimensions')
+        if dimensions:
+            kwargs['dimensions'] = ','.join(dimensions)
         log_message = (f'No data for {view_id} on {start} - {end}.\n'
                        f'metrics: {metrics}')
 
@@ -198,17 +202,17 @@ class GoogleAnalytics(Analytics):
         Wraps `ga.get()`. Gets the Analytics data for a view (profile).
 
         Args:
-            * `view_id` - `str` - View ID for retrieving Analytics data.
-            * `start_date` - `str` - Start date for fetching Analytics data.
-            * `end_date` - `str` - End date for fetching Analytics data.
-            * `metrics` - `str` - A comma-separated list of Analytics metrics.
+            * `view_id` - `str` - view ID for retrieving analytics data.
+            * `start_date` - `str` - start date for fetching analytics data.
+            * `end_date` - `str` - end date for fetching analytics data.
+            * `metrics` - `list` - analytics metrics.
             * `kwargs` - max_results, filters, dimensions, include_empty_rows,
               sort, samplingLevel, segment, start_index, output.
 
         Returns:
             * `dict`
         """
-        # NOTE we're running this multiple times per site.
+        metrics = ','.join(metrics)
         kwargs['include_empty_rows'] = True  # always True
         if type(view_id) == dict:
             view_id = list(view_id.values())[0]
@@ -224,7 +228,7 @@ class GoogleAnalytics(Analytics):
 
 class YouTubeAnalytics(Analytics):
     """
-    Wrapper class for YouTube analytics APIs.
+    Wrapper class for YouTube analytics reports API.
     """
     identifier = 'YouTube Analytics'
 
@@ -249,10 +253,16 @@ class YouTubeAnalytics(Analytics):
         self.content_owner_id = content_owner_id
 
     def data_available(self, _id, stats_date):
+        """
+        Determines whether the data is ready. If there are any rows, the data
+        is ready.
+
+        Returns:
+            * `bool` - Whether there are rows in the response.
+        """
         filters = f'channel=={_id}'
-        results = self._run_report(_id, stats_date, stats_date,
-                                   self.Metrics.views[0], filters=filters)
-        # TODO duplication
+        metrics = [self.Metrics.views[0]]
+        results = self._run_report(_id, stats_date, stats_date, metrics, filters=filters)
         rows = results.get('rows')
         if not bool(rows):
             logger.info(f'ID {_id} returned no rows for '
@@ -260,30 +270,40 @@ class YouTubeAnalytics(Analytics):
             return False
         return True
 
-    def _run_report(self, _id, start_date, end_date, metrics, **kwargs):
+    def _run_report(self, channel_id, start, end, metrics, **kwargs):
         """
+        Wraps `reports.query()`. Gets the analytics data for a channel.
 
-        TODO
+        Args:
+            * `channel_id` - `str` - View ID for retrieving Analytics data.
+            * `start` - `str` - Start date for report.
+            * `end` - `str` - End date for report.
+            * `metrics` - `list` - Analytics metrics.
+            * `kwargs` - max_results, filters, dimensions, include_empty_rows,
+              sort, samplingLevel, segment, start_index, output.
+
+        Returns:
+            * `dict`
         """
-        filters = self._prepare_filters(_id, kwargs.pop('filters', None))
-
+        metrics = ','.join(metrics)
+        filters = self._prepare_filters(channel_id, kwargs.pop('filters', None))
         query = self.data_resource.query(
             ids=f'contentOwner=={self.content_owner_id}',
-            startDate=start_date,
-            endDate=end_date,
+            startDate=start,
+            endDate=end,
             metrics=metrics,
             filters=filters,
             **kwargs,
         )
         return self._execute_query(query)
 
-    def _prepare_filters(self, _id, filters):
+    @staticmethod
+    def _prepare_filters(_id, filters):
         """
         Add the channel ID to the filters arg. The YouTube Analytics API takes
         the channel IDs in the filter argument. If there are already specified
         filters, append the ID to the filters.
         """
-        # TODO test
         if filters:
             return filters + ';channel==%s' % _id
         return 'channel==%s' % _id

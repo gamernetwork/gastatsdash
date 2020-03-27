@@ -128,7 +128,7 @@ class TestGoogleAnalytics(unittest.TestCase):
         """
         mock_query_result.return_value = mock_responses.response_no_rows
         all_reports = self.analytics._fetch_multiple(
-            [self._id], self.stats_date, self.stats_date, 'ga:pageviews')
+            [self._id], self.stats_date, self.stats_date, ['ga:pageviews'])
         self.assertEqual(len(all_reports), 0)
         mock_logger.debug.assert_called_with(
             f'No data for {self._id} on {self.stats_date} - {self.stats_date}.'
@@ -142,7 +142,7 @@ class TestGoogleAnalytics(unittest.TestCase):
         """
         mock_query_result.return_value = mock_responses.response_ready
         aggregated_data = self.analytics.get_data(
-            [self._id], self.stats_date, self.stats_date, 'ga:pageviews')
+            [self._id], self.stats_date, self.stats_date, ['ga:pageviews'])
         self.assertEqual(aggregated_data, [{'ga:pageviews': 126070.0}])
 
     @patch('Statsdash.analytics.GoogleAnalytics._run_report')
@@ -152,7 +152,7 @@ class TestGoogleAnalytics(unittest.TestCase):
         dateHour.
         """
         mock_query_result.return_value = mock_responses.response_ready
-        metrics = 'ga:pageviews,ga:dateHour'
+        metrics = ['ga:pageviews', 'ga:dateHour']
         aggregated_data = self.analytics.get_data(
             [self._id], self.stats_date, self.stats_date, metrics)
         self.assertEqual(
@@ -281,14 +281,27 @@ class TestYouTubeAnalytics(unittest.TestCase):
             [self._id],
             self.stats_date,
             self.stats_date,
-            YouTubeAnalytics.Metrics.views
+            [YouTubeAnalytics.Metrics.views[0]]
         )
         self.assertEqual(len(all_reports), 0)
         mock_logger.debug.assert_called_with(
             f'No data for {self._id} on {self.stats_date} - {self.stats_date}.'
-            f'\nmetrics: {YouTubeAnalytics.Metrics.views}\ndimensions: '
+            f'\nmetrics: {YouTubeAnalytics.Metrics.views[0]}\ndimensions: '
             'None.\nfilters: None.'
         )
+
+    def test_prepare_no_filters(self):
+        _id = '123'
+        filters = None
+        result = self.analytics._prepare_filters(_id, filters)
+        self.assertEqual(result, 'channel==123')
+
+    def test_prepare_filters(self):
+        _id = '123'
+        filters = 'some-filter==x'
+        result = self.analytics._prepare_filters(_id, filters)
+        self.assertEqual(result, 'some-filter==x;channel==123')
+
 
     # TODO with real data
     # @patch('Statsdash.analytics.GoogleAnalytics._run_report')

@@ -204,7 +204,7 @@ class CountryData(AnalyticsData):
             self.site_ids[site],
             period.get_start(),
             period.get_end(),
-            metrics=','.join(third_party_metrics(self.metrics)),
+            metrics=third_party_metrics(self.metrics),
             dimensions=None,
             filters=self.rest_of_world_filters,
             sort=self.sort_by,

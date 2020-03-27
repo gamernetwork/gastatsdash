@@ -1,5 +1,3 @@
-from pprint import pprint
-
 from Statsdash.analytics import third_party_metrics, our_metrics
 from Statsdash.stats_range import StatsRange
 from Statsdash.utils import utils
@@ -23,17 +21,18 @@ class AggregateData:
     def __init__(self, sites, period, frequency):
         self.sites = sites
         self.frequency = frequency
-        # TODO pass name into get_pervious_period
         previous_period = StatsRange.get_previous_period(period, self.frequency)  # remove literal
         previous_period.name = 'previous'
         yearly_period = StatsRange.get_previous_period(period, "YEARLY")
         yearly_period.name = 'yearly'
         self.periods = [period, previous_period, yearly_period]
 
-    # TODO test
     def get_table(self):
         """
+        Gets the aggregated data for each period as a single dict.
 
+        Returns:
+            * `list` of `dicts`.
         """
         period_data = []
         for period in self.periods:
@@ -82,10 +81,9 @@ class AggregateData:
 
     def _get_data_for_period(self, period):
         """
-        Gets the analytics data for each site in `self.site_ids` for the given
-        period and prepares it for the table: renames the keys for each metric,
-        aggregates the data for each site, and gets the average for values
-        where appropriate.
+        Gets the analytics data for each site for the given period and prepares
+        it for the table: renames the keys for each metric, aggregates the data
+        for each site, and does additonal processing of the data as necessary.
 
         Args:
             * `period` - `StatsRange`
@@ -100,8 +98,8 @@ class AggregateData:
                 period.get_start(),
                 period.get_end(),
                 # TODO rename method.
-                metrics=','.join(third_party_metrics(self.metrics)),
-                dimensions=','.join(third_party_metrics(self.dimensions)),
+                metrics=third_party_metrics(self.metrics),
+                dimensions=third_party_metrics(self.dimensions),
                 filters=self.filters,
                 sort=self.sort_by,
                 aggregate_key=self.aggregate_key,
