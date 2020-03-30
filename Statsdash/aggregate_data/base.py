@@ -1,6 +1,6 @@
+from Statsdash import utils
 from Statsdash.analytics import third_party_metrics, our_metrics
 from Statsdash.stats_range import StatsRange
-from Statsdash.utils import utils
 
 
 class AggregateData:

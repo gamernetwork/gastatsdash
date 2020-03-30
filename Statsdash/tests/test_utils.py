@@ -1,5 +1,6 @@
 import unittest
-from Statsdash.utils import utils
+
+from Statsdash import utils
 
 
 class TestUtils(unittest.TestCase):

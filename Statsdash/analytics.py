@@ -2,8 +2,8 @@ from googleapiclient import errors
 import logging.config
 import logging.handlers
 
+from Statsdash import utils
 from Statsdash.config import LOGGING
-from Statsdash.utils import utils
 
 logging.config.dictConfig(LOGGING)
 logger = logging.getLogger('report')

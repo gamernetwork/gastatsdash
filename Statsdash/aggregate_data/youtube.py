@@ -1,8 +1,8 @@
 from .base import AggregateData
 from Statsdash import config
-from Statsdash.analytics import YouTubeAnalytics, YouTubeVideos, our_metrics
+from Statsdash.analytics import YouTubeAnalytics, YouTubeVideos
 from Statsdash.resources import get_youtube_videos
-from Statsdash.utils import utils
+from Statsdash import utils
 
 CONTENT_OWNER_ID = config.YOUTUBE['CONTENT_OWNER_ID']
 TABLES = config.YOUTUBE['CHANNELS']

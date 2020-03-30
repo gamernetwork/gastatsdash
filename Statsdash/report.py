@@ -6,8 +6,7 @@ from Statsdash.aggregate_data import google, youtube
 from Statsdash.render import get_environment
 from Statsdash.resources import get_google_analytics, get_youtube_analytics
 from Statsdash.stats_range import StatsRange
-from Statsdash.utils import date, Frequency
-from Statsdash.utils.utils import camel_to_lowercase_words
+from Statsdash.utils import camel_to_lowercase_words, date, Frequency
 
 logging.config.dictConfig(config.LOGGING)
 logger = logging.getLogger('report')
