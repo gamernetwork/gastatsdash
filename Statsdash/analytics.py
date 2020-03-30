@@ -213,6 +213,7 @@ class GoogleAnalytics(Analytics):
             * `dict`
         """
         metrics = ','.join(metrics)
+        kwargs['dimensions'] = self._get_dimensions(kwargs['dimensions'])
         kwargs['include_empty_rows'] = True  # always True
         if type(view_id) == dict:
             view_id = list(view_id.values())[0]
@@ -224,6 +225,12 @@ class GoogleAnalytics(Analytics):
             **kwargs
         )
         return self._execute_query(query)
+
+    @staticmethod
+    def _get_dimensions(dimensions):
+        if dimensions:
+            return ','.join(dimensions)
+        return None
 
 
 class YouTubeAnalytics(Analytics):

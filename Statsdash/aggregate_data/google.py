@@ -87,10 +87,10 @@ class ArticleData(AnalyticsData):
         Dimensions.host,
     ]
     filters = 'ga:pagePathLevel1!=/;ga:pagePath!~/page/*;ga:pagePath!~^/\?.*'
-    # TODO clean up sort_by
     sort_by = Metrics.pageviews
     match_key = 'site_path'
     aggregate_key = Dimensions.path
+    limit = 20
 
     def _format_data(self, data, site):
         data = super()._format_data(data, site)
@@ -155,7 +155,7 @@ class CountryData(AnalyticsData):
             metrics=third_party_metrics(self.metrics),
             dimensions=None,
             filters=self.rest_of_world_filters,
-            sort=self.sort_by,
+            sort=self.sort_by[0],
             aggregate_key=None
         )
         if world_rows:

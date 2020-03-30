@@ -43,6 +43,13 @@ class AggregateData:
             return self._join_periods(period_data)
         return self._join_periods(period_data)
 
+    def data_available(self):
+        site = self.sites[0]
+        return self.analytics.data_available(
+            self.site_ids[site],
+            self.periods[0].get_end(),
+        )
+
     def _join_periods(self, data):
         """
         Gets the data for each period and combines them into a single dict.

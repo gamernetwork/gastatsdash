@@ -4,8 +4,7 @@ import logging.config, logging.handlers
 from Statsdash import config
 from Statsdash.aggregate_data import google, youtube
 from Statsdash.render import get_environment
-from Statsdash.resources import get_google_analytics, get_youtube_analytics, \
-    get_youtube_videos
+from Statsdash.resources import get_google_analytics, get_youtube_analytics
 from Statsdash.stats_range import StatsRange
 from Statsdash.utils import date, Frequency
 from Statsdash.utils.utils import camel_to_lowercase_words
@@ -87,11 +86,7 @@ class Report:
         tables = self._get_tables()
 
         html = self.get_template().render(
-            subject=self.get_subject(),
-            change=self.frequency_label,
-            report_span=self.frequency,
-            warning_sites=self.warning_sites,
-            num_days=self.num_days,
+            **self._get_render_context(),
             **tables
         )
         return html
@@ -99,14 +94,22 @@ class Report:
     def get_resource(self):
         raise NotImplementedError()
 
+    def _get_render_context(self):
+        return {
+            'subject': self.get_subject(),
+            'change': self.frequency_label,
+            'report_span': self.frequency,
+            'warning_sites': self.warning_sites,
+            'num_days': self.num_days,
+        }
+
     # TODO test and docstring
     def _get_tables(self):
         args = [self.resource, self.sites, self.period, self.frequency]
         return {d.table_label: d(*args).get_table() for d in self.data}
 
-    # TODO consider how this should work
     def check_data_availability(self):
-        return True
+        raise NotImplementedError()
 
 
 class YouTubeReport(Report):
@@ -127,6 +130,10 @@ class YouTubeReport(Report):
     def get_resource(self):
         return get_youtube_analytics()
 
+    def check_data_availability(self):
+        args = [self.resource, self.sites, self.period, self.frequency]
+        youtube.ChannelStatsData(*args)
+
 
 # TODO break this into a daily report and a montly report
 class AnalyticsCoreReport(Report):
@@ -134,7 +141,6 @@ class AnalyticsCoreReport(Report):
     Google Analytics data report for a given collection of sites. Converts the
     report into HTML.
     """
-    # Maybe just make the other tables classes.
     data = [
         google.SummaryData,
         google.SiteSummaryData,
@@ -152,24 +158,18 @@ class AnalyticsCoreReport(Report):
         else:
             self.all_sites = False
 
+    def check_data_availability(self):
+        args = [self.resource, self.sites, self.period, self.frequency]
+        google.SummaryData(*args)
+
     def get_resource(self):
         return get_google_analytics()
 
-    # TODO inheritance
-    def generate_html(self):
-        tables = self._get_tables()
-
-        html = self.get_template().render(
-            subject=self.get_subject(),
-            change=self.frequency_label,
-            report_span=self.frequency,
-            warning_sites=self.warning_sites,
-            num_days=self.num_days,
-            site=self.get_site(),
-            all_sites=self.all_sites,
-            **tables
-        )
-        return html
+    def _get_render_context(self):
+        context = super()._get_render_context()
+        context['site'] = self.get_site()
+        context['all_sites'] = self.all_sites
+        return context
 
     # TODO sort this
     def get_site(self):
@@ -182,40 +182,35 @@ class AnalyticsCoreReport(Report):
         tables = super()._get_tables()
         tables['summary_table'] = tables['summary_table'][0]
         tables['network_summary_table'] = self._get_network_summary_table()[0]
-        if self.frequency != 'MONTHLY':
+        if self.frequency != Frequency.MONTHLY:
             tables['network_month_summary_table'] = self._get_network_month_summary_table()[0]
             tables['full_month_summary_table'] = self._get_full_month_summary_table()[0]
             tables['month_summary_table'] = self._get_month_summary_table()[0]
         return tables
 
     def _get_network_summary_table(self):
-        network_data = google.SummaryData(config.GOOGLE['TABLES'].keys(), self.period, self.frequency)
+        network_data = google.SummaryData(self.resource, config.GOOGLE['TABLES'].keys(), self.period, self.frequency)
         return network_data.get_table()
 
     def _get_month_summary_table(self):
-        # TODO clean, test, mock
-        if self.frequency != 'MONTHLY':
-            # TODO does this need to use datetime method
+        if self.frequency != Frequency.MONTHLY:
             month_range = StatsRange('Month to date Aggregate', self.first, self.today)
-            month_summary_data = google.SummaryData(self.sites, month_range, self.frequency)
+            month_summary_data = google.SummaryData(self.resource, self.sites, month_range, self.frequency)
             return month_summary_data.get_table()
         return None
 
     def _get_full_month_summary_table(self):
         # TODO clean, test, mock
         month_range = self._get_month_range()
-        full_month_data = google.SummaryData(self.sites, month_range, self.frequency)
+        full_month_data = google.SummaryData(self.resource, self.sites, month_range, self.frequency)
         return full_month_data.get_table()
 
     def _get_network_month_summary_table(self):
         month_range = self._get_month_range()
-        # TODO fix
         if not self.all_sites:
-            network_month_data = google.SummaryData(config.GOOGLE['TABLES'], month_range, self.frequency)
+            network_month_data = google.SummaryData(self.resource, config.GOOGLE['TABLES'], month_range, self.frequency)
             return network_month_data.get_table()
         return None
 
     def _get_month_range(self):
-        # TODO docstring and test
         return StatsRange('Month to date Aggregate', self.first, self.last)
-
