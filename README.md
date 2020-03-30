@@ -4,113 +4,138 @@ hiring!](http://www.gamesindustry.biz/jobs/gamer-network)
 # Statsdash
 
 A simple email reporting tool for all your Google Analytics properties and
-Youtube channels.  Not especially useful if you only have one account.
+Youtube channels.
 
 Uses Google Analytics API v3 and various Youtube APIs.
 
 Designed to run periodically and to send reports when data is ready; GA and YT
 do not have live stats and data can take 48 hours to appear.
 
-## Install
 
-Clone and pop it in a virtualenv for safety.
+## Getting Started
+
+
+### Installing
+
+Clone the repo and create a `virtualenv`. Activate the `virtualenv` and install requirements.
 
 ```shell
 virtualenv env
-env/bin/pip install -r requirements.txt
+source env/bin/activate
+pip install -r requirements.txt
+```
+
+For development you should have `mailcatcher` installed. Install it inside the environment
+or system wide. 
+
+```shell script
+brew install ruby
+sudo gem install mailcatcher
 ```
 
 ### Configure
 
-Copy `report_schedule.py-example` to `report_schedule.py` and change the
-reports config to be appropriate to you.
+Copy the example configuration files.
 
-Copy `config.py-example` to `config.py` for Statsdash/config.py and change
-values to those appropriate to you. 
+```shell script
+cp Statsdash/report_schedule.example.py report_schedule.py
+cp Statsdash/config.example.py config.py
+```
 
-Do the same for each API config.py - `Statsdash/GA/config.py` and/or
-`Statsdash/Youtube/config.py` and change values to those appropriate to you. 
+Update `Statsdash/report_schedule.py` for whatever reports you want to generate.
 
-Get your GA site view IDs from the Google Analytics backends - it can be a
-little hard to find the view ID so follow these steps:
+**Important**
+* Inside `Statsdash/config.py` you will need to provide paths to two key files
+for Google Analytics and YouTube Analytics authentication. This step is explained
+[here](#getting-your-property-ids).
+
+* You will also need to update `GOOGLE['TABLES']` and `YOUTUBE['CHANNELS']`
+to reflect your properties. This step is explained [here](#generating-analytics-key-file).
+
+* For YouTube Analytics you will need your content owner ID. This step is explained
+[here](#getting-your-content-owner-id).
+
+* Finally, you will need to auth yourself for YouTube Analytics API. This step is explained
+[here](#generating-analytics-key-file).
+
+
+Once you have completed these steps you can [run the project](#usage).
+
+
+## Getting your property IDs
+
+### Google Analytics
+
+Get your GA site view IDs from the 
+[Google Analytics backend](https://analytics.google.com/analytics/web)
+
+It can be a little hard to find the view ID so follow these steps:
 
 1. Navigate to the 'Admin' tab.
 1. Select your account, property and view.
-1. Select 'View Settings' in the rightmost column - voilà.
+1. Select 'View Settings' in the rightmost column.
 
-Get your Youtube channel IDs as a content owner from here:
-https://www.youtube.com/analytics or from a channels individual settings page
-here: https://www.youtube.com/advanced_settings
+**Note:** the view ID will be a numeric ID with about nine characters. In
+`Statsdash/config.py`, the id should have `ga:` prepended to it (see `config.example.py`).
 
-To get your content owner ID see below.
+### YouTube
 
-### Generating service account
+To get your Youtube channel ID, navigate to the
+[YouTube Analytics page](https://www.youtube.com/analytics). Your ID will appear in the
+URL after `/channel/`. It should be a combination of letters and numbers.
 
-* Register for Google Developers Console:
-  https://console.developers.google.com/
-* Create a project
-* Go to APIs & Auth -> Credentials
-* Click 'Create a new client ID'
-* Choose 'Service account'
-* You will be prompted to save a .p12 file * this is the private key file
-  referenced in GA/config.py
-* Copy the service account email address and pop into GA/config.py
+**Note:** you may need to switch accounts to the appropriate account.
+
+## Generating analytics key file
+
+### Generating service account key file
+
+1. Register for [Google Developers Console](https://console.developers.google.com/)
+1. Create a project
+1. Enable Google Analytics API
+1. Go to Credentials and click `Create Credentials`
+1. Choose 'Service account'
+1. You will be prompted to save a `.json` file. This is the private key file
+  referenced in `config.GOOGLE['KEY_FILE']`.
+1. Update the `config.GOOGLE['KEY_FILE']` path to reflect the location of the key file
+on your machine.
 
 ### Generating OAuth Client ID for Youtube access
 
-* Register for Google Developers Console:
-  https://console.developers.google.com/
-* Create a project
-* Go to APIs & Auth
-* Enable Youtube Analytics API, Youtube Data API v3, Youtube Reporting API,
-  Youtube Content ID API
-* Go to Credentials -> Create Credentials
-* Choose "OAuth Client ID"
-* Choose "Other"
-* Save the client ID and client Secret numbers
-* The Client ID will appear under the Credentials tab, on the right click to
-  "download JSON"
-* Copy this file into the "Youtube folder" and fill in the path in the
-  Youtube/config.py
+1. Register for [Google Developers Console](https://console.developers.google.com/)
+1. Create a project
+1. Enable Youtube Analytics API, Youtube Data API v3, Youtube Reporting API,
+Youtube Content ID API
+1. Go to Credentials and click `Create Credentials`
+1. Choose 'OAuth Client ID'
+1. The Client ID will appear under the Credentials tab, on the right click to
+  download the `.json` file.
+1. Update the `config.YOUTUBE['KEY_FILE']` path to reflect the location of the key file
+on your machine.
+  
+## Getting your content owner ID
 
-### Auth as yourself for Youtube APIs
+TODO
 
+## Auth as yourself for Youtube APIs
+
+Run the `create_credentials` file.
 ```
-python create_credentials.py --noauth_local_webserver
+python create_credentials.py
 ```
 
-Then copy the link into your browser, click "allow" and copy and paste the key
-given into the shell. 
-
-This should now have set up your scheduler with an oauth connection and created
-a file "scheduler.py-oauth2.json".
-
-### Get your content owner ID
-
-** TODO FIX THIS NONSENSE ** 
-
-You must run the `get_content_owner()` function in
-`Statsdash/Youtube/analytics.py`, to do this:
-
-* Generate the OAuth client ID first (see above)
-* Add this code at the very top of analytics.py:
-    ```  
-    import sys
-    sys.path.append("/path/to/gastatsdash")
-    ```
-* Add this code at the bottom of the analytics.py:
-    ```  
-    if __name__=="__main__":
-        analytics = Analytics()
-        print analytics.get_content_owner()["items"][0]["id"]
-    ```
-* You can then run ` python analytics.py --noauth_local_webserver `
-* Follow the instructions. Copy the link into your browser, click "allow" and
-  copy and paste the code back into the shell. 
-* Your content owner id will be printed out, put it into the Youtube/config.py 
-* Remember to remove these bits of code after! 
+A web browser will launch where you can sign into your Google account. Once you have
+signed in, a file called `credentials.json` will be saved in the project root directory.
 
 ## Usage
+
+**Note:** For development, run mailcatcher so that you can see the emails that are sent.
+By default they will be available at `http://127.0.0.1:1080/`.
+```shell script
+mailcatcher
+``` 
+
+To run the scheduler:
 
 ```
 python scheduler.py
@@ -123,5 +148,5 @@ data for the report is available.
 If the data is available for the dependent sites, the scheduler will trigger
 the report to run and email its recipients.
 
-It is advised that an hourly cron runs scheduler.py so that stats reports are
+It is advised that an hourly cron runs `scheduler.py` so that stats reports are
 available soon after the data becomes available.
