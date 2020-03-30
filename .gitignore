@@ -4,7 +4,6 @@ docs/_build
 *.py-oauth2.json
 *.pyc
 *.json
-credentials.py
 daily.sh
 env/
 monthly.sh
@@ -16,3 +15,4 @@ weekly.sh
 schedule.db
 report_schedule.py
 *.egg-info/
+credentials.json

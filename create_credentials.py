@@ -12,7 +12,7 @@ SCOPES = [
     'https://www.googleapis.com/auth/yt-analytics.readonly',
     'https://www.googleapis.com/auth/youtubepartner'
 ]
-PROJECT_ROOT = dir_path = os.path.dirname(os.path.realpath(__file__))
+PROJECT_ROOT = os.path.dirname(os.path.realpath(__file__))
 
 # Authorize the request and store authorization credentials.
 flow = InstalledAppFlow.from_client_secrets_file(KEY_FILE, SCOPES)

@@ -8,15 +8,15 @@ import sqlite3
 import sys
 import traceback
 
+from Statsdash import config
 from Statsdash.config import LOGGING
-from Statsdash.report_schedule import reports
-from Statsdash.utilities import add_one_month, find_next_weekday
-import Statsdash.config as config
 from Statsdash.mailer import send_email
-import Statsdash.utilities as utils
+from Statsdash.report_schedule import reports
+from Statsdash.stats_range import StatsRange
+from Statsdash.utils import Frequency
+from Statsdash.utils.date import add_one_month, find_next_weekday
 
 
-# TODO test this once we're up and running?
 class RunLogger:
     """
     Persistence layer for recording the last run of a report and querying
@@ -75,44 +75,43 @@ class RunLogger:
         )
         self.conn.commit()
 
+    # TODO clean up this method
     def get_next_run(self, last_run_end, frequency, frequency_options={}):
         """
         When should the report run next.
         Returns a Date object
         last_run_end == report end date
         """
-        # NOTE whats going on here?
         today = date.today() - timedelta(days=1)
         now = datetime(today.year, today.month, today.day, 00)
 
-        # TODO remove lits
         if last_run_end.year == 1:
-            if frequency == 'DAILY' or frequency == "WOW_DAILY":
+            if frequency in [Frequency.DAILY, Frequency.WOW_DAILY]:
                 return now
-            if frequency == 'WEEKLY':
+            if frequency == Frequency.WEEKLY:
                 weekday = frequency_options.get('weekday', 'Monday')
                 return find_next_weekday(now, weekday)
-            if frequency == 'MONTHLY':
+            if frequency == Frequency.MONTHLY:
                 day = frequency_options.get('day', 1)
                 next_run = datetime(day=day, month=now.month, year=now.year)
                 if next_run < now:
                     next_run = add_one_month(next_run)
                 return next_run
-       
-        if frequency == 'DAILY' or frequency == "WOW_DAILY":
-            #if last period end was over 2 days ago, set to yesterday 
+
+        if frequency in [Frequency.DAILY, Frequency.WOW_DAILY]:
+            #if last period end was over 2 days ago, set to yesterday
             next_run = last_run_end + timedelta(days=1)
             if (now - last_run_end).days >= 2:
                 # NOTE why is this set to True?
                 self.override_data = True
-        if frequency == 'WEEKLY':
+        if frequency == Frequency.WEEKLY:
             weekday = frequency_options.get('weekday', 'Monday')
             # Next run is the next matching weekday *after* the last run
             # So if we run every Monday, our last_run_end will be on a Sunday - 
             #   so add one day
             next_run = find_next_weekday(last_run_end + timedelta(days=1), weekday, force_future=True)
-        if frequency == 'MONTHLY':
-            day = frequency_options.get("day")
+        if frequency == Frequency.MONTHLY:
+            day = frequency_options.get('day')
             #add one day to last_run_end to get the first day of next month period 
             next_run = last_run_end + timedelta(days=1) 
             #needs to run at the end of the next period, so add one month
@@ -182,7 +181,7 @@ def _run(dryrun=False):
         print("%s next run: %s.  Needs run: %s" % (identifier, next_run_date, needs_run))
 
         if needs_run:
-            period = utils.StatsRange.get_period(next_run_date, frequency)
+            period = StatsRange.get_period(next_run_date, frequency)
             # Create report instance with given period.
             report = report_conf['report'](report_conf['sites'], period, report_conf['frequency'], report_conf['subject'])
             if run_logger.override_data:
@@ -234,7 +233,6 @@ def run_schedule(dryrun=False):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    # TODO improve help text.
     parser.add_argument("-t", "--test", help="test run", action="store_true")
     args = parser.parse_args()
     error_list = Errors()
