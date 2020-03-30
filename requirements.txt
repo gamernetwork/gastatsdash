@@ -1,5 +1,4 @@
 google
-# TODO version lock
 -e .
 argparse==1.4.0
 beautifulsoup4>=4.8.2,<5.0
@@ -11,10 +10,10 @@ google-auth
 google-auth-oauthlib
 Jinja2==2.11.*
 mock
-oauthlib
+nose
 premailer==3.6.1
 pygal
 python-dateutil
-requests==2.10.*
+requests
 simplejson==3.6.*
 tendo==0.2.*

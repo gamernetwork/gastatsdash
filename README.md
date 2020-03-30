@@ -127,6 +127,13 @@ python create_credentials.py
 A web browser will launch where you can sign into your Google account. Once you have
 signed in, a file called `credentials.json` will be saved in the project root directory.
 
+## Running the tests
+
+Make sure you are inside your virtual environment and have installed requirements.
+```shell script
+nosetests Statsdash/tests/
+```
+
 ## Usage
 
 **Note:** For development, run mailcatcher so that you can see the emails that are sent.
