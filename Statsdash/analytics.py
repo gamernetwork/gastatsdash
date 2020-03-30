@@ -77,7 +77,7 @@ class Analytics:
             * `HttpError` if http error occurs.
             * `Exception` if any other error occurs during the execution.
         """
-        # TODO we might need a wait for it type wrapper method.
+        # NOTE original implementation used a wait for it mechanism.
         # https://stackoverflow.com/questions/41713234/better-way-to-write-a-polling-function-in-python
         try:
             return query.execute()
@@ -313,28 +313,8 @@ class YouTubeVideos(Analytics):
     """
     Wrapper class for YouTube Data API Channels resource.
     """
-    def get_data(self, ids, **kwargs):
-        id_combo = ','.join(ids)
-        results = self._run_report(id_combo)
-        stats = {}
-        for row in results:  # TODO k, v refactor?
-            metrics = row['statistics'].keys()
-            data = row['statistics']
-            data = utils.convert_to_floats(metrics, data)
-            for metric in data:
-                if metric in data:
-                    stats[metric] += data[metric]
-                else:
-                    stats[metric] = data[metric]
-        return stats
-
     def _run_report(self, _id, **kwargs):
-        query = self.data_resource.list(
-            id=_id,
-            part='statistics',
-            **kwargs,
-        )
-        return self._execute_query(query)
+        raise NotImplementedError()
 
     def get_video(self, id):
         """

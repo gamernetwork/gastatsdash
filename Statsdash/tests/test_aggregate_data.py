@@ -598,7 +598,7 @@ class TestYouTubeChannelSummaryData(unittest.TestCase):
             date(2020, 3, 13)
         )
         sites = list(tables.keys())
-        self.channel_summary_data = youtube.ChannelSummaryData({}, {}, sites, self.period, 'MONTHLY')
+        self.channel_summary_data = youtube.ChannelSummaryData({}, sites, self.period, 'MONTHLY')
         self.expected_keys = [
             'channel', 'estimated_minutes_watched', 'subscriber_change',
             'subscribers_gained', 'subscribers_lost',
@@ -663,7 +663,7 @@ class TestYouTubeChannelStatsData(unittest.TestCase):
         mock_tables.return_value = tables
         sites = list(tables.keys())
 
-        self.channel_stats_data = youtube.ChannelStatsData({}, {}, sites, self.period, 'MONTHLY')
+        self.channel_stats_data = youtube.ChannelStatsData({}, sites, self.period, 'MONTHLY')
         self.expected_keys = [
             'channel', 'comment_rate', 'comments', 'dislike_ratio',
             'dislikes', 'like_rate', 'like_ratio', 'likes', 'shares',
@@ -728,7 +728,7 @@ class TestYouTubeCountryData(unittest.TestCase):
         }
         mock_tables.return_value = tables
         sites = list(tables.keys())
-        self.country_data = youtube.CountryData({}, {}, sites, self.period, 'MONTHLY')
+        self.country_data = youtube.CountryData({}, sites, self.period, 'MONTHLY')
         self.expected_keys = [
             'country', 'estimated_minutes_watched', 'subscriber_change',
             'subscribers_gained', 'subscribers_lost', 'views',
@@ -795,7 +795,7 @@ class TestYouTubeVideoData(unittest.TestCase):
         }
         mock_table.return_value = tables
         sites = list(tables.keys())
-        self.video_data = youtube.VideoData({}, {}, sites, self.period, 'MONTHLY')
+        self.video_data = youtube.VideoData({}, sites, self.period, 'MONTHLY')
         self.expected_keys = [
             'channel', 'estimated_minutes_watched', 'title', 'video', 'views',
             'previous_figure_views', 'previous_change_views',
@@ -851,7 +851,7 @@ class TestYouTubeTrafficSourceData(unittest.TestCase):
         }
         mock_table.return_value = tables
         sites = list(tables.keys())
-        self.traffic_source_data = youtube.TrafficSourceData({}, {}, sites, self.period, 'MONTHLY')
+        self.traffic_source_data = youtube.TrafficSourceData({}, sites, self.period, 'MONTHLY')
 
     # TODO need to get to the bottom of what this table is meant to do.
     @patch('Statsdash.analytics.YouTubeAnalytics._run_report')

@@ -288,3 +288,9 @@ def add_amp_to_title(path, title):
         h = HTMLParser()
         title = h.unescape(title)
     return title
+
+
+def camel_to_lowercase_words(s):
+    words = re.sub('([A-Z][a-z]+)', r' \1', re.sub('([A-Z]+)', r' \1', s)).split()
+    return ' '.join(words).lower()
+

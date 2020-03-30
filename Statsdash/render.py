@@ -1,6 +1,9 @@
 from jinja2 import Environment, PackageLoader, select_autoescape
 
 
+# TODO add tests for render
+
+
 # custom filters
 def int_comma(value):
     """
@@ -30,6 +33,7 @@ def int_comma(value):
     final += val_point
     return final
 
+
 def cut(word, part="www."):
     """
     Where word is a string
@@ -38,6 +42,7 @@ def cut(word, part="www."):
     split = word.split(part)
     truncated = "".join(split)
     return truncated 
+
 
 def div_or_na(num, denom):
     if float(denom) > 0:

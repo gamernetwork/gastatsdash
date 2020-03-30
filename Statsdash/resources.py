@@ -24,7 +24,7 @@ def get_youtube_analytics():
     Gets the YouTube Analytics resource.
     """
     credentials = get_youtube_credentials()
-    service = build('youtubeAnalytics', 'v3', credentials=credentials)
+    service = build('youtubeAnalytics', 'v2', credentials=credentials)
     return service.reports()
 
 

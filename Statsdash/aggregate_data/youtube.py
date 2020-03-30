@@ -1,6 +1,7 @@
 from .base import AggregateData
 from Statsdash import config
 from Statsdash.analytics import YouTubeAnalytics, YouTubeVideos, our_metrics
+from Statsdash.resources import get_youtube_videos
 from Statsdash.utils import utils
 
 CONTENT_OWNER_ID = config.YOUTUBE['CONTENT_OWNER_ID']
@@ -13,10 +14,9 @@ Metrics = YouTubeAnalytics.Metrics
 
 class YouTubeData(AggregateData):
 
-    def __init__(self, resource, videos_resource, sites, period, frequency):
+    def __init__(self, resource, sites, period, frequency):
         super().__init__(sites, period, frequency)
         self.analytics = YouTubeAnalytics(resource, CONTENT_OWNER_ID)
-        self.videos = YouTubeVideos(videos_resource)
         self.site_ids = get_site_ids()
 
 
@@ -63,11 +63,7 @@ class ChannelStatsData(YouTubeData):
     sort_rows_by = Metrics.views
     match_key = Dimensions.channel
 
-    # TODO how to handle rates?
-
     def _get_extra_data(self, period, site, data):
-        # TODO clean
-        # TODO use constants
         for item in data:
             item['channel'] = site
             item['like_rate'] = utils.rate_per_1000(item['likes'], item['views'])
@@ -111,14 +107,6 @@ class CountryData(YouTubeData):
                 item[Metrics.subscribers_gained[0]] - item[Metrics.subscribers_lost[0]]
         return data
 
-    def _aggregate_data(self, data):
-        # TODO some sort of extra metrics thing would be cool.
-        return utils.aggregate_data(
-            data,
-            our_metrics(self.metrics) + ['subscriber_change'],
-            match_key=self._get_match_key()
-        )
-
 
 class VideoData(YouTubeData):
     table_label = 'top_vids'
@@ -126,7 +114,6 @@ class VideoData(YouTubeData):
         Metrics.views,
         Metrics.estimated_minutes_watched,
     ]
-
     dimensions = [
         Dimensions.video,
     ]
@@ -136,6 +123,7 @@ class VideoData(YouTubeData):
     sort_by = Metrics.views
     aggregate_key = Dimensions.video
     match_key = Dimensions.video
+    videos_method = get_youtube_videos
 
     def _get_extra_data(self, period, site, data):
         for item in data:
@@ -144,6 +132,7 @@ class VideoData(YouTubeData):
         return data
 
     def _get_video_title(self, _id):
+        self.videos = YouTubeVideos(get_youtube_videos())
         video_info = self.videos.get_video(_id)
         try:
             return video_info['items'][0]['snippet']['title']

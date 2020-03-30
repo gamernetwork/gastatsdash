@@ -136,7 +136,7 @@ class AggregateData:
     def _aggregate_data(self, data):
         return utils.aggregate_data(
             data,
-            our_metrics(self.metrics),
+            our_metrics(self.metrics) + self.extra_metrics,
             match_key=self._get_match_key()
         )
 
