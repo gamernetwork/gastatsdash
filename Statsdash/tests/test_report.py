@@ -28,7 +28,7 @@ class TestAnalyticsCoreReport(unittest.TestCase):
         self.report = AnalyticsCoreReport(self.site_tables, self.period, 'MONTHLY', 'SUBJECT')
         mock_get_tables_monthly.return_value = mock_responses.mock_get_tables_monthly
         # TODO actual testing
-        print(self.report.generate_html())
+        # print(self.report.generate_html())
 
     @patch('Statsdash.report.AnalyticsCoreReport._get_tables')
     def test_get_html_daily(self, mock_get_tables_daily):
@@ -37,7 +37,7 @@ class TestAnalyticsCoreReport(unittest.TestCase):
         # TODO remove literal
         self.report = AnalyticsCoreReport(self.site_tables, self.period, 'DAILY', 'SUBJECT')
         mock_get_tables_daily.return_value = mock_responses.mock_get_tables_daily
-        print(self.report.generate_html())
+        # print(self.report.generate_html())
 
 
 class TestYouTubeReport(unittest.TestCase):
@@ -60,4 +60,4 @@ class TestYouTubeReport(unittest.TestCase):
         # TODO remove literal
         self.report = YouTubeReport(self.site_tables, self.period, 'MONTHLY', 'SUBJECT')
         mock_get_tables_monthly.return_value = mock_responses.mock_get_tables_youtube
-        print(self.report.generate_html())
+        # print(self.report.generate_html())

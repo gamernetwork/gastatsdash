@@ -37,6 +37,7 @@ Dimensions = YouTubeAnalytics.Dimensions
 Metrics = YouTubeAnalytics.Metrics
 
 
+# NOTE this is a bit crap
 def get_site_ids():
     return TABLES
 
@@ -72,8 +73,9 @@ class ChannelSummaryData(YouTubeData):
     extra_metrics = [
         'subscriber_change'
     ]
+    # TODO?
     # sort_by = '-' + Metrics.estimated_minutes_watched[0]
-    match_key = Dimensions.channel[1]
+    match_key = Dimensions.channel
 
     # TODO consider changing site/channel to property
     def _get_extra_data(self, period, site, data):
@@ -103,7 +105,7 @@ class ChannelStatsData(YouTubeData):
         'dislike_ratio',
     ]
     sort_rows_by = Metrics.views
-    match_key = Dimensions.channel[1]
+    match_key = Dimensions.channel
 
     # TODO how to handle rates?
 
@@ -142,9 +144,9 @@ class CountryData(YouTubeData):
     dimensions = [
         Dimensions.country
     ]
-    sort_by = '-' + Metrics.estimated_minutes_watched[0]
-    aggregate_key = Dimensions.country[0]
-    match_key = Dimensions.country[1]
+    sort_by = Metrics.estimated_minutes_watched
+    aggregate_key = Dimensions.country
+    match_key = Dimensions.country
     limit = 20
 
     def _get_extra_data(self, period, site, data):
@@ -158,7 +160,7 @@ class CountryData(YouTubeData):
         return utils.aggregate_data(
             data,
             our_metrics(self.metrics) + ['subscriber_change'],
-            match_key=self.match_key
+            match_key=self._get_match_key()
         )
 
 
@@ -176,9 +178,9 @@ class VideoData(YouTubeData):
 
     # NOTE you need to sort by descending views if you want to run a
     # `dimensions=video` report, and you can only retrieve at most 200 results
-    sort_by = '-' + Metrics.views[0]
-    aggregate_key = Dimensions.video[0]
-    match_key = Dimensions.video[1]
+    sort_by = Metrics.views
+    aggregate_key = Dimensions.video
+    match_key = Dimensions.video
 
     def _get_extra_data(self, period, site, data):
         for item in data:
@@ -186,7 +188,8 @@ class VideoData(YouTubeData):
             item['channel'] = site
         return data
 
-    def _get_video_title(self, _id):
+    @staticmethod
+    def _get_video_title(_id):
         video_info = youtube_videos.get_video(_id)
         try:
             return video_info['items'][0]['snippet']['title']
@@ -207,8 +210,8 @@ class TrafficSourceData(YouTubeData):
         'PLAYLIST', 'RELATED_VIDEO', 'SUBSCRIBER', 'YT_CHANNEL',
         'YT_OTHER_PAGE', 'YT_PLAYLIST_PAGE', 'YT_SEARCH',
     ]
-    aggregate_key = Dimensions.insight_traffic_source_type[0]
-    match_key = Dimensions.insight_traffic_source_type[1]
+    aggregate_key = Dimensions.insight_traffic_source_type
+    match_key = Dimensions.insight_traffic_source_type
 
     def _get_extra_data(self, period, site, data):
         channel_total = 0.0

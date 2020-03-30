@@ -1,12 +1,14 @@
-import re
-from html.parser import HTMLParser
 
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 
 from .base import AggregateData
 from Statsdash.analytics import GoogleAnalytics, third_party_metrics
+from Statsdash.utils import utils
 from Statsdash import config
+
+API_SERVICE_NAME = 'analytics'
+API_VERSION = 'v3'
 
 KEY_FILE = config.GOOGLE['KEY_FILE']
 TABLES = config.GOOGLE['TABLES']
@@ -16,7 +18,8 @@ credentials = service_account.Credentials.from_service_account_file(
     KEY_FILE,
     scopes=SCOPES
 )
-service = build('analytics', 'v3', credentials=credentials)
+# TODO should be initialized outside of main script?
+service = build(API_SERVICE_NAME, API_VERSION, credentials=credentials)
 resource = service.data().ga()
 
 Metrics = GoogleAnalytics.Metrics
@@ -36,39 +39,6 @@ class AnalyticsData(AggregateData):
         super().__init__(sites, period, frequency)
         self.site_ids = get_site_ids()
 
-    def _remove_query_string(self, path):
-        """
-        Removes any queries attached to the end of a page path, so aggregation
-        can be accurate.
-        """
-        # TODO finish docstring
-        # NOTE not sure why linter is compaining. Maybe `r`?
-        exp = "^([^\?]+)\?.*"
-        regex = re.compile(exp)
-        m = regex.search(path)
-        if m:
-            new_path = regex.split(path)[1]
-            return new_path
-        else:
-            return path
-
-    def _get_title(self, path, title):
-        """
-        Checks if the article path includes 'amp' making it an AMP article, and
-        appends this to the name so easier to see in report.
-        """
-        # TODO finish docstring
-        # NOTE title/docstring confusion
-        exp = "/amp/"
-        regex = re.compile(exp)
-        m = regex.search(path + "/")
-        if m:
-            title = title + " (AMP)"
-            # amp articles come with html characters
-            h = HTMLParser()
-            title = h.unescape(title)
-        return title
-
 
 class SummaryData(AnalyticsData):
     """
@@ -87,8 +57,7 @@ class SummaryData(AnalyticsData):
         data = super()._format_data(data, site)
         return self._apply_averages(data)
 
-
-    # TODO look closely at this method.
+    # TODO I wonder if this should be happening here.
     def _apply_averages(self, data):
         """
         Get average for metrics which are averages.
@@ -141,10 +110,10 @@ class ArticleData(AnalyticsData):
         Dimensions.host,
     ]
     filters = 'ga:pagePathLevel1!=/;ga:pagePath!~/page/*;ga:pagePath!~^/\?.*'
-    sort_by = '-' + Metrics.pageviews[0]
-    # TODO double check sorting
+    # TODO clean up sort_by
+    sort_by = Metrics.pageviews
     match_key = 'site_path'
-    aggregate_key = Dimensions.path[0]
+    aggregate_key = Dimensions.path
 
     def _format_data(self, data, site):
         data = super()._format_data(data, site)
@@ -152,8 +121,10 @@ class ArticleData(AnalyticsData):
         # TODO clean logic
         path = data['path']
         title = data['title']
-        new_path = self._remove_query_string(path)
-        new_title = self._get_title(path, title)
+
+        new_path = utils.remove_query_string(path)
+        new_title = utils.add_amp_to_title(path, title)
+
         data['path'] = new_path
         data['site_path'] = site + new_path
         data['title'] = new_title
@@ -194,10 +165,10 @@ class CountryData(AnalyticsData):
     countries_regex = "|".join(countries)
     filters = f'ga:country=~{countries_regex}'
     rest_of_world_filters = f'ga:country!~{countries_regex}'
-    match_key = 'country'
-    sort_by = '-' + Metrics.pageviews[0]
+    sort_by = Metrics.pageviews
     sort_rows_by = Metrics.users
-    aggregate_key = Dimensions.country[0]
+    aggregate_key = Dimensions.country
+    match_key = Dimensions.country
 
     def _get_extra_data(self, period, site, data):
         world_rows = self.analytics.get_data(
@@ -228,10 +199,10 @@ class TrafficSourceData(AnalyticsData):
     dimensions = [
         Dimensions.source,
     ]
-    sort_by = '-' + Metrics.users[0]
+    sort_by = Metrics.users
     sort_rows_by = Metrics.users
-    aggregate_key = Dimensions.source[0]
-    match_key = Dimensions.source[1]
+    aggregate_key = Dimensions.source
+    match_key = Dimensions.source
     limit = 10
 
 
@@ -244,10 +215,10 @@ class DeviceData(AnalyticsData):
     dimensions = [
         Dimensions.device_category,
     ]
-    sort_by = '-' + Metrics.users[0]
+    sort_by = Metrics.users
     sort_rows_by = Metrics.users
-    aggregate_key = Dimensions.device_category[0]
-    match_key = Dimensions.device_category[1]
+    aggregate_key = Dimensions.device_category
+    match_key = Dimensions.device_category
 
 
 class SocialData(AnalyticsData):
@@ -262,9 +233,9 @@ class SocialData(AnalyticsData):
     ]
 
     filters = 'ga:socialNetwork!=(not set)'
-    sort_by = '-' + Metrics.users[0]
-    aggregate_key = Dimensions.social_network[0]
-    match_key = Dimensions.social_network[1]
+    sort_by = Metrics.users
+    aggregate_key = Dimensions.social_network
+    match_key = Dimensions.social_network
     limit = 15
 
 

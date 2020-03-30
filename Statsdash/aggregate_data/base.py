@@ -69,7 +69,7 @@ class AggregateData:
                         current_period_data,
                         other_period_data,
                         our_metrics(self.metrics) + self.extra_metrics,
-                        match_key=self.match_key
+                        match_key=self._get_match_key()
                     )
                     change = utils.prefix_keys(change, period.name + '_')
                     joined_data.update(change)
@@ -101,8 +101,8 @@ class AggregateData:
                 metrics=third_party_metrics(self.metrics),
                 dimensions=third_party_metrics(self.dimensions),
                 filters=self.filters,
-                sort=self.sort_by,
-                aggregate_key=self.aggregate_key,
+                sort=self._get_sort_by(),
+                aggregate_key=self._get_aggregate_key(),
                 **self.extra_params,
             )
             data = self._get_extra_data(period, site, data)
@@ -129,7 +129,7 @@ class AggregateData:
         return utils.aggregate_data(
             data,
             our_metrics(self.metrics),
-            match_key=self.match_key
+            match_key=self._get_match_key()
         )
 
     def _format_all_data(self, data, site):
@@ -143,3 +143,39 @@ class AggregateData:
         replacements = [(c[0], c[1]) for c in self.metrics + self.dimensions]
         data = utils.change_key_names(data, replacements)
         return data
+
+    def _get_sort_by(self):
+        """
+        If `sort_by` metric is set, prepend a minus and use the third
+        party string. Most of our stats appear in descending order.
+
+        Returns:
+            * `str` or `None` if `sort_by` is not set.
+        """
+        if self.sort_by:
+            return f'-{self.sort_by[0]}'
+        return None
+
+    def _get_aggregate_key(self):
+        """
+        If `aggregate_key` metric is set, use the third party string.
+
+        Returns:
+            * `str` or `None` if `aggregate_key` is not set.
+        """
+        if self.aggregate_key:
+            return self.aggregate_key[0]
+        return None
+
+    def _get_match_key(self):
+        """
+        If `match_key` is a tuple (metric), use local system string.
+
+        Returns:
+            * `str` or `None` if `match_key` is not set.
+        """
+        if self.match_key:
+            if type(self.match_key) == tuple:
+                return self.match_key[1]
+            return self.match_key
+        return None

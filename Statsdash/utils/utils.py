@@ -1,6 +1,8 @@
 from datetime import datetime, timedelta, date
 import io
+from html.parser import HTMLParser
 import pygal
+import re
 
 
 def format_data_rows(results):
@@ -243,3 +245,46 @@ def chart(title, x_labels, data, x_title, y_title):
 
     # line_chart.render_to_png("/var/www/dev/faye/statsdash_reports/social.png")
 
+
+def remove_query_string(path):
+    """
+    Removes any queries attached to the end of a page path, so aggregation
+    can be accurate.
+
+    Args:
+        * `path` - `str` - The url to be altered.
+
+    Returns:
+        * `str`
+    """
+    exp = r'^([^\?]+)\?.*'
+    regex = re.compile(exp)
+    m = regex.search(path)
+    if m:
+        new_path = regex.split(path)[1]
+        return new_path
+    else:
+        return path
+
+
+def add_amp_to_title(path, title):
+    """
+    Checks if the article path includes 'amp' making it an AMP article, and
+    appends this to the name so easier to see in report.
+
+    Args:
+        * `path` - `str` - The path to check for 'amp'.
+        * `title` - `str` - The title which ' (AMP)' gets added to.
+
+    Returns:
+        * `title`
+    """
+    exp = '/amp/'
+    regex = re.compile(exp)
+    m = regex.search(path + '/')
+    if m:
+        title = title + ' (AMP)'
+        # amp articles come with html characters
+        h = HTMLParser()
+        title = h.unescape(title)
+    return title
