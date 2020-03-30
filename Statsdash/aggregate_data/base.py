@@ -23,7 +23,7 @@ class AggregateData:
         self.frequency = frequency
         previous_period = StatsRange.get_previous_period(period, self.frequency)  # remove literal
         previous_period.name = 'previous'
-        yearly_period = StatsRange.get_previous_period(period, "YEARLY")
+        yearly_period = StatsRange.get_previous_period(period, 'YEARLY')
         yearly_period.name = 'yearly'
         self.periods = [period, previous_period, yearly_period]
 
@@ -120,9 +120,17 @@ class AggregateData:
 
     def _get_extra_data(self, period, site, data):
         """
+        Subclasses can implement this method to get additional data or
+        manipulate the data that is pulled from the analytics resource.
 
+        Args:
+            * `period` - `StatsRange`
+            * `site` - `str` -  The name of the site or channel.
+            * `data` - `list` -  Data returned from analytics.
+
+        Returns:
+            * `list`
         """
-        # TODO docstring
         return data
 
     def _aggregate_data(self, data):

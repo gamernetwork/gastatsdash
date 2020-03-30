@@ -1,66 +1,23 @@
-from pprint import pprint
-import json
-from google.oauth2.credentials import Credentials
-from googleapiclient.discovery import build
-
 from .base import AggregateData
 from Statsdash import config
 from Statsdash.analytics import YouTubeAnalytics, YouTubeVideos, our_metrics
 from Statsdash.utils import utils
 
 CONTENT_OWNER_ID = config.YOUTUBE['CONTENT_OWNER_ID']
-CREDENTIALS_FILE = config.YOUTUBE['CREDENTIALS_FILE']
 TABLES = config.YOUTUBE['CHANNELS']
-
-API_SERVICE_NAME = 'youtubeAnalytics'
-API_VERSION = 'v2'
-
-
-SCOPES = [
-    'https://www.googleapis.com/auth/youtube.readonly',
-    'https://www.googleapis.com/auth/yt-analytics.readonly',
-    'https://www.googleapis.com/auth/youtubepartner'
-]
-with open(CREDENTIALS_FILE) as json_file:
-    data = json.load(json_file)
-credentials = Credentials(**data)
-
-service = build(API_SERVICE_NAME, API_VERSION, credentials=credentials)
-resource = service.reports()
-
-service = build('youtube', 'v3', credentials=credentials)
-videos = service.videos()
-youtube_videos = YouTubeVideos(videos)
 
 
 Dimensions = YouTubeAnalytics.Dimensions
 Metrics = YouTubeAnalytics.Metrics
 
 
-# NOTE this is a bit crap
-def get_site_ids():
-    return TABLES
-
-
 class YouTubeData(AggregateData):
 
-    analytics = YouTubeAnalytics(resource, CONTENT_OWNER_ID)
-
-    def __init__(self, sites, period, frequency):
+    def __init__(self, resource, videos_resource, sites, period, frequency):
         super().__init__(sites, period, frequency)
+        self.analytics = YouTubeAnalytics(resource, CONTENT_OWNER_ID)
+        self.videos = YouTubeVideos(videos_resource)
         self.site_ids = get_site_ids()
-
-    # def check_available_data(self):
-    #     run_report = {"result": True, "channel": []}
-    #     for channel in self.channels:
-    #         ids = self.channel_ids[channel]
-    #         for id in ids:
-    #             data_available = analytics.data_available(id, self.period.get_end())
-    #             if not data_available:
-    #                 run_report['result'] = False
-    #                 run_report['channel'].append(channel)
-    #     return run_report
-
 
 
 class ChannelSummaryData(YouTubeData):
@@ -73,8 +30,7 @@ class ChannelSummaryData(YouTubeData):
     extra_metrics = [
         'subscriber_change'
     ]
-    # TODO?
-    # sort_by = '-' + Metrics.estimated_minutes_watched[0]
+    sort_by = Metrics.estimated_minutes_watched
     match_key = Dimensions.channel
 
     # TODO consider changing site/channel to property
@@ -175,7 +131,6 @@ class VideoData(YouTubeData):
         Dimensions.video,
     ]
     extra_params = {'maxResults': 20}
-
     # NOTE you need to sort by descending views if you want to run a
     # `dimensions=video` report, and you can only retrieve at most 200 results
     sort_by = Metrics.views
@@ -188,9 +143,8 @@ class VideoData(YouTubeData):
             item['channel'] = site
         return data
 
-    @staticmethod
-    def _get_video_title(_id):
-        video_info = youtube_videos.get_video(_id)
+    def _get_video_title(self, _id):
+        video_info = self.videos.get_video(_id)
         try:
             return video_info['items'][0]['snippet']['title']
         except IndexError:
@@ -221,3 +175,8 @@ class TrafficSourceData(YouTubeData):
         for item in data:
             item['channel_total'] = channel_total
         return data
+
+
+def get_site_ids():
+    # NOTE this method exists so it can be easily mocked during tests.
+    return TABLES

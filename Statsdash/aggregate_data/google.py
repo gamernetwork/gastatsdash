@@ -1,42 +1,19 @@
-
-from google.oauth2 import service_account
-from googleapiclient.discovery import build
-
 from .base import AggregateData
 from Statsdash.analytics import GoogleAnalytics, third_party_metrics
 from Statsdash.utils import utils
 from Statsdash import config
 
-API_SERVICE_NAME = 'analytics'
-API_VERSION = 'v3'
-
-KEY_FILE = config.GOOGLE['KEY_FILE']
 TABLES = config.GOOGLE['TABLES']
-
-SCOPES = ['https://www.googleapis.com/auth/analytics.readonly', ]
-credentials = service_account.Credentials.from_service_account_file(
-    KEY_FILE,
-    scopes=SCOPES
-)
-# TODO should be initialized outside of main script?
-service = build(API_SERVICE_NAME, API_VERSION, credentials=credentials)
-resource = service.data().ga()
-
 Metrics = GoogleAnalytics.Metrics
 Dimensions = GoogleAnalytics.Dimensions
 Countries = GoogleAnalytics.Countries
 
 
-def get_site_ids():
-    return TABLES
-
-
 class AnalyticsData(AggregateData):
 
-    analytics = GoogleAnalytics(resource)
-
-    def __init__(self, sites, period, frequency):
+    def __init__(self, resource, sites, period, frequency):
         super().__init__(sites, period, frequency)
+        self.analytics = GoogleAnalytics(resource)
         self.site_ids = get_site_ids()
 
 
@@ -326,3 +303,8 @@ class SocialData(AnalyticsData):
 #             row["articles"] = article
 #             referrals.append(row)
 #     return referrals
+
+
+def get_site_ids():
+    # NOTE this method exists so it can be easily mocked during tests.
+    return TABLES

@@ -1,4 +1,3 @@
-from pprint import pprint
 from datetime import date
 import unittest
 from unittest.mock import patch
@@ -61,7 +60,7 @@ class TestGoogleSummaryData(unittest.TestCase):
         }
         mock_table.return_value = tables
         sites = list(tables.keys())
-        self.summary_data = google.SummaryData(sites, self.period, 'MONTHLY')
+        self.summary_data = google.SummaryData({}, sites, self.period, 'MONTHLY')
 
     @patch('Statsdash.analytics.GoogleAnalytics._run_report')
     def test_get_data_for_period(self, mock_query_result):
@@ -126,7 +125,7 @@ class TestGoogleSiteSummaryData(unittest.TestCase):
         }
         mock_table.return_value = tables
         sites = list(tables.keys())
-        self.site_summary_data = google.SiteSummaryData(sites, self.period, 'MONTHLY')
+        self.site_summary_data = google.SiteSummaryData({}, sites, self.period, 'MONTHLY')
 
 
     @patch('Statsdash.analytics.GoogleAnalytics._run_report')
@@ -210,7 +209,7 @@ class TestGoogleArticleData(unittest.TestCase):
         }
         mock_table.return_value = tables
         sites = list(tables.keys())
-        self.article_data = google.ArticleData(sites, self.period, 'MONTHLY')
+        self.article_data = google.ArticleData({}, sites, self.period, 'MONTHLY')
 
 
     @patch('Statsdash.analytics.GoogleAnalytics._run_report')
@@ -319,7 +318,7 @@ class TestGoogleCountryData(unittest.TestCase):
         mock_table.return_value = tables
         sites = list(tables.keys())
 
-        self.country_data = google.CountryData(sites, self.period, 'MONTHLY')
+        self.country_data = google.CountryData({}, sites, self.period, 'MONTHLY')
         self.expected_keys = [
             'country', 'pageviews', 'users', 'previous_figure_pageviews',
             'previous_change_pageviews', 'previous_percentage_pageviews',
@@ -387,7 +386,7 @@ class TestGoogleTrafficSourceData(unittest.TestCase):
         }
         mock_table.return_value = tables
         sites = list(tables.keys())
-        self.traffic_source_data = google.TrafficSourceData(sites, self.period, 'MONTHLY')
+        self.traffic_source_data = google.TrafficSourceData({}, sites, self.period, 'MONTHLY')
         self.expected_keys = [
             'pageviews', 'source_medium', 'users', 'previous_figure_pageviews',
             'previous_change_pageviews', 'previous_percentage_pageviews',
@@ -442,7 +441,7 @@ class TestGoogleDeviceData(unittest.TestCase):
         }
         mock_table.return_value = tables
         sites = list(tables.keys())
-        self.social_data = google.DeviceData(sites, self.period, 'MONTHLY')
+        self.social_data = google.DeviceData({}, sites, self.period, 'MONTHLY')
         self.expected_keys = [
             'device_category', 'users', 'previous_figure_users',
             'previous_change_users', 'previous_percentage_users',
@@ -487,7 +486,7 @@ class TestGoogleSocialData(unittest.TestCase):
         }
         mock_table.return_value = tables
         sites = list(tables.keys())
-        self.social_data = google.SocialData(sites, self.period, 'MONTHLY')
+        self.social_data = google.SocialData({}, sites, self.period, 'MONTHLY')
         self.expected_keys = [
             'pageviews', 'sessions', 'social_network', 'users',
             'previous_figure_pageviews', 'previous_change_pageviews',
@@ -599,7 +598,7 @@ class TestYouTubeChannelSummaryData(unittest.TestCase):
             date(2020, 3, 13)
         )
         sites = list(tables.keys())
-        self.channel_summary_data = youtube.ChannelSummaryData(sites, self.period, 'MONTHLY')
+        self.channel_summary_data = youtube.ChannelSummaryData({}, {}, sites, self.period, 'MONTHLY')
         self.expected_keys = [
             'channel', 'estimated_minutes_watched', 'subscriber_change',
             'subscribers_gained', 'subscribers_lost',
@@ -664,7 +663,7 @@ class TestYouTubeChannelStatsData(unittest.TestCase):
         mock_tables.return_value = tables
         sites = list(tables.keys())
 
-        self.channel_stats_data = youtube.ChannelStatsData(sites, self.period, 'MONTHLY')
+        self.channel_stats_data = youtube.ChannelStatsData({}, {}, sites, self.period, 'MONTHLY')
         self.expected_keys = [
             'channel', 'comment_rate', 'comments', 'dislike_ratio',
             'dislikes', 'like_rate', 'like_ratio', 'likes', 'shares',
@@ -729,7 +728,7 @@ class TestYouTubeCountryData(unittest.TestCase):
         }
         mock_tables.return_value = tables
         sites = list(tables.keys())
-        self.country_data = youtube.CountryData(sites, self.period, 'MONTHLY')
+        self.country_data = youtube.CountryData({}, {}, sites, self.period, 'MONTHLY')
         self.expected_keys = [
             'country', 'estimated_minutes_watched', 'subscriber_change',
             'subscribers_gained', 'subscribers_lost', 'views',
@@ -796,7 +795,7 @@ class TestYouTubeVideoData(unittest.TestCase):
         }
         mock_table.return_value = tables
         sites = list(tables.keys())
-        self.video_data = youtube.VideoData(sites, self.period, 'MONTHLY')
+        self.video_data = youtube.VideoData({}, {}, sites, self.period, 'MONTHLY')
         self.expected_keys = [
             'channel', 'estimated_minutes_watched', 'title', 'video', 'views',
             'previous_figure_views', 'previous_change_views',
@@ -852,7 +851,7 @@ class TestYouTubeTrafficSourceData(unittest.TestCase):
         }
         mock_table.return_value = tables
         sites = list(tables.keys())
-        self.traffic_source_data = youtube.TrafficSourceData(sites, self.period, 'MONTHLY')
+        self.traffic_source_data = youtube.TrafficSourceData({}, {}, sites, self.period, 'MONTHLY')
 
     # TODO need to get to the bottom of what this table is meant to do.
     @patch('Statsdash.analytics.YouTubeAnalytics._run_report')
