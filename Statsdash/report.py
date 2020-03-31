@@ -1,3 +1,4 @@
+from pprint import pprint
 from datetime import date, datetime, timedelta
 import logging.config, logging.handlers
 
@@ -83,7 +84,8 @@ class Report:
         Get formatted data and render to template
         """
         tables = self._get_tables()
-
+        for row in tables['geo_table']:
+            assert 'previous_percentage_pageviews' in row.keys()
         html = self.get_template().render(
             **self._get_render_context(),
             **tables
@@ -152,7 +154,7 @@ class AnalyticsCoreReport(Report):
 
     def __init__(self, sites, period, frequency, subject):
         super().__init__(sites, period, frequency, subject)
-        if self.sites == config.GOOGLE['ALL_NETWORK_SITES']:
+        if self.sites == config.ALL_NETWORK_SITES:
             self.all_sites = True
         else:
             self.all_sites = False
@@ -170,19 +172,21 @@ class AnalyticsCoreReport(Report):
         context['all_sites'] = self.all_sites
         return context
 
-    # TODO sort this
     def get_site(self):
         if len(self.sites) == 1:
-            return self.sites[0]
+            return list(self.sites)[0]
         elif self.all_sites:
             return config.GOOGLE['ALL_SITES_NAME']
 
+    # TODO these tables can probably exist as `AggregateData` classes.
     def _get_tables(self):
         tables = super()._get_tables()
         tables['summary_table'] = tables['summary_table'][0]
         tables['network_summary_table'] = self._get_network_summary_table()[0]
         if self.frequency != Frequency.MONTHLY:
-            tables['network_month_summary_table'] = self._get_network_month_summary_table()[0]
+            network_summary_table = self._get_network_month_summary_table()
+            if network_summary_table:
+                tables['network_month_summary_table'] = network_summary_table[0]
             tables['full_month_summary_table'] = self._get_full_month_summary_table()[0]
             tables['month_summary_table'] = self._get_month_summary_table()[0]
         return tables

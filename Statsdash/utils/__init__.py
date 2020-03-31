@@ -187,8 +187,7 @@ def aggregate_data_by_match_key(data, aggregate_keys, match_key):
     return new_table
 
 
-# TODO add matchkey functionality
-def get_change(data_a, data_b, change_keys, match_key=None):
+def get_change(data_a, data_b, change_keys):
     """
     Given two sets of data, gets the change and percentage change between the
     two data sets for each of the given `change_keys`. Also includes the
@@ -205,12 +204,32 @@ def get_change(data_a, data_b, change_keys, match_key=None):
     """
     result = {}
     for key in change_keys:
-        result['figure_%s' % (key)] = data_b[key]
-        result['change_%s' % (key)] = data_a[key] - data_b[key]
-        result['percentage_%s' % (key)] = percentage(
-            result['change_%s' % (key)],
-            data_b[key]
-        )
+        result['figure_%s' % key] = data_b[key]
+        result['change_%s' % key] = data_a[key] - data_b[key]
+        result['percentage_%s' % key] = percentage(result['change_%s' % key], data_b[key])
+    return result
+
+
+def get_change_match_key(data_a, data_b, change_keys, match_key=None):
+    result = {}
+    if data_a[match_key] in data_b.keys():
+        for key in change_keys:
+            result['figure_%s' % key] = data_b[key]
+            result['change_%s' % key] = result[key] - data_b[key]
+            result['percentage_%s' % key] = percentage(result['change_%s' % (key)], data_b[key])
+    else:
+        for key in change_keys:
+            result['figure_%s' % key] = 0
+            result['change_%s' % key] = 0
+            result['percentage_%s' % key] = 0
+    return result
+
+def get_change_zero(change_keys):
+    result = {}
+    for key in change_keys:
+        result['figure_%s' % key] = 0
+        result['change_%s' % key] = 0
+        result['percentage_%s' % key] = 0
     return result
 
 

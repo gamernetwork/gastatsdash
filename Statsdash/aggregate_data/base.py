@@ -1,3 +1,4 @@
+from pprint import pprint
 from Statsdash import utils
 from Statsdash.analytics import third_party_metrics, our_metrics
 from Statsdash.stats_range import StatsRange
@@ -62,25 +63,43 @@ class AggregateData:
         """
         current_period = data[0]
         other_periods = data[1:]
+
         new_data = []
         #iterate over every item in the current period and get the change versus prevous periods
         # NOTE this will cause a bug if the other period doesn't have the data for all the same rows. Should be the exact same rows.
-
         for i, current_period_data in enumerate(current_period):
+            # TODO this whole block needs a lot of testing
             joined_data = current_period_data
             for j, other_period in enumerate(other_periods, 1):
                 period = self.periods[j]
                 try:
-                    other_period_data = other_period[i]
-                    change = utils.get_change(
-                        current_period_data,
-                        other_period_data,
-                        our_metrics(self.metrics) + self.extra_metrics,
-                        match_key=self._get_match_key()
-                    )
+                    if self._get_match_key():
+                        match_key = self._get_match_key()
+                        val = current_period_data[match_key]
+
+                        to_print = [match_key, val, other_period]
+                        try:
+                            other_period_data = utils.list_search(other_period, match_key, val)
+                            change = utils.get_change_match_key(
+                                current_period_data,
+                                other_period_data,
+                                our_metrics(self.metrics) + self.extra_metrics,
+                                match_key,
+                            )
+                        except KeyError:
+                            [print(v) for v in to_print]
+                            change = utils.get_change_zero(
+                                our_metrics(self.metrics) + self.extra_metrics,
+                            )
+                    else:
+                        other_period_data = other_period[i]
+                        change = utils.get_change(
+                            current_period_data,
+                            other_period_data,
+                            our_metrics(self.metrics) + self.extra_metrics,
+                        )
                     change = utils.prefix_keys(change, period.name + '_')
                     joined_data.update(change)
-                # TODO test
                 except IndexError:
                     pass
             new_data.append(joined_data)
