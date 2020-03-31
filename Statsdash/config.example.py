@@ -43,7 +43,7 @@ LOGGING = {
 }
 
 GOOGLE = {
-    'KEY_FILE': 'path/to/keyfile',
+    'KEY_FILE': 'path/to/keyfile',  # update this
     'TABLES': {
         # 'site-name.com': [{'id': 'ga:12345678'}]
     },
@@ -54,12 +54,20 @@ GOOGLE = {
 }
 
 YOUTUBE = {
-    'KEY_FILE': 'path/to/keyfile',
+    'KEY_FILE': 'path/to/keyfile',  # update this
     'CREDENTIALS_FILE': PROJECT_ROOT + '/credentials.json',
     'CHANNELS': {
         # 'channel-name': ['UC0abcdefgh12345678']
     },
     'CONTENT_OWNER_ID': '-some_id',
+}
+# Email recipient for specific sites.
+EMAILS = {
+    # 'site_name': 'email_address'
+}
+
+CUSTOM_NAMES = {
+    # 'site_name': 'custom_name'
 }
 
 SMTP_ADDRESS = 'localhost:1025'
