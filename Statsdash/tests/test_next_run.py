@@ -2,7 +2,6 @@ from datetime import datetime, date, timedelta
 import unittest
 
 from Statsdash.utils import Frequency
-
 from scheduler import RunLogger
 
 

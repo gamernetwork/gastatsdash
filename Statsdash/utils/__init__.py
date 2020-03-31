@@ -238,7 +238,6 @@ def convert_values_list(id_dict):
     """
     Converts the values of a dictionary to be list format
     """
-    # NOTE wtf?
     for key in id_dict:
         try:
             converted = id_dict[key].split()
