@@ -224,6 +224,7 @@ def get_change_match_key(data_a, data_b, change_keys, match_key=None):
             result['percentage_%s' % key] = 0
     return result
 
+
 def get_change_zero(change_keys):
     result = {}
     for key in change_keys:

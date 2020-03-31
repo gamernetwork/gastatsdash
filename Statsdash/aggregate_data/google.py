@@ -1,4 +1,3 @@
-from pprint import pprint
 from .base import AggregateData
 from Statsdash.analytics import GoogleAnalytics, third_party_metrics
 from Statsdash import config, utils

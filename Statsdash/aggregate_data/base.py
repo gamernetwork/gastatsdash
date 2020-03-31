@@ -1,4 +1,3 @@
-from pprint import pprint
 from Statsdash import utils
 from Statsdash.analytics import third_party_metrics, our_metrics
 from Statsdash.stats_range import StatsRange
@@ -47,7 +46,7 @@ class AggregateData:
     def data_available(self):
         site = self.sites[0]
         return self.analytics.data_available(
-            self.site_ids[site],
+            self.site_ids[site][0],
             self.periods[0].get_end(),
         )
 
@@ -66,9 +65,8 @@ class AggregateData:
 
         new_data = []
         #iterate over every item in the current period and get the change versus prevous periods
-        # NOTE this will cause a bug if the other period doesn't have the data for all the same rows. Should be the exact same rows.
+        # TODO this whole block needs a lot of testing and refactoring
         for i, current_period_data in enumerate(current_period):
-            # TODO this whole block needs a lot of testing
             joined_data = current_period_data
             for j, other_period in enumerate(other_periods, 1):
                 period = self.periods[j]
@@ -77,7 +75,6 @@ class AggregateData:
                         match_key = self._get_match_key()
                         val = current_period_data[match_key]
 
-                        to_print = [match_key, val, other_period]
                         try:
                             other_period_data = utils.list_search(other_period, match_key, val)
                             change = utils.get_change_match_key(
@@ -87,7 +84,6 @@ class AggregateData:
                                 match_key,
                             )
                         except KeyError:
-                            [print(v) for v in to_print]
                             change = utils.get_change_zero(
                                 our_metrics(self.metrics) + self.extra_metrics,
                             )

@@ -24,7 +24,7 @@ class Report:
 
     def __init__(self, sites, period, frequency, subject):
         self.resource = self.get_resource()
-        self.sites = sites
+        self.sites = list(sites)
         self.period = period
         self.frequency = frequency
         self.subject = subject
@@ -161,7 +161,7 @@ class AnalyticsCoreReport(Report):
 
     def check_data_availability(self):
         args = [self.resource, self.sites, self.period, self.frequency]
-        google.SummaryData(*args)
+        return google.SummaryData(*args).data_available()
 
     def get_resource(self):
         return get_google_analytics()

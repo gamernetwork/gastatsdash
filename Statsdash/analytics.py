@@ -182,8 +182,8 @@ class GoogleAnalytics(Analytics):
             _id,
             stats_date,
             stats_date,
-            self.Metrics.pageviews[0],
-            dimensions=self.Dimensions.date_hour
+            [self.Metrics.pageviews[0]],
+            dimensions=[self.Dimensions.date_hour[0]],
         )
         rows = results.get('rows')
         if not rows:
@@ -217,6 +217,7 @@ class GoogleAnalytics(Analytics):
         kwargs['include_empty_rows'] = True  # always True
         if type(view_id) == dict:
             view_id = list(view_id.values())[0]
+        print(view_id)
         query = self.data_resource.get(
             ids=view_id,
             start_date=start,
