@@ -1,6 +1,8 @@
 import unittest
+from datetime import datetime
 
 from Statsdash import utils
+from Statsdash.utils.date import find_last_weekday, find_next_weekday
 
 
 class TestUtils(unittest.TestCase):
@@ -53,3 +55,42 @@ class TestUtils(unittest.TestCase):
         result = utils.sort_data([data_a, data_b], 'pears', reverse=False)
         self.assertEqual(result[0], data_a)
         self.assertEqual(result[1], data_b)
+
+
+class TestDateUtils(unittest.TestCase):
+
+    def test_last_weekday_currentWeekdayMatches(self):
+        today = datetime(year=2015, month=7, day=2)
+        day = "Thursday"
+        result = find_last_weekday(today, day)
+        self.assertEqual(result, datetime(year=2015, month=7, day=2))
+
+    def test_last_weekday_currentWeekdayBelowDesired(self):
+        today = datetime(year=2015, month=7, day=2)
+        day = "Friday"
+        result = find_last_weekday(today, day)
+        self.assertEqual(result, datetime(year=2015, month=6, day=26))
+
+    def test_last_weekday_currentWeekdayAboveDesired(self):
+        today = datetime(year=2015, month=7, day=2)
+        day = "Wednesday"
+        result = find_last_weekday(today, day)
+        self.assertEqual(result, datetime(year=2015, month=7, day=1))
+
+    def test_next_weekday_currentWeekdayMatches(self):
+        today = datetime(year=2015, month=7, day=2)
+        day = "Thursday"
+        result = find_next_weekday(today, day)
+        self.assertEqual(result, datetime(year=2015, month=7, day=2))
+
+    def test_next_weekday_currentWeekdayBelowDesired(self):
+        today = datetime(year=2015, month=7, day=2)
+        day = "Friday"
+        result = find_next_weekday(today, day)
+        self.assertEqual(result, datetime(year=2015, month=7, day=3))
+
+    def test_next_weekday_currentWeekdayAboveDesired(self):
+        today = datetime(year=2015, month=7, day=2)
+        day = "Wednesday"
+        result = find_next_weekday(today, day)
+        self.assertEqual(result, datetime(year=2015, month=7, day=8))

@@ -112,14 +112,13 @@ class RunLogger:
             next_run = find_next_weekday(last_run_end + timedelta(days=1), weekday, force_future=True)
         if frequency == Frequency.MONTHLY:
             day = frequency_options.get('day')
-            #add one day to last_run_end to get the first day of next month period 
+            #add one day to last_run_end to get the first day of next month period
             next_run = last_run_end + timedelta(days=1) 
             #needs to run at the end of the next period, so add one month
             next_run = add_one_month(next_run)
             #make sure set to be correct day 
             next_run = next_run.replace(day=day) 
             if (now - next_run).days >= 2:
-                # NOTE why is this set to True?
                 self.override_data = True
 
         return next_run
