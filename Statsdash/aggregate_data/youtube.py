@@ -17,7 +17,7 @@ class YouTubeData(AggregateData):
     def __init__(self, resource, sites, period, frequency):
         super().__init__(sites, period, frequency)
         self.analytics = YouTubeAnalytics(resource, CONTENT_OWNER_ID)
-        self.site_ids = get_site_ids()
+        self.site_ids = TABLES
 
 
 class ChannelSummaryData(YouTubeData):
@@ -165,7 +165,3 @@ class TrafficSourceData(YouTubeData):
             item['channel_total'] = channel_total
         return data
 
-
-def get_site_ids():
-    # NOTE this method exists so it can be easily mocked during tests.
-    return TABLES

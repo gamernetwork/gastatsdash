@@ -13,7 +13,7 @@ class AnalyticsData(AggregateData):
     def __init__(self, resource, sites, period, frequency):
         super().__init__(sites, period, frequency)
         self.analytics = GoogleAnalytics(resource)
-        self.site_ids = get_site_ids()
+        self.site_ids = TABLES
 
 
 class SummaryData(AnalyticsData):
@@ -211,8 +211,3 @@ class SocialData(AnalyticsData):
     aggregate_key = Dimensions.social_network
     match_key = Dimensions.social_network
     limit = 15
-
-
-def get_site_ids():
-    # NOTE this method exists so it can be easily mocked during tests.
-    return TABLES

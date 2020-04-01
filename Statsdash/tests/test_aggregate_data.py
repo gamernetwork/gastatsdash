@@ -7,6 +7,18 @@ from Statsdash.aggregate_data import google, youtube
 from Statsdash.tests.data import mock_responses
 from Statsdash.stats_range import StatsRange
 
+google_tables = {
+    'fake.site1.com': [{'id': 'ga:12345678'}],
+    'fake.site2.com': [{'id': 'ga:87654321'}],
+}
+google_sites = list(google_tables.keys())
+
+youtube_tables = {
+    'channel_1': '12345678',
+    'channel_2': '87654321',
+}
+youtube_sites = list(youtube_tables.keys())
+
 expected_keys = [
     'pageviews',
     'users',
@@ -48,20 +60,14 @@ expected_keys = [
 
 class TestGoogleSummaryData(unittest.TestCase):
 
-    @patch('Statsdash.aggregate_data.google.get_site_ids')
-    def setUp(self, mock_table):
+    @patch('Statsdash.aggregate_data.google.TABLES', google_tables)
+    def setUp(self):
         self.period = StatsRange(
             'Month to date Aggregate',
             date(2020, 3, 12),
             date(2020, 3, 13)
         )
-        tables = {
-            'fake.site1.com': [{'id': 'ga:12345678'}],
-            'fake.site2.com': [{'id': 'ga:87654321'}],
-        }
-        mock_table.return_value = tables
-        sites = list(tables.keys())
-        self.summary_data = google.SummaryData({}, sites, self.period, 'MONTHLY')
+        self.summary_data = google.SummaryData({}, google_sites, self.period, 'MONTHLY')
 
     @patch('Statsdash.analytics.GoogleAnalytics._run_report')
     def test_get_data_for_period(self, mock_query_result):
@@ -113,20 +119,14 @@ class TestGoogleSummaryData(unittest.TestCase):
 
 class TestGoogleSiteSummaryData(unittest.TestCase):
 
-    @patch('Statsdash.aggregate_data.google.get_site_ids')
-    def setUp(self, mock_table):
+    @patch('Statsdash.aggregate_data.google.TABLES', google_tables)
+    def setUp(self):
         self.period = StatsRange(
             'Month to date Aggregate',
             date(2020, 3, 12),
             date(2020, 3, 13)
         )
-        tables = {
-            'fake.site1.com': [{'id': 'ga:12345678'}],
-            'fake.site2.com': [{'id': 'ga:87654321'}],
-        }
-        mock_table.return_value = tables
-        sites = list(tables.keys())
-        self.site_summary_data = google.SiteSummaryData({}, sites, self.period, 'MONTHLY')
+        self.site_summary_data = google.SiteSummaryData({}, google_sites, self.period, 'MONTHLY')
 
 
     @patch('Statsdash.analytics.GoogleAnalytics._run_report')
@@ -197,20 +197,14 @@ class TestGoogleSiteSummaryData(unittest.TestCase):
 
 class TestGoogleArticleData(unittest.TestCase):
 
-    @patch('Statsdash.aggregate_data.google.get_site_ids')
-    def setUp(self, mock_table):
+    @patch('Statsdash.aggregate_data.google.TABLES', google_tables)
+    def setUp(self):
         self.period = StatsRange(
             'Month to date Aggregate',
             date(2020, 3, 12),
             date(2020, 3, 13)
         )
-        tables = {
-            'fake.site1.com': [{'id': 'ga:12345678'}],
-            'fake.site2.com': [{'id': 'ga:87654321'}],
-        }
-        mock_table.return_value = tables
-        sites = list(tables.keys())
-        self.article_data = google.ArticleData({}, sites, self.period, 'MONTHLY')
+        self.article_data = google.ArticleData({}, google_sites, self.period, 'MONTHLY')
 
 
     @patch('Statsdash.analytics.GoogleAnalytics._run_report')
@@ -305,21 +299,14 @@ class TestGoogleArticleData(unittest.TestCase):
 
 class TestGoogleCountryData(unittest.TestCase):
 
-    @patch('Statsdash.aggregate_data.google.get_site_ids')
-    def setUp(self, mock_table):
+    @patch('Statsdash.aggregate_data.google.TABLES', google_tables)
+    def setUp(self):
         self.period = StatsRange(
             'Month to date Aggregate',
             date(2020, 3, 12),
             date(2020, 3, 13)
         )
-        tables = {
-            'fake.site1.com': [{'id': 'ga:12345678'}],
-            'fake.site2.com': [{'id': 'ga:87654321'}],
-        }
-        mock_table.return_value = tables
-        sites = list(tables.keys())
-
-        self.country_data = google.CountryData({}, sites, self.period, 'MONTHLY')
+        self.country_data = google.CountryData({}, google_sites, self.period, 'MONTHLY')
         self.expected_keys = [
             'country', 'pageviews', 'users', 'previous_figure_pageviews',
             'previous_change_pageviews', 'previous_percentage_pageviews',
@@ -374,20 +361,14 @@ class TestGoogleCountryData(unittest.TestCase):
 
 class TestGoogleTrafficSourceData(unittest.TestCase):
 
-    @patch('Statsdash.aggregate_data.google.get_site_ids')
-    def setUp(self, mock_table):
+    @patch('Statsdash.aggregate_data.google.TABLES', google_tables)
+    def setUp(self):
         self.period = StatsRange(
             'Month to date Aggregate',
             date(2020, 3, 12),
             date(2020, 3, 13)
         )
-        tables = {
-            'fake.site1.com': [{'id': 'ga:12345678'}],
-            'fake.site2.com': [{'id': 'ga:87654321'}],
-        }
-        mock_table.return_value = tables
-        sites = list(tables.keys())
-        self.traffic_source_data = google.TrafficSourceData({}, sites, self.period, 'MONTHLY')
+        self.traffic_source_data = google.TrafficSourceData({}, google_sites, self.period, 'MONTHLY')
         self.expected_keys = [
             'pageviews', 'source_medium', 'users', 'previous_figure_pageviews',
             'previous_change_pageviews', 'previous_percentage_pageviews',
@@ -429,20 +410,14 @@ class TestGoogleTrafficSourceData(unittest.TestCase):
 
 class TestGoogleDeviceData(unittest.TestCase):
 
-    @patch('Statsdash.aggregate_data.google.get_site_ids')
-    def setUp(self, mock_table):
+    @patch('Statsdash.aggregate_data.google.TABLES', google_tables)
+    def setUp(self):
         self.period = StatsRange(
             'Month to date Aggregate',
             date(2020, 3, 12),
             date(2020, 3, 13)
         )
-        tables = {
-            'fake.site1.com': [{'id': 'ga:12345678'}],
-            'fake.site2.com': [{'id': 'ga:87654321'}],
-        }
-        mock_table.return_value = tables
-        sites = list(tables.keys())
-        self.social_data = google.DeviceData({}, sites, self.period, 'MONTHLY')
+        self.social_data = google.DeviceData({}, google_sites, self.period, 'MONTHLY')
         self.expected_keys = [
             'device_category', 'users', 'previous_figure_users',
             'previous_change_users', 'previous_percentage_users',
@@ -474,20 +449,14 @@ class TestGoogleDeviceData(unittest.TestCase):
 
 class TestGoogleSocialData(unittest.TestCase):
 
-    @patch('Statsdash.aggregate_data.google.get_site_ids')
-    def setUp(self, mock_table):
+    @patch('Statsdash.aggregate_data.google.TABLES', google_tables)
+    def setUp(self):
         self.period = StatsRange(
             'Month to date Aggregate',
             date(2020, 3, 12),
             date(2020, 3, 13)
         )
-        tables = {
-            'fake.site1.com': [{'id': 'ga:12345678'}],
-            'fake.site2.com': [{'id': 'ga:87654321'}],
-        }
-        mock_table.return_value = tables
-        sites = list(tables.keys())
-        self.social_data = google.SocialData({}, sites, self.period, 'MONTHLY')
+        self.social_data = google.SocialData({}, google_sites, self.period, 'MONTHLY')
         self.expected_keys = [
             'pageviews', 'sessions', 'social_network', 'users',
             'previous_figure_pageviews', 'previous_change_pageviews',
@@ -586,20 +555,14 @@ class TestGoogleSocialData(unittest.TestCase):
 
 class TestYouTubeChannelSummaryData(unittest.TestCase):
 
-    @patch('Statsdash.aggregate_data.youtube.get_site_ids')
-    def setUp(self, mock_table):
-        tables = {
-            'channel_1': ['12345678'],
-            'channel_2': ['87654321'],
-        }
-        mock_table.return_value = tables
+    @patch('Statsdash.aggregate_data.youtube.TABLES', youtube_tables)
+    def setUp(self):
         self.period = StatsRange(
             'Month to date Aggregate',
             date(2020, 3, 12),
             date(2020, 3, 13)
         )
-        sites = list(tables.keys())
-        self.channel_summary_data = youtube.ChannelSummaryData({}, sites, self.period, 'MONTHLY')
+        self.channel_summary_data = youtube.ChannelSummaryData({}, youtube_sites, self.period, 'MONTHLY')
         self.expected_keys = [
             'channel', 'estimated_minutes_watched', 'subscriber_change',
             'subscribers_gained', 'subscribers_lost',
@@ -650,21 +613,14 @@ class TestYouTubeChannelSummaryData(unittest.TestCase):
 
 class TestYouTubeChannelStatsData(unittest.TestCase):
 
-    @patch('Statsdash.aggregate_data.youtube.get_site_ids')
-    def setUp(self, mock_tables):
+    @patch('Statsdash.aggregate_data.youtube.TABLES', youtube_tables)
+    def setUp(self):
         self.period = StatsRange(
             'Month to date Aggregate',
             date(2020, 3, 12),
             date(2020, 3, 13)
         )
-        tables = {
-            'channel_1': ['12345678'],
-            'channel_2': ['87654321'],
-        }
-        mock_tables.return_value = tables
-        sites = list(tables.keys())
-
-        self.channel_stats_data = youtube.ChannelStatsData({}, sites, self.period, 'MONTHLY')
+        self.channel_stats_data = youtube.ChannelStatsData({}, youtube_sites, self.period, 'MONTHLY')
         self.expected_keys = [
             'channel', 'comment_rate', 'comments', 'dislike_ratio',
             'dislikes', 'like_rate', 'like_ratio', 'likes', 'shares',
@@ -716,20 +672,15 @@ class TestYouTubeChannelStatsData(unittest.TestCase):
 
 class TestYouTubeCountryData(unittest.TestCase):
 
-    @patch('Statsdash.aggregate_data.youtube.get_site_ids')
-    def setUp(self, mock_tables):
+    @patch('Statsdash.aggregate_data.youtube.TABLES', youtube_tables)
+    def setUp(self):
         self.period = StatsRange(
             'Month to date Aggregate',
             date(2020, 3, 12),
             date(2020, 3, 13)
         )
-        tables = {
-            'channel_1': '12345678',
-            'channel_2': '87654321',
-        }
-        mock_tables.return_value = tables
-        sites = list(tables.keys())
-        self.country_data = youtube.CountryData({}, sites, self.period, 'MONTHLY')
+
+        self.country_data = youtube.CountryData({}, youtube_sites, self.period, 'MONTHLY')
         self.expected_keys = [
             'country', 'estimated_minutes_watched', 'subscriber_change',
             'subscribers_gained', 'subscribers_lost', 'views',
@@ -783,20 +734,14 @@ class TestYouTubeCountryData(unittest.TestCase):
 
 class TestYouTubeVideoData(unittest.TestCase):
 
-    @patch('Statsdash.aggregate_data.youtube.get_site_ids')
-    def setUp(self, mock_table):
+    @patch('Statsdash.aggregate_data.youtube.TABLES', youtube_tables)
+    def setUp(self):
         self.period = StatsRange(
             'Month to date Aggregate',
             date(2020, 3, 12),
             date(2020, 3, 13)
         )
-        tables = {
-            'channel_1': '12345678',
-            'channel_2': '87654321',
-        }
-        mock_table.return_value = tables
-        sites = list(tables.keys())
-        self.video_data = youtube.VideoData({}, sites, self.period, 'MONTHLY')
+        self.video_data = youtube.VideoData({}, youtube_sites, self.period, 'MONTHLY')
         self.expected_keys = [
             'channel', 'estimated_minutes_watched', 'title', 'video', 'views',
             'previous_figure_views', 'previous_change_views',
@@ -840,19 +785,14 @@ class TestYouTubeVideoData(unittest.TestCase):
 
 class TestYouTubeTrafficSourceData(unittest.TestCase):
 
-    @patch('Statsdash.aggregate_data.youtube.get_site_ids')
-    def setUp(self, mock_table):
+    @patch('Statsdash.aggregate_data.youtube.TABLES', youtube_tables)
+    def setUp(self):
         self.period = StatsRange(
             'Month to date Aggregate',
             date(2020, 3, 12),
             date(2020, 3, 13)
         )
-        tables = {
-            'channel_1': '12345678',
-        }
-        mock_table.return_value = tables
-        sites = list(tables.keys())
-        self.traffic_source_data = youtube.TrafficSourceData({}, sites, self.period, 'MONTHLY')
+        self.traffic_source_data = youtube.TrafficSourceData({}, youtube_sites, self.period, 'MONTHLY')
 
     # TODO need to get to the bottom of what this table is meant to do.
     @patch('Statsdash.analytics.YouTubeAnalytics._run_report')

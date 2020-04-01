@@ -2,7 +2,7 @@ from Statsdash import config
 from Statsdash.report import AnalyticsCoreReport
 
 
-all_recipients = ['all@gamer-network.net']
+all_recipients = ['recipeint@some-site.net']
 
 
 all_sites = config.GOOGLE['TABLES'].keys()
