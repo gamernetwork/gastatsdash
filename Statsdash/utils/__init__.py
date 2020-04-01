@@ -95,7 +95,7 @@ def remove_prefix_from_keys(data, prefix):
     keys = list(data.keys())
     for key in keys:
         assert key.startswith(prefix)
-        new_key = key[3:]
+        new_key = key[len(prefix):]
         data[new_key] = data.pop(key)
     return data
 
