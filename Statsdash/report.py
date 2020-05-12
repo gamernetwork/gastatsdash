@@ -1,4 +1,3 @@
-from pprint import pprint
 from datetime import date, datetime, timedelta
 import logging.config, logging.handlers
 

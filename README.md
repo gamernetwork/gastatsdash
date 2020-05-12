@@ -17,7 +17,8 @@ do not have live stats and data can take 48 hours to appear.
 
 ### Installing
 
-Clone the repo and create a `virtualenv`. Activate the `virtualenv` and install requirements.
+Clone the repo and create a `virtualenv`. Activate the `virtualenv` and install
+requirements.
 
 ```shell
 virtualenv env
@@ -25,8 +26,8 @@ source env/bin/activate
 pip install -r requirements.txt
 ```
 
-For development you should have `mailcatcher` installed. Install it inside the environment
-or system wide. 
+For development you should have `mailcatcher` installed. Install it inside the
+environment or system wide. 
 
 ```shell script
 brew install ruby
@@ -46,17 +47,18 @@ Update `Statsdash/report_schedule.py` for whatever reports you want to generate.
 
 **Important**
 * Inside `Statsdash/config.py` you will need to provide paths to two key files
-for Google Analytics and YouTube Analytics authentication. This step is explained
-[here](#getting-your-property-ids).
+  for Google Analytics and YouTube Analytics authentication. This step is
+  explained [here](#getting-your-property-ids).
 
-* You will also need to update `GOOGLE['TABLES']` and `YOUTUBE['CHANNELS']`
-to reflect your properties. This step is explained [here](#generating-analytics-key-file).
+* You will also need to update `GOOGLE['TABLES']` and `YOUTUBE['CHANNELS']` to
+  reflect your properties. This step is explained
+  [here](#generating-analytics-key-file).
 
-* For YouTube Analytics you will need your content owner ID. This step is explained
-[here](#getting-your-content-owner-id).
+* For YouTube Analytics you will need your content owner ID. This step is
+  explained [here](#getting-your-content-owner-id).
 
-* Finally, you will need to auth yourself for YouTube Analytics API. This step is explained
-[here](#generating-analytics-key-file).
+* Finally, you will need to auth yourself for YouTube Analytics API. This step
+  is explained [here](#generating-analytics-key-file).
 
 
 Once you have completed these steps you can [run the project](#usage).
@@ -76,7 +78,8 @@ It can be a little hard to find the view ID so follow these steps:
 1. Select 'View Settings' in the rightmost column.
 
 **Note:** the view ID will be a numeric ID with about nine characters. In
-`Statsdash/config.py`, the id should have `ga:` prepended to it (see `config.example.py`).
+`Statsdash/config.py`, the id should have `ga:` prepended to it (see
+`config.example.py`).
 
 ### YouTube
 
@@ -97,8 +100,8 @@ URL after `/channel/`. It should be a combination of letters and numbers.
 1. Choose 'Service account'
 1. You will be prompted to save a `.json` file. This is the private key file
   referenced in `config.GOOGLE['KEY_FILE']`.
-1. Update the `config.GOOGLE['KEY_FILE']` path to reflect the location of the key file
-on your machine.
+1. Update the `config.GOOGLE['KEY_FILE']` path to reflect the location of the
+   key file on your machine.
 
 ### Generating OAuth Client ID for Youtube access
 
@@ -110,8 +113,8 @@ Youtube Content ID API
 1. Choose 'OAuth Client ID'
 1. The Client ID will appear under the Credentials tab, on the right click to
   download the `.json` file.
-1. Update the `config.YOUTUBE['KEY_FILE']` path to reflect the location of the key file
-on your machine.
+1. Update the `config.YOUTUBE['KEY_FILE']` path to reflect the location of the
+   key file on your machine.
   
 ## Getting your content owner ID
 
@@ -124,20 +127,22 @@ Run the `create_credentials` file.
 python create_credentials.py
 ```
 
-A web browser will launch where you can sign into your Google account. Once you have
-signed in, a file called `credentials.json` will be saved in the project root directory.
+A web browser will launch where you can sign into your Google account. Once you
+have signed in, a file called `credentials.json` will be saved in the project
+root directory.
 
 ## Running the tests
 
-Make sure you are inside your virtual environment and have installed requirements.
+Make sure you are inside your virtual environment and have installed
+requirements.
 ```shell script
 nosetests Statsdash/tests/
 ```
 
 ## Usage
 
-**Note:** For development, run mailcatcher so that you can see the emails that are sent.
-By default they will be available at `http://127.0.0.1:1080/`.
+**Note:** For development, run mailcatcher so that you can see the emails that
+are sent.  By default they will be available at `http://127.0.0.1:1080/`.
 ```shell script
 mailcatcher
 ``` 

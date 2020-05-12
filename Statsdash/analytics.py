@@ -1,3 +1,4 @@
+from pprint import pprint
 from googleapiclient import errors
 import logging.config
 import logging.handlers
@@ -217,7 +218,6 @@ class GoogleAnalytics(Analytics):
         kwargs['include_empty_rows'] = True  # always True
         if type(view_id) == dict:
             view_id = list(view_id.values())[0]
-        print(view_id)
         query = self.data_resource.get(
             ids=view_id,
             start_date=start,
