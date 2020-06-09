@@ -1,3 +1,5 @@
+import os
+
 from mock import Mock
 import unittest
 from unittest.mock import patch
@@ -13,9 +15,8 @@ from Statsdash.analytics import GoogleAnalytics, YouTubeAnalytics
 class TestGoogleAnalytics(unittest.TestCase):
 
     def setUp(self):
-        # TODO fix link
-        analytics_discovery = \
-            '/Users/john/src/gastatsdash/Statsdash/tests/data/analytics-discovery.json'
+        analytics_discovery = os.path.join(os.path.dirname(__file__), 'data/analytics-discovery.json')
+
         http = HttpMock(analytics_discovery, {'status': '200'})
         api_key = 'test_api_key'
         service = build(
@@ -176,8 +177,8 @@ class TestGoogleAnalytics(unittest.TestCase):
 class TestYouTubeAnalytics(unittest.TestCase):
 
     def setUp(self):
-        analytics_discovery = \
-            '/Users/john/src/gastatsdash/Statsdash/tests/data/youtube-analytics-discovery.json'
+        analytics_discovery = os.path.join(os.path.dirname(__file__), 'data/youtube-analytics-discovery.json')
+
         http = HttpMock(analytics_discovery, {'status': '200'})
         api_key = 'test_api_key'
         service = build(
@@ -345,8 +346,7 @@ class TestYouTubeAnalytics(unittest.TestCase):
 # class TestYouTubeAPI(unittest.TestCase):
 #
 #     def setUp(self):
-#         analytics_discovery = \
-#             '/Users/john/src/gastatsdash/youtube-data-discovery.json'
+#         analytics_discovery = os.path.join(os.path.dirname(__file__), 'data/youtube-data-discovery.json')
 #         http = HttpMock(analytics_discovery, {'status': '200'})
 #         api_key = 'test_api_key'
 #         YOUTUBE_API_SERVICE_NAME = 'youtube'
