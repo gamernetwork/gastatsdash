@@ -211,12 +211,13 @@ def get_change(data_a, data_b, change_keys):
 
 
 def get_change_match_key(data_a, data_b, change_keys, match_key=None):
+
     result = {}
-    if data_a[match_key] in data_b.keys():
+    if data_a[match_key] in data_b.values():
         for key in change_keys:
             result['figure_%s' % key] = data_b[key]
-            result['change_%s' % key] = result[key] - data_b[key]
-            result['percentage_%s' % key] = percentage(result['change_%s' % (key)], data_b[key])
+            result['change_%s' % key] = result['figure_%s' % key] - data_a[key]
+            result['percentage_%s' % key] = percentage(result['change_%s' % (key)], data_a[key])
     else:
         for key in change_keys:
             result['figure_%s' % key] = 0
