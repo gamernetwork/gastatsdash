@@ -8,6 +8,7 @@ class Frequency:
     WOW_DAILY = 'WOW_DAILY'
     WEEKLY = 'WEEKLY'
     MONTHLY = 'MONTHLY'
+    YOY_MONTHLY = 'YOY_MONTHLY'
     YEARLY = 'YEARLY'
 
 

@@ -91,7 +91,7 @@ class RunLogger:
             if frequency == Frequency.WEEKLY:
                 weekday = frequency_options.get('weekday', 'Monday')
                 return find_next_weekday(now, weekday)
-            if frequency == Frequency.MONTHLY:
+            if frequency in {Frequency.MONTHLY, Frequency.YOY_MONTHLY}:
                 day = frequency_options.get('day', 1)
                 next_run = datetime(day=day, month=now.month, year=now.year)
                 if next_run < now:
@@ -110,7 +110,7 @@ class RunLogger:
             # So if we run every Monday, our last_run_end will be on a Sunday - 
             #   so add one day
             next_run = find_next_weekday(last_run_end + timedelta(days=1), weekday, force_future=True)
-        if frequency == Frequency.MONTHLY:
+        if frequency in {Frequency.MONTHLY, Frequency.YOY_MONTHLY}:
             day = frequency_options.get('day')
             #add one day to last_run_end to get the first day of next month period
             next_run = last_run_end + timedelta(days=1) 

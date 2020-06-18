@@ -150,6 +150,7 @@ class GoogleAnalytics(Analytics):
         source = ('ga:sourceMedium', 'source_medium')
         path = ('ga:pagePath', 'path')
         title = ('ga:pageTitle', 'title')
+        year_month = ('ga:yearMonth', 'year_month')
 
     class Countries:
         czech_republic = 'Czec'

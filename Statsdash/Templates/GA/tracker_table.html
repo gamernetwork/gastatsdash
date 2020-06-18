@@ -1,0 +1,32 @@
+<h2>Site performance tracker</h2>
+<table border="0" cellspacing="0">
+    <thead>
+		<tr>
+			<th rowspan="2">Site</th>
+            {% for something in tracker_table %}
+                <th colspan="3">{{ something.year }}</th>
+            {% endfor %}
+		</tr>
+		<tr>
+            {% for something in tracker_table %}
+                <th>Visitors</th>
+                <th>+/- YoY</th>
+                <th>Pageviews</th>
+                <th>+/- YoY</th>
+            {% endfor %}
+		</tr>
+    </thead>
+
+    <tbody>
+		{% for row in tracker_table %}
+			<tr class="{{ loop.cycle('odd', 'even') }}">
+				<th>{{ row.site|title }}</th>
+				<td class="num">{{ row.users|int|intcomma }}</td>
+				<td class="num"><span style="color: {% if row.yearly_percentage_users > 0 %}green{% else %}red{% endif %};">{{row.yearly_percentage_users|round(1)}}%</span></td>					
+				<td class="num">{{ row.pageviews|int|intcomma }}</td>
+				<td class="num"><span style="color: {% if row.yearly_percentage_pageviews > 0 %}green{% else %}red{% endif %};">{{row.yearly_percentage_pageviews|round(1)}}%</span></td>
+            </tr>
+		{% endfor %}
+    </tbody>
+
+</table>

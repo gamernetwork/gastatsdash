@@ -147,6 +147,7 @@ class AnalyticsCoreReport(Report):
         google.CountryData,
         google.ArticleData,
         google.TrafficSourceData,
+        google.TrackerData,
         google.DeviceData,
     ]
     template = 'GA/base.html'
@@ -182,6 +183,8 @@ class AnalyticsCoreReport(Report):
         tables = super()._get_tables()
         tables['summary_table'] = tables['summary_table'][0]
         tables['network_summary_table'] = self._get_network_summary_table()[0]
+        if self.frequency == Frequency.YOY_MONTHLY:
+            tables['tracker_table'] = self._get_tracker_table()[0]
         if self.frequency != Frequency.MONTHLY:
             network_summary_table = self._get_network_month_summary_table()
             if network_summary_table:
@@ -214,5 +217,17 @@ class AnalyticsCoreReport(Report):
             return network_month_data.get_table()
         return None
 
+    def _get_tracker_table(self):
+        month_range = self._get_month_range() # Three year range. Check stats_range
+        three_year_data = google.TrackerData(self.resource, config.GOOGLE['TABLES'], month_range, self.frequency)
+        return three_year_data.get_table()
+
     def _get_month_range(self):
         return StatsRange('Month to date Aggregate', self.first, self.last)
+
+    def _get_three_year_range(self):
+        three_years_ago = self.today - timedelta(years=3)
+        first = datetime(three_years_ago.year, 1, 1).date()
+        self.last = date.add_one_month(self.first) - timedelta(days=1)
+        return StatsRange('Three year monthly to date Aggregate', first, self.last)
+

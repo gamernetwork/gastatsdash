@@ -180,6 +180,30 @@ class TrafficSourceData(AnalyticsData):
     limit = 10
 
 
+class TrackerData(AnalyticsData):
+    """
+    Gets monthly users and pageviews for all sites.
+    """
+    table_label = 'tracker_table'
+    metrics = [
+        Metrics.pageviews,
+        Metrics.users,
+    ]
+    dimensions = [
+        Dimensions.year_month,
+    ]
+    sort_by = Dimensions.year_month
+    match_key = 'site'
+    aggregate_key = Dimensions.year_month
+
+
+    def _format_data(self, data, site):
+        data = super()._format_data(data, site)
+        # Maybe we could add this by default?
+        data['site'] = site
+        return data
+
+
 class DeviceData(AnalyticsData):
 
     table_label = 'device_table'

@@ -9,6 +9,7 @@ class StatsRange:
         WOW_DAILY = 'WOW_DAILY'
         WEEKLY = 'WEEKLY'
         MONTHLY = 'MONTHLY'
+        YOY_MONTHLY = 'YOY_MONTHLY'
         YEARLY = 'YEARLY'
 
     def __init__(self, name, start_date, end_date):
@@ -41,7 +42,7 @@ class StatsRange:
             return cls.get_one_day_period(date)
         if frequency == cls.Frequency.WEEKLY:
             return cls.get_one_week_period(date)
-        if frequency == cls.Frequency.MONTHLY:
+        if frequency in [cls.Frequency.MONTHLY, cls.Frequency.YOY_MONTHLY]:
             return cls.get_one_month_period(date)
 
     @classmethod
@@ -64,6 +65,10 @@ class StatsRange:
             previous_start = current_period.start_date - relativedelta(months=1)
             previous_end = current_period.start_date - timedelta(days=1)
             return cls("Previous Month", previous_start, previous_end)
+        if frequency == cls.Frequency.YOY_MONTHLY:
+            previous_start = current_period.start_date - relativedelta(years=1)
+            previous_end = current_period.end_date - relativedelta(years=1)
+            return cls("Month Last Year", previous_start, previous_end)
         if frequency == cls.Frequency.YEARLY:
             previous_start = current_period.start_date - relativedelta(years=1)
             previous_end = current_period.end_date - relativedelta(years=1)
