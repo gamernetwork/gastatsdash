@@ -218,7 +218,7 @@ class AnalyticsCoreReport(Report):
         return None
 
     def _get_tracker_table(self):
-        month_range = self._get_month_range() # Three year range. Check stats_range
+        month_range = self._get_three_year_range() # Three year range. Check stats_range
         three_year_data = google.TrackerData(self.resource, config.GOOGLE['TABLES'], month_range, self.frequency)
         return three_year_data.get_table()
 
